@@ -43,7 +43,7 @@ const FindIdForm = ({ onFindId, onError }: { onFindId: (id: string) => void, onE
     
     return (
         <>
-        <div className="row w-full mt-[30px]">
+        <div className="w-full max-w-[320px] mt-[30px]">
             <Input
                 placeholder="이메일"
                 className="is-rounded-form w-full shadow-none"
@@ -52,16 +52,9 @@ const FindIdForm = ({ onFindId, onError }: { onFindId: (id: string) => void, onE
                 onChange={(e) => setEmail(e.target.value)}
                 />
         </div>
-        <div className="row w-full mt-[60px]">
-            <Button style={{ width: "100%", marginLeft: 0, marginRight: 0 }} state="warning" size="L"  onClick={handleBack}>뒤로 가기</Button>
-        </div>
-        <div className="row w-full mt-[20px]">
-            <Button
-                style={{ width: "100%", marginLeft: 0, marginRight: 0 }}
-                state="success"
-                size="L"
-                onClick={handleSubmit}
-                >아이디 찾기</Button>
+        <div className="flex flex-col items-center gap-2 mt-[60px] w-full">
+            <Button className="w-full max-w-[320px]" state="warning" size="L" onClick={handleBack}>뒤로 가기</Button>
+            <Button className="w-full max-w-[320px]" state="success" size="L" onClick={handleSubmit}>아이디 찾기</Button>
         </div>
         </>
     );
