@@ -46,10 +46,10 @@ export default function TitlePage(){
     }, [getTitle, page]);
 
     return (
-        <div className="bg-slate-400 flex items-center justify-center p-5 flex-1 min-h-screen overscroll-none">
-            <div className="bg-white p-8 w-full overflow-hidden">
-                <h1 className="mb-10 text-2xl">칭호 도감</h1>
-                <div className="grid grid-cols-3 gap-5">
+        <div className="bg-slate-400 flex items-center justify-center p-3 sm:p-5 flex-1 min-h-screen overscroll-none">
+            <div className="bg-white p-4 sm:p-8 w-full overflow-hidden">
+                <h1 className="mb-6 sm:mb-10 text-xl sm:text-2xl">칭호 도감</h1>
+                <div className="grid grid-cols-3 gap-3 sm:gap-5">
                     {gridItems.map((title, index) => (
                         <RenderTitleItem key={index} title={title} index={index} />
                     ))}                

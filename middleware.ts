@@ -9,19 +9,16 @@ export async function middleware(request: NextRequest) {
   if (pathname === "/signin"
     || pathname === "/signup"
     || pathname === "/findid"
-    || pathname === "/beginning"
     || pathname.startsWith("/play")) {
     return NextResponse.next();
   }
 
-  // const { user, response } = await getUserFromCookie(request);
-  const { user } = await getUserFromCookie(request);
-
-  // 'isBeginned' 쿠키가 없으면 '/beginning'으로 리다이렉트
-  const isBeginned = request.cookies.get("isBeginned") || null;
-  if (!isBeginned) {
-    return NextResponse.redirect(new URL("/beginning", request.url));
+  // '/beginning' 접근 차단 — 랜딩 페이지로 리다이렉트
+  if (pathname === "/beginning") {
+    return NextResponse.redirect(new URL("/", request.url));
   }
+
+  const { user } = await getUserFromCookie(request);
   
   // 쿠키로부터 accessToken과 refreshToken 값 저장
   const accessToken = request.cookies.get("accessToken");

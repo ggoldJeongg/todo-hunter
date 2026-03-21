@@ -32,7 +32,7 @@ export default function CharacterPage() {
 
     return (
         <>
-        <div className="relative w-full h-[91vh] overflow-hidden"> 
+        <div className="relative w-full min-h-screen overflow-hidden">
             <Image
                 src="/images/backgrounds/Character-Page-Bg.webp"
                 // src="/images/backgrounds/Character-Page-Bg.png"
@@ -42,7 +42,7 @@ export default function CharacterPage() {
                 className="object-cover z-[-1]"
                 quality={70}
             />
-            <Button className="absolute top-8 right-5" size={"S"} state={"error"} onClick={handleLogout}>로그아웃</Button>
+            <Button className="absolute top-4 right-4" size={"S"} state={"error"} onClick={handleLogout}>로그아웃</Button>
             <Suspense>
                 <ProgressBar nickname={nickname} progress={progress} />
             </Suspense>

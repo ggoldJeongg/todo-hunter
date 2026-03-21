@@ -30,7 +30,7 @@ const FindId = () => {
                 flex-col
                 justify-center
                 items-center
-            mx-3
+            px-4 sm:px-6
             min-h-screen
             `
             .replace(/\s+/g, ' ').trim()

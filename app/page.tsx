@@ -23,9 +23,7 @@ export default function Home() {
     const checkTokens = async () => {
       const response = await fetch("/", { credentials: "include" });
 
-      // Access-Control-Request-Headers로 전달받은 액세스 토큰 유무 여부를 boolean 값으로 저장
       const accessTokenHeader = response.headers.get("X-Has-AccessToken");
-      // Access-Control-Request-Headers로 전달받은 리프레시 토큰 유무 여부를 boolean 값으로 저장
       const refreshTokenHeader = response.headers.get("X-Has-RefreshToken");
 
       const hasAccessToken = accessTokenHeader === "true";
@@ -33,8 +31,8 @@ export default function Home() {
 
       setHasAccessToken(hasAccessToken);
       setHasRefreshToken(hasRefreshToken);
-      
-      setIsLoading(false); // 로딩 완료
+
+      setIsLoading(false);
     };
     checkTokens();
   }, []);
@@ -115,7 +113,7 @@ export default function Home() {
         />
       )}
       {/* <Image src="/images/logo.png" width={1001} height={395} alt="TODO HUNTER ~RETURN OF SCROLL~ (투두 헌터 -리턴 오브 스크롤-)" className="p-6"/> */}
-      <Button asChild size="L" state="success" className="mt-20 max-[1000px]:mt-[8vw] max-[380px]:w-4/5">
+      <Button asChild size="L" state="success" className="mt-10 w-4/5 max-w-[280px]">
         <Link href={"/"} onClick={handleStartClick}>시작하기</Link>
       </Button>
     </div>

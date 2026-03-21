@@ -38,7 +38,7 @@ const FightField = () => {
   ];
 
   return (
-    <div className="relative w-auto h-[150px]">
+    <div className="relative w-full h-[35vw] max-h-[150px]">
       <Image
         src="/images/backgrounds/underwater-fantasy-background3.png"
         alt="field image"

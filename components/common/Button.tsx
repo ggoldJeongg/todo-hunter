@@ -10,7 +10,7 @@ const buttonVariants = cva(
   {
     variants: {
       size:{
-        L: "w-80 h-7",
+        L: "w-full max-w-[320px] h-7",
         M: "w-56 h-7",
         S: "w-32 h-7",
         XS: "w-12 h-7",
