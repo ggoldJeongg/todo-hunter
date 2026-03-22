@@ -1,6 +1,6 @@
 import { UserTitleUsecase } from "@/application/usecases/title/UserTitleUsecase";
-import { ITitleRepository, IUserTitleRepository } from "@/domain/repositories";
-import { PriCharacterRepository, PriTitleRepository, PriUserTitleRepository } from "@/infrastructure/repositories";
+import { ITitleRepository, IUserTitleRepository, IStatusRepository } from "@/domain/repositories";
+import { PriCharacterRepository, PriTitleRepository, PriUserTitleRepository, PriStatusRepository } from "@/infrastructure/repositories";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromCookie } from "@/utils/auth";
@@ -24,11 +24,13 @@ export async function GET(req: NextRequest){
     // 리포지토리 인스턴스 생성
     const userTitleRepository: IUserTitleRepository = new PriUserTitleRepository(prisma);
     const titleRepository: ITitleRepository = new PriTitleRepository(prisma);
+    const statusRepository: IStatusRepository = new PriStatusRepository(prisma);
 
     // UserTitleUsecase 인스턴스 생성
     const userTitleUsecase = new UserTitleUsecase(
         userTitleRepository,
-        titleRepository
+        titleRepository,
+        statusRepository
     );
 
     try {

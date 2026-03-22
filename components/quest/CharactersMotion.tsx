@@ -1,5 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import {
+  loadLayers,
+  renderLayers,
+  type LayerConfig,
+  type SpriteSheet,
+} from "@/utils/sprite/SpriteLayerRenderer";
 
 interface CharacterProps {
   idleFrames: string[];
@@ -14,7 +20,11 @@ interface CharacterProps {
   isAttacking?: boolean;
   isDefeated?: boolean;
   isShaking?: boolean;
+  useCanvas?: boolean;
+  spriteLayers?: LayerConfig[];
 }
+
+const CANVAS_SIZE = 120;
 
 const CharacterMotion: React.FC<CharacterProps> = ({
   idleFrames,
@@ -29,24 +39,43 @@ const CharacterMotion: React.FC<CharacterProps> = ({
   isAttacking = false,
   isDefeated = false,
   isShaking = false,
+  useCanvas = false,
+  spriteLayers,
 }) => {
   const [currentFrame, setCurrentFrame] = useState(0);
   const [position, setPosition] = useState({ top, left });
   const [opacity, setOpacity] = useState(1);
   const [shake, setShake] = useState("");
 
+  // Canvas refs
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const sheetsRef = useRef<SpriteSheet[]>([]);
+
+  // Canvas 레이어 로드 및 첫 프레임 렌더
+  useEffect(() => {
+    if (!useCanvas || !spriteLayers) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+
+    ctx.imageSmoothingEnabled = false;
+
+    loadLayers(spriteLayers).then((sheets) => {
+      sheetsRef.current = sheets;
+      renderLayers(ctx, sheets, 0, CANVAS_SIZE, CANVAS_SIZE);
+    });
+  }, [useCanvas, spriteLayers]);
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
     const frames = isAttacking ? attackFrames : idleFrames;
 
     if (isMoving) {
-      // 이동 방향에 따라 위치 변경
       setPosition({
         top: "60%",
-        left: isMovingForward ? "65%" : "30%", // 앞으로 이동 or 뒤로 복귀
+        left: isMovingForward ? "65%" : "30%",
       });
 
-      // 뒤로 이동일 경우 0.6초 후 원래 자리로 복귀
       if (!isMovingForward) {
         setTimeout(() => {
           setPosition({ top, left });
@@ -61,11 +90,10 @@ const CharacterMotion: React.FC<CharacterProps> = ({
     }
 
     if (isDefeated) {
-      // werewolf가 사라지는 애니메이션
       setOpacity(1);
       setTimeout(() => {
-        setOpacity(0); // 서서히 사라지기
-      }, 500); // 0.5초 후 사라짐
+        setOpacity(0);
+      }, 500);
     }
 
     if (isShaking) {
@@ -89,10 +117,19 @@ const CharacterMotion: React.FC<CharacterProps> = ({
         left: position.left,
         transform: `translate(-50%, -50%) ${flip ? "scaleX(-1)" : ""} ${shake}`,
         opacity,
-        animation: isShaking ? "shake 0.5s infinite" : "none", //  진동 효과
+        animation: isShaking ? "shake 0.5s infinite" : "none",
       }}
     >
-      <Image src={isAttacking ? attackFrames[currentFrame] : idleFrames[currentFrame]} alt={alt} width={120} height={120} />
+      {useCanvas && spriteLayers ? (
+        <canvas
+          ref={canvasRef}
+          width={CANVAS_SIZE}
+          height={CANVAS_SIZE}
+          style={{ imageRendering: "pixelated" }}
+        />
+      ) : (
+        <Image src={isAttacking ? attackFrames[currentFrame] : idleFrames[currentFrame]} alt={alt} width={120} height={120} />
+      )}
     </div>
   );
 };

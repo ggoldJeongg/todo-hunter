@@ -1,10 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import Image from "next/image";
 import CharacterMotion from "./CharactersMotion";
 import { useQuestStore } from "@/utils/stores/questStore";
 import useProgressStore from "@/utils/stores/useProgressStore";
+import type { LayerConfig } from "@/utils/sprite/SpriteLayerRenderer";
+
+const BASE_PATH = "/images/asprites/char_a_p1";
 
 // FightField에서 상태 추가
 const FightField = () => {
@@ -16,6 +19,12 @@ const FightField = () => {
       setDefeated(true);
     }
   }, [progress, setDefeated]);
+
+  const playerSpriteLayers: LayerConfig[] = useMemo(() => [
+    { src: `${BASE_PATH}/char_a_p1_0bas_humn_v00.png` },
+    { src: `${BASE_PATH}/1out/char_a_p1_1out_fstr_v01.png` },
+    { src: `${BASE_PATH}/4har/char_a_p1_4har_bob1_v01.png` },
+  ], []);
 
   const playerIdleFrames = [
     "/images/characters/player/idle01.png",
@@ -47,7 +56,7 @@ const FightField = () => {
         priority
       />
 
-      {/* 플레이어 (이동 & 공격 반영) */}
+      {/* 플레이어 (Canvas 레이어 합성) */}
       <CharacterMotion
         idleFrames={playerIdleFrames}
         attackFrames={playerAttackFrames}
@@ -55,8 +64,10 @@ const FightField = () => {
         top="60%"
         left="30%"
         isMoving={isMoving}
-        isMovingForward={isMovingForward} // 이동 방향 전달
+        isMovingForward={isMovingForward}
         isAttacking={isAttacking}
+        useCanvas={true}
+        spriteLayers={playerSpriteLayers}
       />
 
       {/* 몬스터 (werewolf) */}
