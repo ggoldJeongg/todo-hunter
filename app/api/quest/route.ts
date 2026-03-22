@@ -3,15 +3,21 @@ import { CreateQuestUseCase } from '@/application/usecases/quest/CreateQuestUsec
 import { PriQuestRepository, PriStatusRepository } from '@/infrastructure/repositories';
 import { prisma } from '@/lib/prisma';
 import { CreateQuestDTO } from '@/application/usecases/quest/dtos';
-import { getUserFromCookie, getUserFromRequest } from '@/utils/auth';
+import { getUserFromCookie } from '@/utils/auth';
 
 // POST 요청 (새 퀘스트 생성)
 export async function POST(req: NextRequest) {
   try {
     // 🔹 유저 정보 가져오기
-    const userId = await getUserFromRequest(req);
-    if (!userId || typeof userId !== "number") {
+    const { user } = await getUserFromCookie(req);
+    if (!user || !user.id) {
       return NextResponse.json({ success: false, error: "로그인이 필요합니다." }, { status: 401 });
+    }
+
+    // 🔹 유저의 캐릭터 조회
+    const character = await prisma.character.findFirst({ where: { userId: Number(user.id) } });
+    if (!character) {
+      return NextResponse.json({ success: false, error: "캐릭터를 찾을 수 없습니다." }, { status: 404 });
     }
 
     // 🔹 요청 바디 파싱
@@ -24,9 +30,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "필수 값이 누락되었습니다." }, { status: 400 });
     }
 
-    // 🔹 DTO 생성 (characterId는 로그인한 유저의 ID로 설정)
+    // 🔹 DTO 생성 (캐릭터 ID를 정확히 사용)
     const dto: CreateQuestDTO = {
-      characterId: userId, // 로그인한 유저의 ID 사용
+      characterId: character.id,
       name,
       tagged,
       isWeekly,
