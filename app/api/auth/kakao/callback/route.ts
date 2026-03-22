@@ -8,9 +8,17 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const code = searchParams.get("code");
+    const state = searchParams.get("state");
 
     if (!code) {
       return NextResponse.redirect(new URL("/signin?error=no_code", req.url));
+    }
+
+    // CSRF 검증: 쿠키에 저장된 state와 콜백의 state 비교
+    const savedState = req.cookies.get("kakao_oauth_state")?.value;
+
+    if (!state || !savedState || state !== savedState) {
+      return NextResponse.redirect(new URL("/signin?error=invalid_state", req.url));
     }
 
     // 1. 인가 코드로 카카오 액세스 토큰 발급
@@ -42,39 +50,38 @@ export async function GET(req: NextRequest) {
     const kakaoNickname = kakaoUser.properties?.nickname || "헌터";
     const kakaoEmail = kakaoUser.kakao_account?.email || `kakao_${kakaoId}@todohunter.local`;
 
-    // 3. DB에서 기존 카카오 사용자 조회 또는 신규 생성
-    let user = await prisma.user.findUnique({
+    // 사용 완료된 CSRF state 쿠키 삭제
+    const deleteCsrfCookie = (res: NextResponse) => {
+      res.cookies.delete("kakao_oauth_state");
+    };
+
+    // 3. DB에서 기존 카카오 사용자 조회
+    const user = await prisma.user.findUnique({
       where: { providerId: kakaoId },
     });
 
     if (!user) {
-      // 신규 사용자 생성 (User + Character + Status)
-      user = await prisma.user.create({
-        data: {
-          loginId: `kakao_${kakaoId}`,
-          email: kakaoEmail,
-          password: null,
-          nickname: kakaoNickname,
-          provider: "kakao",
-          providerId: kakaoId,
-          characters: {
-            create: {
-              endingState: 0,
-              status: {
-                create: {
-                  str: 0,
-                  int: 0,
-                  emo: 0,
-                  fin: 0,
-                  liv: 0,
-                },
-              },
-            },
-          },
-        },
+      // 신규 사용자: 닉네임 입력을 위해 signup 페이지로 리다이렉트
+      const response = NextResponse.redirect(new URL("/signup?provider=kakao", req.url));
+
+      // 카카오 데이터를 HttpOnly 쿠키에 임시 저장 (5분 만료)
+      response.cookies.set("kakao_pending", JSON.stringify({
+        kakaoId,
+        kakaoEmail,
+        kakaoNickname,
+      }), {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
+        sameSite: "lax",
+        maxAge: 300,
       });
+
+      deleteCsrfCookie(response);
+      return response;
     }
 
+    // 기존 사용자: 바로 로그인 처리
     // 4. JWT 토큰 발급 (기존 시스템 활용)
     const generateAccessToken = new GenerateAccessTokenUsecase();
     const generateRefreshToken = new GenerateRefreshTokenUsecase(new RdAuthenticationRepository());
@@ -96,6 +103,7 @@ export async function GET(req: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       path: "/",
+      sameSite: "strict",
       maxAge: parseInt((process.env.ACCESS_TOKEN_EXPIRES || "3600").replace("s", ""), 10),
     });
 
@@ -103,6 +111,7 @@ export async function GET(req: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       path: "/",
+      sameSite: "strict",
       maxAge: parseInt((process.env.REFRESH_TOKEN_EXPIRES || "3600").replace("s", ""), 10),
     });
 
@@ -112,9 +121,11 @@ export async function GET(req: NextRequest) {
       maxAge: 31536000,
     });
 
+    deleteCsrfCookie(response);
+
     return response;
   } catch (error) {
-    console.error("카카오 로그인 오류:", error);
+    console.error("카카오 로그인 오류:", error instanceof Error ? error.message : "unknown error");
     return NextResponse.redirect(new URL("/signin?error=kakao_failed", req.url));
   }
 }

@@ -48,12 +48,15 @@ export class PriUserRepository implements IUserRepository {
   }
 
   async verifyPassword(user: User, password: string): Promise<boolean> {
-    return await bcrypt.compare(password, user.password);
+    if (!user.password) return false;
+    return await bcrypt.compare(password, user.password) as boolean;
   }
 
   async create(data: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {
     return await this.prisma.$transaction(async (tx) => {
-      const hashedPassword = await bcrypt.hash(data.password, 10);
+      const hashedPassword = data.password
+        ? (await bcrypt.hash(data.password, 10) as string)
+        : null;
 
       const newUser = await tx.user.create({
         data: {
@@ -61,6 +64,8 @@ export class PriUserRepository implements IUserRepository {
           email: data.email,
           password: hashedPassword,
           nickname: data.nickname,
+          provider: data.provider,
+          providerId: data.providerId,
         },
       });
 

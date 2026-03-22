@@ -13,9 +13,32 @@ import { GenerateRefreshTokenUsecase } from "@/application/usecases/auth/Generat
 import { VerifyRefreshTokenUsecase } from "@/application/usecases/auth/VerifyRefreshTokenUsecase";
 import { RenewRefreshTokenUsecase } from "@/application/usecases/auth/RenewRefreshTokenUsecase";
 import { FindUserIdByLoginIdUsecase } from "@/application/usecases/auth/FindUserIdByLoginIdUsecase";
+import { checkRateLimit, getClientIp } from "@/infrastructure/rate-limiter";
+
+// 로그인: 같은 IP에서 60초 내 최대 5회
+const LOGIN_RATE_LIMIT = { maxRequests: 5, windowSeconds: 60 };
 
 export async function POST(req: NextRequest) {
     try {
+        // Rate Limiting 검사
+        const clientIp = getClientIp(req.headers);
+        const rateLimit = await checkRateLimit(
+            `signin:${clientIp}`,
+            LOGIN_RATE_LIMIT.maxRequests,
+            LOGIN_RATE_LIMIT.windowSeconds
+        );
+
+        if (!rateLimit.allowed) {
+            return NextResponse.json(
+                { error: "로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요." },
+                {
+                    status: 429,
+                    headers: {
+                        "Retry-After": String(rateLimit.retryAfterSeconds),
+                    },
+                }
+            );
+        }
         const request: SignInRequestDTO = await req.json();
         const userRepository: IUserRepository = new PriUserRepository(prisma);
         const verifyPasswordUsecase = new VerifyPasswordUsecase();
@@ -58,37 +81,39 @@ export async function POST(req: NextRequest) {
         // Access Token 생성
         const accessToken = await generateAccessTokenUsecase.execute({ id: id, loginId: loginId });
 
-        // 쿠키 설정 및 응답
-        const response = NextResponse.json({ accessToken }, { status: 200 });
+        // 쿠키 설정 및 응답 (토큰은 HttpOnly 쿠키로만 전달, body에 포함하지 않음)
+        const response = NextResponse.json({ message: "로그인 성공" }, { status: 200 });
         response.cookies.set("accessToken", accessToken, {
-            httpOnly: true, // XSS 방지
-            secure: process.env.NODE_ENV === "production", // 프로덕션에서만 Secure 적용
-            path: "/", // 모든 경로에서 사용 가능
-            maxAge: parseInt(process.env.ACCESS_TOKEN_EXPIRES || "3600", 10), // 유효기간 (초 단위)
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            path: "/",
+            sameSite: "strict",
+            maxAge: parseInt(process.env.ACCESS_TOKEN_EXPIRES || "3600", 10),
         });
         response.cookies.set("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             path: "/",
-            maxAge: parseInt(process.env.REFRESH_TOKEN_EXPIRES || "3600", 10), // 유효기간 (초 단위)
+            sameSite: "strict",
+            maxAge: parseInt(process.env.REFRESH_TOKEN_EXPIRES || "3600", 10),
         });
 
         return response;
     } catch (error) {
-        console.error("❌ 로그인 오류", error);
+        console.error("로그인 오류:", error instanceof Error ? error.message : "unknown error");
 
         if(error instanceof LoginError){
             const errorMapping: Record<LoginErrorType, {message: string; status: number}> = {
                 MISSING_CREDENTIALS: {
-                message: "이메일과 비밀번호를 모두 입력해주세요.",
+                message: "아이디와 비밀번호를 모두 입력해주세요.",
                 status: 400,
                 },
                 LOGIN_ID_NOT_FOUND: {
-                message: "가입되지 않은 아이디입니다. 회원가입 후 이용해주세요.",
+                message: "아이디 또는 비밀번호가 올바르지 않습니다.",
                 status: 401,
                 },
                 INVALID_PASSWORD: {
-                message: "비밀번호가 올바르지 않습니다. 다시 시도해주세요.",
+                message: "아이디 또는 비밀번호가 올바르지 않습니다.",
                 status: 401,
                 },
                 UNKNOWN_ERROR: {

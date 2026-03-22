@@ -3,12 +3,14 @@
 import { LoginError } from "@/application/usecases/auth/errors/LoginError";
 import { Button, Input } from "@/components/common";
 import { useUserStore } from "@/utils/stores/userStore";
-import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useRef, useState } from "react";
 
 const SignUp = () => {
   // React Router 호출
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isKakao = searchParams.get("provider") === "kakao";
   // Zustand에서 fetchUser 가져오기
   const { fetchUser } = useUserStore();
 
@@ -372,7 +374,39 @@ const SignUp = () => {
     router.push("/play/character");
   };
   /* 가입 끝 */
-  
+
+
+  /* 카카오 가입 시작 */
+  const handleKakaoSignUp = async () => {
+    const nickname = nicknameRef.current?.value;
+
+    setNicknameEmpty(!nickname);
+    if (!nickname) return;
+
+    try {
+      const response = await fetch('/api/auth/kakao/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nickname }),
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        alert(data.error || "가입 중 오류가 발생했습니다.");
+        return;
+      }
+    } catch (error) {
+      console.error("카카오 가입 오류:", error);
+      return;
+    }
+
+    alert("가입이 완료되었습니다!");
+    await fetchUser();
+    router.push("/play/character");
+  };
+  /* 카카오 가입 끝 */
+
 
   return (
     <div className={
@@ -394,8 +428,9 @@ const SignUp = () => {
         `
         .replace(/\s+/g, ' ').trim()
         }>
-            <span>회원가입</span>
+            <span>{isKakao ? "닉네임 설정" : "회원가입"}</span>
         </h1>
+        {!isKakao && (
         <div className="row relative w-full flex flex-col">
             <div className={`
                 w-full
@@ -430,7 +465,8 @@ const SignUp = () => {
             </span>
             )}
         </div>
-        <div className="row relative w-full flex flex-col mt-[26px]">
+        )}
+        <div className={`row relative w-full flex flex-col ${isKakao ? "" : "mt-[26px]"}`}>
             <Input placeholder="닉네임" className="is-rounded-form w-full shadow-none"
               ref={nicknameRef} onChange={handleNicknameChange} />
             {nicknameEmpty && (
@@ -446,6 +482,7 @@ const SignUp = () => {
             </span>
             )}
         </div>
+        {!isKakao && (
         <div className="row relative w-full flex flex-col mt-[26px]">
             <div className={`
                 w-full
@@ -501,6 +538,9 @@ const SignUp = () => {
             </span>
             )}
         </div>
+        )}
+        {!isKakao && (
+        <>
         <div className="row relative w-full flex flex-col mt-[26px]">
             <Input placeholder="비밀번호" className="is-rounded-form w-full shadow-none" type="password"
               ref={passwordRef} value={password} onChange={handlePasswordChange} />
@@ -613,12 +653,20 @@ const SignUp = () => {
             </span>
             )}
         </div>
+        </>
+        )}
         <div className="row w-full mt-[60px]">
             <Button style={{ width: "100%", marginLeft: 0, marginRight: 0 }} state="success" size="L"
-              onClick={handleSignUp}>가입하기</Button>
+              onClick={isKakao ? handleKakaoSignUp : handleSignUp}>가입하기</Button>
         </div>
     </div>
   );
 };
 
-export default SignUp;
+const SignUpPage = () => (
+  <Suspense>
+    <SignUp />
+  </Suspense>
+);
+
+export default SignUpPage;
