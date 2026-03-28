@@ -9,3 +9,10 @@ export const EXP_TO_LEVEL_UP = (level: number) => level * 100;
 
 /** 최대 의지력 공식 (레벨별) */
 export const MAX_WILLPOWER = (level: number) => 100 + level * 10;
+
+/** 난이도별 경험치 배율 */
+export const DIFFICULTY_MULTIPLIER: Record<string, number> = {
+  easy: 1,
+  normal: 2,
+  hard: 3,
+};

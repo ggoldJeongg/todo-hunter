@@ -62,6 +62,7 @@ model Quest {
   tagged      String
   name        String
   isWeekly    Boolean   @default(false) @map("is_weekly")
+  difficulty  String    @default("normal")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @default(now()) @map("updated_at")
   // null: 무기한 반복, 날짜 지정: 해당 날짜에 만료

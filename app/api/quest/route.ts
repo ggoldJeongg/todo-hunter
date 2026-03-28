@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     // 🔹 요청 바디 파싱
     const body = await req.json();
 
-    const { name, tagged, isWeekly, expiredAt } = body;
+    const { name, tagged, isWeekly, difficulty, expiredAt } = body;
 
     // 🔹 필수 값 검증
     if (!name || !tagged) {
@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
       name,
       tagged,
       isWeekly,
+      difficulty: difficulty || "normal",
       expiredAt: expiredAt ? new Date(expiredAt) : undefined,
     };
 

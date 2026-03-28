@@ -9,6 +9,7 @@ interface Quest {
   isWeekly: boolean;
   tagged: "STR" | "INT" | "EMO" | "FIN" | "LIV";
   expiredAt?: string | null;
+  difficulty?: string;
   completed: boolean;
   characterId: number;
 }

@@ -1,6 +1,6 @@
 import { CompleteQuestError } from "@/application/usecases/quest/errors/CompleteQuestError";
 import { ICharacterRepository, IQuestRepository, IStatusRepository, ISuccessDayRepository } from "@/domain/repositories";
-import { EXP_PER_QUEST, WILLPOWER_COST, EXP_TO_LEVEL_UP, MAX_WILLPOWER } from "@/constants/game";
+import { EXP_PER_QUEST, WILLPOWER_COST, EXP_TO_LEVEL_UP, MAX_WILLPOWER, DIFFICULTY_MULTIPLIER } from "@/constants/game";
 
 export class CompleteQuestUsecase {
   constructor(
@@ -72,8 +72,9 @@ export class CompleteQuestUsecase {
     // 6. 스탯 상태 업데이트
     await this.PriStatusRepository.update(characterStatus);
 
-    // 7. 경험치 증가 + 의지력 소모 + 레벨업 판정
-    let newExp = character.exp + EXP_PER_QUEST;
+    // 7. 경험치 증가 (난이도 배율 적용) + 의지력 소모 + 레벨업 판정
+    const expMultiplier = DIFFICULTY_MULTIPLIER[quest.difficulty] ?? DIFFICULTY_MULTIPLIER["normal"];
+    let newExp = character.exp + EXP_PER_QUEST * expMultiplier;
     let newWillpower = Math.max(character.willpower - WILLPOWER_COST, 0);
     let newLevel = character.level;
     let newMaxWillpower = character.maxWillpower;
