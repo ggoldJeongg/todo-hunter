@@ -1,6 +1,6 @@
 import { CharacterDto } from "@/application/usecases/character/dtos";
 
-const Status = ({ str, int, emo, fin, liv }: CharacterDto) => {
+const Status = ({ str, int, emo, fin, liv }: Pick<CharacterDto, "str" | "int" | "emo" | "fin" | "liv">) => {
     return (
         <div className="is-rounded-progress custom-status-size ml-5">
             <div className="custom-progress is-rounded-progress">

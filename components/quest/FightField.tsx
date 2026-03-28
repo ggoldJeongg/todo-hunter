@@ -3,6 +3,7 @@
 import React, { useMemo } from "react";
 import CharacterMotion from "./CharactersMotion";
 import { useQuestStore } from "@/utils/stores/questStore";
+import { useUserStore } from "@/utils/stores/userStore";
 import useProgressStore from "@/utils/stores/useProgressStore";
 import type { LayerConfig } from "@/utils/sprite/SpriteLayerRenderer";
 
@@ -77,6 +78,7 @@ const FightField = () => {
     isDefeated,
     setDefeated,
   } = useQuestStore();
+  const { nickname, level, willpower, maxWillpower } = useUserStore();
   const { progress } = useProgressStore();
 
   const totalQuests = quests.length;
@@ -183,9 +185,9 @@ const FightField = () => {
       {/* HUD — 좌상단 플레이어 / 우상단 몬스터 */}
       <div className="absolute top-0 w-full flex justify-between px-3 py-2 z-10">
         <HudBox
-          name="Lv.5 운영자"
-          current={80}
-          max={100}
+          name={`Lv.${level ?? 1} ${nickname ?? "플레이어"}`}
+          current={willpower ?? 100}
+          max={maxWillpower ?? 100}
           color="#4ade80"
         />
         <HudBox

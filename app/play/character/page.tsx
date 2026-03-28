@@ -13,7 +13,7 @@ import Image from "next/image";
 export default function CharacterPage() {
     const router = useRouter();
     const pathname = usePathname();
-    const { id, nickname, progress, str, int, emo, fin, liv, fetchUser } = useUserStore();
+    const { id, nickname, progress, str, int, emo, fin, liv, level, exp, willpower, maxWillpower, fetchUser } = useUserStore();
 
     useEffect(() => {
         if (pathname === "/play/character" && id) {
