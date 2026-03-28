@@ -58,7 +58,13 @@ export const useQuestStore = create<QuestStore>((set) => ({
       }
 
 
-      set({ quests: json.quests, loading: false });
+      // 미완료 퀘스트가 있으면 defeated 상태 해제 (몬스터 부활)
+      const hasIncomplete = json.quests.some((q: Quest) => !q.completed);
+      set({
+        quests: json.quests,
+        loading: false,
+        ...(hasIncomplete ? { isDefeated: false } : {}),
+      });
     } catch (err) {
       set({
         error: err instanceof Error ? err.message : "알 수 없는 오류 발생",
@@ -179,6 +185,12 @@ export const useQuestStore = create<QuestStore>((set) => ({
       });
 
       if (!response.ok) throw new Error("퀘스트 추가 실패");
+
+      // 새 퀘스트 추가 시 몬스터 부활 (defeated 해제)
+      if (useQuestStore.getState().isDefeated) {
+        set({ isDefeated: false });
+      }
+
       await useUserStore.getState().fetchCharacter();
     } catch (err) {
       console.error("퀘스트 추가 실패:", err);
