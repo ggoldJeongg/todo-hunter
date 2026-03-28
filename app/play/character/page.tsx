@@ -8,6 +8,7 @@ import { Button } from "@/components/common";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, Suspense } from "react";
 import ProgressBar from "./_components/ProgressBar";
+import LevelInfo from "./_components/LevelInfo";
 import Image from "next/image";
 
 export default function CharacterPage() {
@@ -46,9 +47,20 @@ export default function CharacterPage() {
             <Suspense>
                 <ProgressBar nickname={nickname} progress={progress} />
             </Suspense>
-            <div className="mt-10">
+            <div className="flex items-center justify-center gap-3">
                 <Character />
+                <span className="is-rounded-progress bg-[#C84B3A] text-white text-sm font-bold px-4 py-0.5">
+                    Lv.{level ?? 1}
+                </span>
             </div>
+            <Suspense>
+                <LevelInfo
+                    level={level ?? 1}
+                    exp={exp ?? 0}
+                    willpower={willpower ?? 100}
+                    maxWillpower={maxWillpower ?? 100}
+                />
+            </Suspense>
             <Suspense>
                 <Status
                     str={str ?? 0}
