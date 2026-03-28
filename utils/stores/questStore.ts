@@ -27,6 +27,7 @@ interface QuestStore {
   completeQuest: (questId: number) => Promise<void>;
   deleteQuest: (questId: number) => Promise<void>;
   addQuest: (quest: Omit<Quest, "id">) => Promise<void>;
+  updateQuest: (questId: number, data: Partial<Quest>) => Promise<void>;
 }
 
 export const useQuestStore = create<QuestStore>((set) => ({
@@ -181,6 +182,28 @@ export const useQuestStore = create<QuestStore>((set) => ({
       await useUserStore.getState().fetchCharacter();
     } catch (err) {
       console.error("퀘스트 추가 실패:", err);
+    }
+  },
+
+  updateQuest: async (questId: number, data: Partial<Quest>) => {
+    try {
+      const response = await fetch(`/api/quest/${questId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) throw new Error("퀘스트 수정 실패");
+
+      // 로컬 상태 업데이트
+      set((state) => ({
+        quests: state.quests.map((q) =>
+          q.id === questId ? { ...q, ...data } : q
+        ),
+      }));
+    } catch (err) {
+      console.error("퀘스트 수정 실패:", err);
     }
   },
 }));
