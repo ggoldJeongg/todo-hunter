@@ -10,22 +10,6 @@ import type { LayerConfig } from "@/utils/sprite/SpriteLayerRenderer";
 const IDLE_PATH = "/images/asprites/char_a_p1";
 const ATTACK_PATH = "/images/asprites/char_a_pONE1";
 
-const RetroBox = ({ children }: { children: React.ReactNode }) => (
-  <div
-    className="relative min-w-[130px]"
-    style={{
-      background: "#101040",
-      border: "3px solid #e8e8e8",
-      outline: "3px solid #484888",
-      boxShadow: "inset 2px 2px 0 #2828a0, inset -2px -2px 0 #080830",
-      padding: "6px 10px",
-      imageRendering: "pixelated",
-    }}
-  >
-    {children}
-  </div>
-);
-
 const HudBox = ({
   name,
   current,
@@ -37,35 +21,25 @@ const HudBox = ({
   max: number;
   color: string;
 }) => {
-  const ratio = max > 0 ? current / max : 0;
+  const ratio = max > 0 ? Math.min(current / max, 1) : 0;
   return (
-    <RetroBox>
-      <div className="text-[10px] font-bold mb-1 text-white" style={{ textShadow: "1px 1px 0 #000" }}>
+    <div className="two-step-border min-w-[130px] bg-[#2D3748] !p-1.5 !m-0.5">
+      <div className="text-[10px] font-bold mb-1 text-white">
         {name}
       </div>
       <div className="flex items-center gap-1">
-        <span className="text-[8px] font-bold text-[#ffd700]">HP</span>
-        <div
-          className="flex-1 h-[7px]"
-          style={{
-            background: "#080830",
-            border: "1px solid #484888",
-          }}
-        >
+        <span className="text-[8px] font-bold" style={{ color }}>HP</span>
+        <div className="flex-1 h-[7px] is-rounded-progress !m-0 !border-2 bg-[#e0e0e0]">
           <div
             className="h-full transition-all duration-500"
-            style={{
-              width: `${ratio * 100}%`,
-              background: color,
-              imageRendering: "pixelated",
-            }}
+            style={{ width: `${ratio * 100}%`, background: color }}
           />
         </div>
         <span className="text-[8px] text-[#aaa] min-w-[30px] text-right">
           {current}/{max}
         </span>
       </div>
-    </RetroBox>
+    </div>
   );
 };
 
