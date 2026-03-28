@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" style="image-rendering:pixelated">
+  <!-- 연필 촉 (5px) -->
+  <rect x="0" y="16" width="2" height="2" fill="#C84B3A"/>
+  <rect x="2" y="16" width="2" height="2" fill="#C84B3A"/>
+  <rect x="0" y="18" width="2" height="2" fill="#C84B3A"/>
+  <rect x="2" y="18" width="2" height="2" fill="#C84B3A"/>
+  <rect x="4" y="16" width="2" height="2" fill="#C84B3A"/>
+  <rect x="0" y="14" width="2" height="2" fill="#C84B3A"/>
+  <rect x="4" y="18" width="2" height="2" fill="#C84B3A"/>
+  <!-- 연필 몸통 (5px 대각선 두께) -->
+  <rect x="2" y="12" width="2" height="2" fill="#fff"/>
+  <rect x="4" y="12" width="2" height="2" fill="#fff"/>
+  <rect x="6" y="12" width="2" height="2" fill="#888"/>
+  <rect x="2" y="14" width="2" height="2" fill="#888"/>
+  <rect x="4" y="14" width="2" height="2" fill="#888"/>
+  <rect x="6" y="14" width="2" height="2" fill="#888"/>
+  <rect x="4" y="10" width="2" height="2" fill="#fff"/>
+  <rect x="6" y="10" width="2" height="2" fill="#fff"/>
+  <rect x="8" y="10" width="2" height="2" fill="#888"/>
+  <rect x="8" y="12" width="2" height="2" fill="#888"/>
+  <rect x="6" y="8" width="2" height="2" fill="#fff"/>
+  <rect x="8" y="8" width="2" height="2" fill="#fff"/>
+  <rect x="10" y="8" width="2" height="2" fill="#888"/>
+  <rect x="10" y="10" width="2" height="2" fill="#888"/>
+  <rect x="8" y="6" width="2" height="2" fill="#fff"/>
+  <rect x="10" y="6" width="2" height="2" fill="#fff"/>
+  <rect x="12" y="6" width="2" height="2" fill="#888"/>
+  <rect x="12" y="8" width="2" height="2" fill="#888"/>
+  <rect x="10" y="4" width="2" height="2" fill="#fff"/>
+  <rect x="12" y="4" width="2" height="2" fill="#fff"/>
+  <rect x="14" y="4" width="2" height="2" fill="#888"/>
+  <rect x="14" y="6" width="2" height="2" fill="#888"/>
+  <!-- 지우개 (5px) -->
+  <rect x="12" y="2" width="2" height="2" fill="#666"/>
+  <rect x="14" y="2" width="2" height="2" fill="#666"/>
+  <rect x="16" y="2" width="2" height="2" fill="#555"/>
+  <rect x="16" y="4" width="2" height="2" fill="#555"/>
+  <rect x="14" y="0" width="2" height="2" fill="#666"/>
+  <rect x="16" y="0" width="2" height="2" fill="#666"/>
+  <rect x="18" y="0" width="2" height="2" fill="#555"/>
+  <rect x="18" y="2" width="2" height="2" fill="#555"/>
+  <rect x="12" y="0" width="2" height="2" fill="#666"/>
+</svg>

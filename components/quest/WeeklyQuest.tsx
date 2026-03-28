@@ -65,9 +65,19 @@ const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hide
                   )}
                 </div>
                 <Tag variant={tagged}>{tagged}</Tag>
-                <button className="shrink-0 cursor-pointer" onClick={() => deleteQuest(id)}>
-                  <Image src="/icons/circle-x.svg" width={24} height={24} alt="삭제" />
-                </button>
+                {!completed && (
+                  <button
+                    className="shrink-0 cursor-pointer"
+                    onClick={() => router.push(`/play/quest/edit-quest/${id}`)}
+                  >
+                    <Image src="/icons/pencil.svg" width={20} height={20} alt="수정" />
+                  </button>
+                )}
+                {!completed && (
+                  <button className="shrink-0 cursor-pointer" onClick={() => deleteQuest(id)}>
+                    <Image src="/icons/circle-x.svg" width={24} height={24} alt="삭제" />
+                  </button>
+                )}
               </div>
             ))}
         </div>

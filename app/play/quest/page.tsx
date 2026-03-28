@@ -48,7 +48,7 @@ const QuestPage = () => {
 
       {/* 퀘스트 리스트 (내부 스크롤) */}
       <div className="flex-1 min-h-0 relative">
-        <div className="absolute inset-0 overflow-y-auto p-4 pb-14 scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+        <div className="absolute inset-0 overflow-y-auto p-4 pb-28 scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
           {activeTab === "daily" && dailyCount.length === 0 && (
             <div className="flex items-center justify-center h-full">
               <p className="text-gray-400 text-center text-sm">할일 추가 버튼을 눌러<br/>퀘스트를 추가하세요</p>
