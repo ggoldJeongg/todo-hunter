@@ -10,6 +10,7 @@ import {
 import { toast } from "sonner";
 import { EndingImage, EndingScriptBox } from "@/app/play/ending/_components";
 import { useUserStore } from "@/utils/stores/userStore";
+import { useRouter } from "next/navigation";
 
 const EndingPage = () => {
   const [endingData, setEndingData] = useState<EndingDTO | null>(null);
@@ -17,6 +18,7 @@ const EndingPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchUser = useUserStore((state) => state.fetchUser);
+  const router = useRouter();
 
   useEffect(() => {
     const initializeData = async () => {
@@ -52,7 +54,7 @@ const EndingPage = () => {
 
         // 토스트는 페이드인이 완료된 후 표시
         setTimeout(() => {
-          toast("🏆 새로운 칭호를 획득했습니다!", {
+          toast("새로운 칭호를 획득했습니다!", {
             duration: 3000,
           });
           setTimeout(() => {
@@ -76,12 +78,24 @@ const EndingPage = () => {
             ? error.message
             : "알 수 없는 오류가 발생했습니다."
         );
-        setFadeStep(7); // 에러 시 바로 표시
+        setFadeStep(7);
       }
     };
 
     initializeData();
   }, [fetchUser]);
+
+  // 엔딩 확인 완료 처리
+  const handleConfirm = async () => {
+    try {
+      await fetch("/api/ending", {
+        method: "PATCH",
+      });
+      router.push("/play/character");
+    } catch {
+      console.error("엔딩 확인 처리 실패");
+    }
+  };
 
   const getOverlayClass = () => {
     switch (fadeStep) {
@@ -115,14 +129,38 @@ const EndingPage = () => {
           </div>
         ) : !endingData ? (
           <div className="is-center min-h-screen">
-            <p>로딩 중...</p>
+            <p className="text-white">로딩 중...</p>
           </div>
         ) : (
           <>
             <EndingImage image={endingData.endingImage} />
-            <EndingScriptBox script={endingData.endingPrompt} />
+            <EndingScriptBox
+              name={endingData.endingName}
+              story={endingData.endingStory}
+            />
             <div
-              className={`absolute inset-0 bg-black pointer-events-none ${getOverlayClass()}`}
+              className={`transition-opacity duration-1000 z-10 relative ${
+                fadeStep >= 7 ? "opacity-100" : "opacity-0 pointer-events-none"
+              }`}
+            >
+              {endingData.endingState === 3 ? (
+                <button
+                  onClick={() => router.push("/play/character")}
+                  className="px-8 py-3 bg-gray-600 hover:bg-gray-700 text-white font-bold rounded-lg transition-colors"
+                >
+                  돌아가기
+                </button>
+              ) : (
+                <button
+                  onClick={handleConfirm}
+                  className="px-8 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg transition-colors"
+                >
+                  확인
+                </button>
+              )}
+            </div>
+            <div
+              className={`absolute inset-0 bg-black pointer-events-none transition-opacity duration-500 ${getOverlayClass()}`}
             />
           </>
         )}
