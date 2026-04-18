@@ -2,6 +2,7 @@
 
 import { Button, Input } from "@/components/common";
 import { useUserStore } from "@/utils/stores/userStore";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -37,49 +38,65 @@ const SignIn = () => {
   };
   
   return (
-    <div className={
-        `
-        flex
-            flex-col
-            justify-center
-            items-center
-        mx-3
-        min-h-screen
-        `
-        .replace(/\s+/g, ' ').trim()
-        }>
-      <h1 className={
-        `
-        mb-[40px]
-        text-center
-        text-[38px]
-        `
-        .replace(/\s+/g, ' ').trim()
-        }>
-        <span>로그인</span>
-      </h1>
-      <div className="gap-box block w-full mb-2">
-        <span className="block mb-2">ID</span>
-        <Input className="is-rounded-form w-full shadow-none" type="text"
-        value={loginId}
-        onChange={(e) => setLoginId(e.target.value)} />
+    <div
+      className="flex flex-col min-h-screen overflow-hidden"
+      style={{
+        backgroundImage: "url('/images/backgrounds/landing-page-background1.png')",
+        backgroundSize: "100% 100%",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      {/* 상단 다크 영역 - 제목 + 입력폼 */}
+      <div className="flex flex-col items-center justify-end pb-8 px-6" style={{ height: "55vh" }}>
+        <h1
+          className="mb-10 text-center text-3xl sm:text-4xl font-galmuri11-bold"
+          style={{ textShadow: "-4px -4px 0 #555, 4px -4px 0 #555, -4px 4px 0 #555, 4px 4px 0 #555, 0 -4px 0 #555, 0 4px 0 #555, -4px 0 0 #555, 4px 0 0 #555" }}
+        >
+          <span className="text-white">로그인</span>
+        </h1>
+
+        <div className="w-full max-w-[320px] space-y-4">
+          <Input className="is-rounded-form w-full shadow-none" type="text"
+            placeholder="Email"
+            value={loginId}
+            onChange={(e) => setLoginId(e.target.value)} />
+          <Input className="is-rounded-form w-full shadow-none" type="password"
+            placeholder="PASSWORD"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)} />
+        </div>
       </div>
-      <div className="gap-box block w-full mb-2">
-        <span className="block mb-2">PASSWORD</span>
-        <Input className="is-rounded-form w-full shadow-none" type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)} />
+
+      {/* 하단 밝은 영역 - 버튼 + 링크 + 카카오 */}
+      <div className="flex flex-col items-center flex-1 px-6" style={{ paddingTop: "70px" }}>
+        <div className="flex flex-col items-center gap-3 w-full max-w-[320px]">
+          <Button value={"play"} onClick={handleSignIn} className="w-full" state="primary" size="L">로그인하기</Button>
+          <Button value={"signup"} onClick={(e) => handleMove(e.currentTarget.value)} className="w-full" state="outline" size="L">이메일 회원가입</Button>
+        </div>
+
+        <div className="text-center mt-4 w-full">
+          <Link href="/findid" className="text-sm text-gray-500 hover:text-gray-700">아이디 찾기 &gt;</Link>
+        </div>
+
+        {/* 구분선 */}
+        <div className="flex items-center w-full max-w-[320px] my-6">
+          <div className="flex-1 h-px bg-gray-300"></div>
+          <span className="px-4 text-sm text-gray-500">또는</span>
+          <div className="flex-1 h-px bg-gray-300"></div>
+        </div>
+
+        {/* 카카오 로그인 */}
+        <a href="/api/auth/kakao">
+          <Image
+            src="/icons/kakao_login_medium_narrow.png"
+            alt="카카오 로그인"
+            width={183}
+            height={45}
+            priority
+            unoptimized
+          />
+        </a>
       </div>
-      <div className="gap-box mt-8 w-full">
-        <Button value={"play"} onClick={handleSignIn} style={{ width: "100%", marginLeft: 0, marginRight: 0 }} state="success" size="L">로그인하기</Button>
-        <Button value={"signup"} onClick={(e) => handleMove(e.currentTarget.value)} style={{ width: "100%", marginLeft: 0, marginRight: 0 }} state="warning" size="L">회원가입</Button>
-      </div>
-      <div className="gap-box text-center mt-12 w-full">
-        <Link href="/findid">아이디 찾기 &gt;</Link>
-      </div>
-      {/* <div className="gap-box text-center mt-2 w-full">
-        <Link href="/findpw">비밀번호 찾기 &gt;</Link>
-      </div> */}
     </div>
   );
 };

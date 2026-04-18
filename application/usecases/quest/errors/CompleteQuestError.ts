@@ -3,7 +3,8 @@ export type CompleteQuestErrorType =
   | "QUEST_NOT_FOUND"
   | "CHARACTER_NOT_FOUND"
   | "STATUS_NOT_FOUND"
-  | "INVALID_TAG";
+  | "INVALID_TAG"
+  | "WILLPOWER_DEPLETED";
 
 export class CompleteQuestError extends Error {
   constructor(public type: CompleteQuestErrorType, message: string) {

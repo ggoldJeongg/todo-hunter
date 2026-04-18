@@ -32,6 +32,10 @@ export class CharacterUsecase {
                 fin: characterStatus?.fin || 0,
                 liv: characterStatus?.liv || 0,
                 endingCount: characterInfo?.endingCount || 0,
+                level: characterInfo?.level ?? 1,
+                exp: characterInfo?.exp ?? 0,
+                willpower: characterInfo?.willpower ?? 100,
+                maxWillpower: characterInfo?.maxWillpower ?? 100,
             };
         }
     
@@ -56,6 +60,10 @@ export class CharacterUsecase {
             fin: characterStatus?.fin || 0,
             liv: characterStatus?.liv || 0,
             endingCount: characterInfo?.endingCount || 0,
+            level: characterInfo?.level ?? 1,
+            exp: characterInfo?.exp ?? 0,
+            willpower: characterInfo?.willpower ?? 100,
+            maxWillpower: characterInfo?.maxWillpower ?? 100,
         };
     }
 }

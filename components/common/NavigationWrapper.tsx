@@ -27,7 +27,7 @@ export default function NavigationWrapper() {
 
   // 네비게이션을 숨길 페이지 목록
   const hiddenRoutes = ["/", "/beginning", "/signin", "/signup", "/findid", "/findpw", "/error", "/not-found"];
-  const shouldHideNavigation = hiddenRoutes.includes(pathname) || isErrorPage;
+  const shouldHideNavigation = hiddenRoutes.includes(pathname) || pathname.startsWith("/tools") || isErrorPage;
 
   if (shouldHideNavigation) return null; // 네비게이션 숨김
 
@@ -37,7 +37,7 @@ export default function NavigationWrapper() {
     return matchedMenu ? matchedMenu.menu : "character"; // 기본값 "character"
   };
 
-  return <Navigation selectedMenu={getSelectedMenu()} className="fixed bottom-0 w-full" />;
+  return <Navigation selectedMenu={getSelectedMenu()} className="fixed bottom-0 w-full max-w-[430px]" />;
 
   
 }

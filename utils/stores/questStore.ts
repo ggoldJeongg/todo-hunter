@@ -2,6 +2,7 @@ import { STATUS } from "@/constants";
 import { toast } from "sonner";
 import { create } from "zustand";
 import { useUserStore } from "@/utils/stores/userStore";
+import { getMonsterByKillCount, QUEST_DAMAGE } from "@/utils/pixi/MonsterRegistry";
 
 interface Quest {
   id: number;
@@ -9,6 +10,7 @@ interface Quest {
   isWeekly: boolean;
   tagged: "STR" | "INT" | "EMO" | "FIN" | "LIV";
   expiredAt?: string | null;
+  difficulty?: string;
   completed: boolean;
   characterId: number;
 }
@@ -17,35 +19,70 @@ interface QuestStore {
   quests: Quest[];
   loading: boolean;
   error: string | null;
-  isMoving: boolean; // 이동 애니메이션 상태
+  isMoving: boolean;
   isMovingForward: boolean;
-  isAttacking: boolean; // 공격 애니메이션 상태
-  isDefeated: boolean; // werewolf 처치 여부 추가
+  isAttacking: boolean;
+  isDefeated: boolean;
+  killCount: number;
+  monsterHp: number; // 현재 몬스터 HP
+  monsterMaxHp: number; // 현재 몬스터 최대 HP
   setDefeated: (value: boolean) => void;
+  spawnNextMonster: () => void;
   fetchQuests: () => Promise<void>;
   completeQuest: (questId: number) => Promise<void>;
   deleteQuest: (questId: number) => Promise<void>;
   addQuest: (quest: Omit<Quest, "id">) => Promise<void>;
+  updateQuest: (questId: number, data: Partial<Quest>) => Promise<void>;
 }
 
-export const useQuestStore = create<QuestStore>((set) => ({
+// 초기 몬스터
+const initialMonster = getMonsterByKillCount(0);
+
+export const useQuestStore = create<QuestStore>((set, get) => ({
   quests: [],
   loading: false,
   error: null,
   isMoving: false,
   isMovingForward: false,
-  isAttacking: false, // 초기값 : false
-  isDefeated: false, // 초기값은 false
-  setDefeated: (value) => set({ isDefeated: value }),
+  isAttacking: false,
+  isDefeated: false,
+  killCount: 0,
+  monsterHp: initialMonster.hp,
+  monsterMaxHp: initialMonster.hp,
+
+  setDefeated: (value) => {
+    const prev = get().isDefeated;
+    if (value && !prev) {
+      const newKillCount = get().killCount + 1;
+      set({ isDefeated: true, killCount: newKillCount });
+      toast.success(`몬스터를 처치했습니다! 🎉`);
+
+      // CLEAR 연출 후 자동으로 다음 몬스터 젠 (2초 뒤)
+      setTimeout(() => {
+        get().spawnNextMonster();
+      }, 2000);
+    } else {
+      set({ isDefeated: value });
+    }
+  },
+
+  spawnNextMonster: () => {
+    const { killCount } = get();
+    const next = getMonsterByKillCount(killCount);
+    set({
+      isDefeated: false,
+      monsterHp: next.hp,
+      monsterMaxHp: next.hp,
+    });
+    toast(`${next.name}이(가) 나타났다! 🐺`);
+  },
 
   fetchQuests: async () => {
     set({ loading: true, error: null });
 
     try {
-    const { id } = useUserStore.getState();
-    if (!id) throw new Error("로그인이 필요합니다.");
-    console.log("id값:", id);
-
+      const { id } = useUserStore.getState();
+      if (!id) throw new Error("로그인이 필요합니다.");
 
       const response = await fetch(`/api/quest?characterId=${id}`);
       if (!response.ok) throw new Error("퀘스트 데이터를 불러오지 못했습니다.");
@@ -56,8 +93,10 @@ export const useQuestStore = create<QuestStore>((set) => ({
         throw new Error("퀘스트 데이터를 올바르게 받아오지 못했습니다.");
       }
 
-
-      set({ quests: json.quests, loading: false });
+      set({
+        quests: json.quests,
+        loading: false,
+      });
     } catch (err) {
       set({
         error: err instanceof Error ? err.message : "알 수 없는 오류 발생",
@@ -65,62 +104,79 @@ export const useQuestStore = create<QuestStore>((set) => ({
       });
     }
   },
-  // API요청, quests 상태,
-  // 애니메이션과 관련된 상태 (isMoving, isAttacking) completeQuest()가 실행될 때 상태를 변경
+
   completeQuest: async (questId) => {
     try {
-      const { id: characterId } = useUserStore.getState(); // 로그인한 유저 ID 가져오기
+      const { id: characterId } = useUserStore.getState();
       if (!characterId) throw new Error("로그인이 필요합니다.");
 
-      console.log("completeQuest 실행됨! characterId:", characterId, "questId:", questId);
-
-      // 1. 해당 퀘스트 찾기
-      const quest = useQuestStore.getState().quests.find((q) => q.id === questId);
+      const quest = get().quests.find((q) => q.id === questId);
       if (!quest) return;
 
-      // 2. 낙관적 UI 업데이트 (즉시 반영)
+      // 낙관적 UI 업데이트
       set((state) => ({
         quests: state.quests.map((q) =>
           q.id === questId ? { ...q, completed: true } : q
         ),
       }));
 
-      // 3. 애니메이션 실행
+      // API 요청
+      const responsePromise = fetch("/api/quest/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ characterId, questId }),
+      });
+
+      // 데미지 계산
+      const difficulty = quest.difficulty ?? "normal";
+      const damage = QUEST_DAMAGE[difficulty] ?? QUEST_DAMAGE.normal;
+
+      // 애니메이션 실행
       set({ isMoving: true, isMovingForward: true });
 
       setTimeout(() => {
         set({ isMoving: false, isAttacking: true });
 
         setTimeout(() => {
+          // 공격 적중 시점: HP 감소
+          set((state) => {
+            const newHp = Math.max(state.monsterHp - damage, 0);
+            return { monsterHp: newHp };
+          });
+
           set({ isAttacking: false, isMoving: true, isMovingForward: false });
 
           setTimeout(() => {
             set({ isMoving: false, isMovingForward: true });
+
+            // 애니메이션 끝 — HP 0이면 처치
+            const { monsterHp } = get();
+            if (monsterHp <= 0) {
+              get().setDefeated(true);
+            }
           }, 600);
         }, 1000);
       }, 600);
 
-      // 4. API 요청 (로그인한 유저의 `characterId`로 설정)
-      const response = await fetch("/api/quest/complete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include", // 인증 정보 포함
-        body: JSON.stringify({ characterId, questId }), // 로그인한 유저의 ID로 설정
-      });
+      // API 응답 확인
+      const response = await responsePromise;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        if (errorData.errorType === "WILLPOWER_DEPLETED") {
+          throw new Error("WILLPOWER_DEPLETED");
+        }
+        throw new Error("퀘스트 완료 실패");
+      }
 
-      console.log("서버 응답 상태 코드:", response.status);
+      setTimeout(() => {
+        toast.success(`${STATUS[quest.tagged]} 스탯이 +1 증가했습니다!`);
+      }, 1600);
 
-      if (!response.ok) throw new Error("퀘스트 완료 실패");
-
-      // 5. 완료 후 상태 메시지 띄우기
-      toast.success(` ${STATUS[quest.tagged]} 스탯이 +1 증가했습니다!`);
-
-       // 6. 캐릭터 데이터 갱신
-      await useUserStore.getState().fetchCharacter(); // 캐릭터 정보 갱신
+      await useUserStore.getState().fetchCharacter();
     } catch (err) {
       console.error("completeQuest 오류:", err);
 
-      // 실패 시 애니메이션 중단 & 상태 롤백
       set({ isMoving: false, isAttacking: false, isMovingForward: true });
 
       set((state) => ({
@@ -128,25 +184,25 @@ export const useQuestStore = create<QuestStore>((set) => ({
           q.id === questId ? { ...q, completed: false } : q
         ),
       }));
+
+      if (err instanceof Error && err.message === "WILLPOWER_DEPLETED") {
+        toast.error("의지력이 부족하여 퀘스트를 완료할 수 없습니다!");
+      }
     }
   },
 
   deleteQuest: async (questId) => {
     try {
-      const { id: characterId } = useUserStore.getState(); // 로그인한 유저 ID 가져오기
+      const { id: characterId } = useUserStore.getState();
       if (!characterId) throw new Error("로그인이 필요합니다.");
-  
-      console.log("deleteQuest 실행됨! characterId:", characterId, "questId:", questId);
-  
+
       const response = await fetch(`/api/quest/${questId}?characterId=${characterId}`, {
         method: "DELETE",
-        credentials: "include", // 인증 정보 포함
+        credentials: "include",
       });
-  
-      console.log("서버 응답 상태 코드:", response.status);
-  
+
       if (!response.ok) throw new Error("삭제 실패");
-  
+
       set((state) => ({
         quests: state.quests.filter((q) => q.id !== questId),
       }));
@@ -154,15 +210,13 @@ export const useQuestStore = create<QuestStore>((set) => ({
       console.error("deleteQuest 오류:", err);
     }
   },
-  
 
   addQuest: async (quest: Omit<Quest, "id" | "characterId">) => {
     try {
-      const { id } = useUserStore.getState(); // 로그인한 유저 ID 가져오기
+      const { id } = useUserStore.getState();
       if (!id) throw new Error("로그인이 필요합니다.");
 
-      const requestData = { ...quest, characterId: id }; // 로그인한 유저의 ID를 characterId에 설정
-      console.log("전송할 퀘스트 데이터:", requestData); // characterId 확인
+      const requestData = { ...quest, characterId: id };
 
       const response = await fetch("/api/quest", {
         method: "POST",
@@ -172,9 +226,34 @@ export const useQuestStore = create<QuestStore>((set) => ({
       });
 
       if (!response.ok) throw new Error("퀘스트 추가 실패");
-      await useUserStore.getState().fetchCharacter();
+
+      await Promise.all([
+        useQuestStore.getState().fetchQuests(),
+        useUserStore.getState().fetchCharacter(),
+      ]);
     } catch (err) {
       console.error("퀘스트 추가 실패:", err);
+    }
+  },
+
+  updateQuest: async (questId: number, data: Partial<Quest>) => {
+    try {
+      const response = await fetch(`/api/quest/${questId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) throw new Error("퀘스트 수정 실패");
+
+      set((state) => ({
+        quests: state.quests.map((q) =>
+          q.id === questId ? { ...q, ...data } : q
+        ),
+      }));
+    } catch (err) {
+      console.error("퀘스트 수정 실패:", err);
     }
   },
 }));

@@ -3,8 +3,24 @@ import { SendSignUpEmailUsecase } from "@/application/usecases/auth/SendSignUpEm
 
 import { RdVerificationRepository } from "@/infrastructure/repositories/RdVerificationRepository";
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit, getClientIp } from "@/infrastructure/rate-limiter";
+
+const EMAIL_RATE_LIMIT = { maxRequests: 3, windowSeconds: 120 };
 
 export async function POST(req: NextRequest) {
+  const clientIp = getClientIp(req.headers);
+  const rateLimit = await checkRateLimit(
+    `send-email:${clientIp}`,
+    EMAIL_RATE_LIMIT.maxRequests,
+    EMAIL_RATE_LIMIT.windowSeconds
+  );
+
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "이메일 발송 요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
+      { status: 429, headers: { "Retry-After": String(rateLimit.retryAfterSeconds) } }
+    );
+  }
 
   try {
     const { email } = await req.json();

@@ -10,30 +10,28 @@ const FindIdView = ({ loginId, error, onBack }: { loginId?: string | null, error
 
     return (
         <>
-        <div className="is-rounded-form w-full p-5 text-center">
+        <div className="is-rounded-form w-full max-w-[360px] p-6 text-center bg-white">
             {error ? (
-                <>
                 <p>{error}</p>
-                </>
             ) : (
                 <>
-                <p>당신의 아이디는</p>
-                <p>&nbsp;</p>
-                <p className="font-extrabold">{loginId}</p>
-                <p>&nbsp;</p>
-                <p>&nbsp;</p>
-                <p>지금부터 할일 사냥을 떠나볼까요?</p>
+                <p>▼ 당신의 아이디는 ▼</p>
+                <p className="font-extrabold text-lg my-4">{loginId}</p>
                 </>
             )}
         </div>
-        <div className="row w-full mt-[60px]">
-            <Button style={{ width: "100%", marginLeft: 0, marginRight: 0 }} state="warning" size="L" onClick={onBack}>뒤로 가기</Button>
+        <div className="text-white text-center mt-8 font-galmuri11-bold">
+            <p className="text-lg">지금부터</p>
+            <p className="text-lg">할일 사냥을 떠나볼까요?</p>
         </div>
-        {!error && (
-            <div className="row w-full mt-[20px]">
-            <Button style={{ width: "100%", marginLeft: 0, marginRight: 0 }} state="success" size="L" onClick={() => handleMove('signin')}>로그인하기</Button>
-            </div>
-        )}
+        <div className="w-full max-w-[360px] mt-6">
+            {!error && (
+                <Button className="w-full max-w-none" state="primary" size="L" onClick={() => handleMove('signin')}>로그인하기</Button>
+            )}
+            {error && (
+                <Button className="w-full max-w-none" state="primary" size="L" onClick={onBack}>다시 찾기</Button>
+            )}
+        </div>
         </>
     );
 }

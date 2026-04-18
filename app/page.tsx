@@ -1,11 +1,8 @@
 "use client"; // This tells Next.js to treat this as a client-side component
 
-import { Button } from "@/components/common";
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import Loading from "./loading";
-import Head from "next/head";
 
 const setCookie = (name: string, value: string, maxAge: number) => {
   document.cookie = `${name}=${value}; max-age=${maxAge}; path=/; ${
@@ -23,9 +20,7 @@ export default function Home() {
     const checkTokens = async () => {
       const response = await fetch("/", { credentials: "include" });
 
-      // Access-Control-Request-Headers로 전달받은 액세스 토큰 유무 여부를 boolean 값으로 저장
       const accessTokenHeader = response.headers.get("X-Has-AccessToken");
-      // Access-Control-Request-Headers로 전달받은 리프레시 토큰 유무 여부를 boolean 값으로 저장
       const refreshTokenHeader = response.headers.get("X-Has-RefreshToken");
 
       const hasAccessToken = accessTokenHeader === "true";
@@ -33,8 +28,8 @@ export default function Home() {
 
       setHasAccessToken(hasAccessToken);
       setHasRefreshToken(hasRefreshToken);
-      
-      setIsLoading(false); // 로딩 완료
+
+      setIsLoading(false);
     };
     checkTokens();
   }, []);
@@ -96,29 +91,68 @@ export default function Home() {
   };
 
   return (
-    <>
-    <Head>
-      <link rel="preload" href="/images/logo.png" as="image" />
-    </Head>
-    <div className="flex flex-col justify-center items-center min-h-screen bg-black">
-      {isLoading ? (
-        <Loading color={"black"} /> // 이미지 로딩 중일 때 로딩 상태 표시
-      ) : (
+    <div className="flex flex-col min-h-screen overflow-hidden"
+      style={{
+        backgroundImage: "url('/images/backgrounds/landing-page-background1.png')",
+        backgroundSize: "100% 100%",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      {/* 상단 다크 영역 - 로고+텍스트를 체커보드 바로 위에 배치 */}
+      <div className="flex flex-col items-center justify-end pb-10" style={{ height: "60vh" }}>
+        {/* 로고 */}
         <Image
           src="/images/logo.png"
-          width={150}
-          height={150}
-          alt="TODO HUNTER ~RETURN OF SCROLL~ (투두 헌터 -리턴 오브 스크롤-)"
-          className="p-6"
+          width={120}
+          height={120}
+          alt="TODO HUNTER"
+          className="mb-6"
           unoptimized
-          onLoad={handleImageLoad} // 이미지 로딩 완료 시 핸들러 호출
+          priority
+          onLoad={handleImageLoad}
         />
-      )}
-      {/* <Image src="/images/logo.png" width={1001} height={395} alt="TODO HUNTER ~RETURN OF SCROLL~ (투두 헌터 -리턴 오브 스크롤-)" className="p-6"/> */}
-      <Button asChild size="L" state="success" className="mt-20 max-[1000px]:mt-[8vw] max-[380px]:w-4/5">
-        <Link href={"/"} onClick={handleStartClick}>시작하기</Link>
-      </Button>
+
+        {/* 타이틀 텍스트 */}
+        <h1
+          className="text-center mb-2 font-galmuri11-bold"
+          style={{ textShadow: "-4px -4px 0 #555, 4px -4px 0 #555, -4px 4px 0 #555, 4px 4px 0 #555, 0 -4px 0 #555, 0 4px 0 #555, -4px 0 0 #555, 4px 0 0 #555" }}
+        >
+          <span className="text-4xl sm:text-5xl tracking-wider">
+            <span className="text-red-500">TODO</span>
+            <span className="text-white">HUNTER</span>
+          </span>
+        </h1>
+        <p
+          className="text-gray-400 text-base sm:text-lg tracking-widest font-galmuri11-bold"
+          style={{ textShadow: "-4px -4px 0 #333, 4px -4px 0 #333, -4px 4px 0 #333, 4px 4px 0 #333, 0 -4px 0 #333, 0 4px 0 #333, -4px 0 0 #333, 4px 0 0 #333" }}
+        >
+          ~RETURN OF SCROLL~
+        </p>
+      </div>
+
+      {/* 하단 밝은 영역 */}
+      <div className="flex flex-col items-center justify-between flex-1">
+        {/* PRESS TO START */}
+        <button
+          onClick={handleStartClick}
+          className="pt-8 pb-2 text-center w-full cursor-pointer hover:opacity-70 transition-opacity"
+        >
+          <span className="text-xl sm:text-2xl font-bold tracking-wider text-gray-800 font-galmuri11-bold">
+            ▽ PRESS TO START ▽
+          </span>
+        </button>
+
+        {/* 성 이미지 - 바닥에 붙이기 */}
+        <Image
+          src="/images/backgrounds/landing-page-castle.png"
+          width={600}
+          height={300}
+          alt="Castle"
+          className="w-full max-w-[600px] h-auto mt-auto"
+          unoptimized
+          priority
+        />
+      </div>
     </div>
-    </>
   );
 }

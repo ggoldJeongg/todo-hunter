@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
 /** @type {import("next").NextConfig} */
 module.exports = {
   output: "standalone",
+  serverExternalPackages: ["@prisma/instrumentation"],
 };
 
 export default withPWA(nextConfig);

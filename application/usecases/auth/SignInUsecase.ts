@@ -22,6 +22,9 @@ export class SignInUsecase {
         }
 
         const { password } = user;
+        if (!password) {
+            throw new LoginError("INVALID_PASSWORD", "비밀번호가 올바르지 않습니다.");
+        }
         const isPasswordValid = await this.verifyPasswordUsecase.execute(request.password, password);
         
         if (!isPasswordValid) {

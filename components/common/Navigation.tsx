@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger } from "@/components/common/tabs";
 import './Navigation.css';
@@ -20,6 +20,11 @@ const Navigation: React.FC<NavigationProps> = ({
 }) => {
   const router = useRouter();
   const endingState = useUserStore((state) => state.endingState);
+  const fetchEndingState = useUserStore((state) => state.fetchEndingState);
+
+  useEffect(() => {
+    fetchEndingState();
+  }, [fetchEndingState]);
 
   const handleTabChange = (value: string) => {
     router.push(`/play/${value}`); // URL 변경
@@ -27,7 +32,8 @@ const Navigation: React.FC<NavigationProps> = ({
 
   const isEndingDisabled = (menu: string) => {
     if (menu === "ending") {
-      return endingState !== 2;
+      // endingState=2 (ENABLED) 또는 3 (CHECKED, 재확인 가능)일 때 활성화
+      return endingState !== 2 && endingState !== 3;
     }
     return false;
   };

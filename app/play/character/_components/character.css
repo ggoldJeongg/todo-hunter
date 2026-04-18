@@ -1,57 +1,20 @@
-/* Progress bar styles */
-.progress-red::-moz-progress-bar,
-.progress-red::-webkit-progress-value,
-.progress-red::-ms-fill {
-    background-color: var(--error-color-red);
+/* ============================================
+   Cozy Pixel Game UI — Character Page
+   Warm palette + pixel-art borders
+   ============================================ */
+
+/* Pixel border mixin via SVG */
+.pixel-border {
+    border-style: solid;
+    border-width: 4px;
+    border-image-slice: 3;
+    border-image-width: 3;
+    border-image-source: url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(74,63,47)" /></svg>');
+    border-image-repeat: stretch;
+    border-image-outset: 2;
 }
 
-.progress-green::-moz-progress-bar,
-.progress-green::-webkit-progress-value,
-.progress-green::-ms-fill {
-    background-color: var(--current-color-green);
-}
-
-.progress-yellow::-moz-progress-bar,
-.progress-yellow::-webkit-progress-value,
-.progress-yellow::-ms-fill {
-    background-color: var(--warning-color-yellow);
-}
-
-.progress-purple::-moz-progress-bar,
-.progress-purple::-webkit-progress-value,
-.progress-purple::-ms-fill {
-    background-color: #603C9B;
-}
-
-.progress-bar-bg::-webkit-progress-bar {
-    background-color: #e0e0e0;
-}
-
-/* Custom progress styles */
-.custom-progress {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    background-color: #2D3748;
-    margin-bottom: 16px !important;
-}
-
-.custom-status-size {
-    margin-left: 5% !important;
-    width: 80%;
-    max-width: 600px;
-    margin-bottom: 10%;
-    padding: 10px;
-    padding-bottom: 0px;
-    background-color: #E4E4E4;
-}
-
-.custom-status-size div:last-child {
-    margin-bottom: 10px !important;
-}
-
-
-/* Rounded progress styles */
+/* Keep legacy class for Button component */
 .is-rounded-progress {
     border-style: solid;
     border-width: 4px;
@@ -63,19 +26,315 @@
     margin: 1px;
 }
 
-/* Responsive styles */
-@media (max-width: 320px) {
-    .custom-progress p {
-        margin-left: 6px;
-        width: 30%;
-    }
 
-    .progress-bar-bg {
-        width: 70%;
-    }
+/* ===== Page Base ===== */
+.cozy-page {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #C8B88A;
+    image-rendering: pixelated;
 }
 
-/* Adjust height to 90% */
-.character-page-background {
-    height: 90vh;
+
+/* ============================================
+   Character Row (sprite + info side)
+   ============================================ */
+.char-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 8px 16px 8px;
+    margin-top: 48px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.char-sprite-area {
+    flex-shrink: 0;
+    width: 150px;
+    height: 150px;
+    background: rgba(250, 244, 230, 0.6);
+    border: 3px solid #C4AA78;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: 0 3px 0 #B49A68;
+}
+
+.char-sprite-area canvas {
+    width: 130px !important;
+    height: 130px !important;
+    image-rendering: pixelated;
+}
+
+.char-info-side {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+/* Shared badge base */
+.info-badge {
+    font-size: 12px;
+    font-weight: 700;
+    color: #4A3F2F;
+    background: rgba(250, 244, 230, 0.9);
+    padding: 4px 10px;
+    border-style: solid;
+    border-width: 3px;
+    border-image-slice: 3;
+    border-image-width: 3;
+    border-image-source: url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(168,152,104)" /></svg>');
+    border-image-repeat: stretch;
+    border-image-outset: 1;
+}
+
+.level-badge {
+    background: #5B8C5A;
+    color: #fff;
+    font-weight: 800;
+    border-image-source: url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(61,92,60)" /></svg>');
+    box-shadow: 0 2px 0 #3D5C3C;
+}
+
+.exp-badge {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.exp-badge-label {
+    font-size: 11px;
+}
+
+.exp-bar-mini-track {
+    width: 100%;
+    height: 6px;
+    background: #E8DFC8;
+    border: 2px solid #4A3F2F;
+    overflow: hidden;
+}
+
+.exp-bar-mini-fill {
+    height: 100%;
+    background: #5B8C5A;
+    transition: width 0.5s steps(15);
+}
+
+
+/* ============================================
+   Cozy Card (pixel border version)
+   ============================================ */
+.cozy-card {
+    width: 88%;
+    max-width: 380px;
+    background: #FAF4E6;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    border-style: solid;
+    border-width: 4px;
+    border-image-slice: 3;
+    border-image-width: 3;
+    border-image-source: url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(168,152,104)" /></svg>');
+    border-image-repeat: stretch;
+    border-image-outset: 2;
+    box-shadow: 0 4px 0 #B49A68;
+}
+
+
+/* ============================================
+   Progress Card (오늘의 모험)
+   ============================================ */
+.progress-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+}
+
+.progress-card-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #4A3F2F;
+}
+
+.progress-card-pct {
+    font-size: 18px;
+    font-weight: 900;
+    color: #5B8C5A;
+}
+
+.progress-card-track {
+    width: 100%;
+    height: 16px;
+    background: #E8DFC8;
+    overflow: hidden;
+    border: 3px solid #4A3F2F;
+}
+
+.progress-card-fill {
+    height: 100%;
+    background: #5B8C5A;
+    transition: width 0.6s steps(20);
+    position: relative;
+}
+
+.progress-card-fill::before {
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.35);
+}
+
+.progress-card-msg {
+    font-size: 12px;
+    color: #8A7D6B;
+    font-weight: 600;
+    margin-top: 6px;
+    text-align: center;
+}
+
+
+/* ============================================
+   Status Card (능력치)
+   ============================================ */
+.status-card-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #4A3F2F;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 3px solid #D9CDB5;
+}
+
+.stat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.stat-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Pixel square icon */
+.stat-icon-circle {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(0, 0, 0, 0.15);
+    border-radius: 0;
+    box-shadow:
+        -1px 0 0 0 rgba(0,0,0,0.1),
+         1px 0 0 0 rgba(0,0,0,0.1),
+         0 -1px 0 0 rgba(0,0,0,0.1),
+         0  1px 0 0 rgba(0,0,0,0.1);
+}
+
+.stat-label {
+    width: 48px;
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #4A3F2F;
+}
+
+/* Pixel bar */
+.stat-bar-track {
+    flex: 1;
+    height: 16px;
+    background: #E8DFC8;
+    overflow: hidden;
+    border: 3px solid #4A3F2F;
+    min-width: 0;
+}
+
+.stat-bar-fill {
+    height: 100%;
+    transition: width 0.5s steps(20);
+    position: relative;
+}
+
+/* Pixel highlight stripe */
+.stat-bar-fill::before {
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* Pixel shadow stripe */
+.stat-bar-fill::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.stat-value {
+    flex-shrink: 0;
+    width: 28px;
+    text-align: right;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+
+/* ============================================
+   Responsive
+   ============================================ */
+@media (max-width: 360px) {
+    .char-sprite-area {
+        width: 120px;
+        height: 120px;
+    }
+
+    .char-sprite-area canvas {
+        width: 100px !important;
+        height: 100px !important;
+    }
+
+    .info-badge {
+        font-size: 11px;
+        padding: 3px 8px;
+    }
+
+    .cozy-card {
+        padding: 14px 14px;
+    }
+
+    .stat-label {
+        width: 40px;
+        font-size: 12px;
+    }
+
+    .stat-icon-circle {
+        width: 26px;
+        height: 26px;
+    }
+
+    .stat-bar-track {
+        height: 14px;
+    }
 }

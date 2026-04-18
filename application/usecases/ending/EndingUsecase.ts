@@ -7,8 +7,7 @@ import {
 } from "@/domain/repositories";
 import { EndingDTO } from "@/application/usecases/ending/dtos";
 import {
-  ENDING_IMAGES,
-  ENDING_PROMPTS,
+  ENDING_MAP,
   DEFAULT_ENDING_IMAGE,
   DEFAULT_ENDING_PROMPT,
 } from "@/constants";
@@ -68,38 +67,56 @@ export class EndingUsecase {
       throw new Error("Status not found");
     }
 
-    const highestStat = this.findHighestStat(status);
+    // 크론잡이 저장한 endingCode로 엔딩 데이터 조회
+    const endingCode = character.endingCode ?? "ORDINARY_DAY";
+    const endingInfo = ENDING_MAP[endingCode];
 
+    // 칭호 처리 (기존 로직 유지)
+    const highestStat = this.findHighestStat(status);
     const availableTitles = await this.titleRepository.findByReqStat(
-      highestStat.statName
+      highestStat.statName.toLowerCase()
     );
 
     const matchingTitle = availableTitles
       .filter((title) => title.reqValue <= highestStat.value)
       .sort((a, b) => b.reqValue - a.reqValue)[0];
 
-    if (!matchingTitle) {
+    if (matchingTitle) {
+      await this.saveOrUpdateUserTitle(character.id, matchingTitle.id);
+    }
+
+    const defaultTitle = {
+      titleName: "방랑자",
+      description: "아직 자신만의 길을 찾지 못한 여행자",
+    };
+
+    const title = matchingTitle
+      ? { titleName: matchingTitle.titleName, description: matchingTitle.description }
+      : defaultTitle;
+
+    // endingCode 기반 응답
+    if (endingInfo) {
       return {
         endingState: character.endingState,
-        endingPrompt: DEFAULT_ENDING_PROMPT,
-        endingImage: DEFAULT_ENDING_IMAGE,
-        achievableTitle: {
-          titleName: "방랑자",
-          description: "아직 자신만의 길을 찾지 못한 여행자",
-        },
+        endingCode,
+        endingName: endingInfo.name,
+        endingStory: endingInfo.story,
+        endingDialogue: endingInfo.dialogue,
+        endingImage: endingInfo.image,
+        achievableTitle: title,
       };
     }
 
-    await this.saveOrUpdateUserTitle(character.id, matchingTitle.id);
-
+    // endingCode에 매칭되는 엔딩이 없을 경우 기본값
+    const fallback = ENDING_MAP["ORDINARY_DAY"];
     return {
       endingState: character.endingState,
-      endingPrompt: ENDING_PROMPTS[matchingTitle.id] ?? DEFAULT_ENDING_PROMPT,
-      endingImage: ENDING_IMAGES[matchingTitle.id] ?? DEFAULT_ENDING_IMAGE,
-      achievableTitle: {
-        titleName: matchingTitle.titleName,
-        description: matchingTitle.description,
-      },
+      endingCode: "ORDINARY_DAY",
+      endingName: "평범한 하루",
+      endingStory: fallback?.story ?? [DEFAULT_ENDING_PROMPT],
+      endingDialogue: fallback?.dialogue ?? [],
+      endingImage: DEFAULT_ENDING_IMAGE,
+      achievableTitle: defaultTitle,
     };
   }
 }

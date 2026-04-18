@@ -43,6 +43,21 @@ export class PriCharacterRepository implements ICharacterRepository {
     });
   }
 
+  async updateCharacterStats(
+    id: number,
+    data: { level?: number; exp?: number; willpower?: number; maxWillpower?: number }
+  ): Promise<Character> {
+    return await this.prisma.character.update({
+      where: { id },
+      data,
+    });
+  }
+
+  // 매일 자정 모든 캐릭터의 willpower를 maxWillpower로 리셋
+  async resetAllWillpower(): Promise<void> {
+    await this.prisma.$executeRaw`UPDATE "Character" SET willpower = max_willpower`;
+  }
+
   // 일요일에 endingState가 1인 사용자들의 endingState를 2로 업데이트 - node-cron 사용
   async updateForSunday(): Promise<void> {
     await this.prisma.character.updateMany({

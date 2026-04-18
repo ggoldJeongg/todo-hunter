@@ -20,6 +20,8 @@ export class SignUpUsecase {
       email: request.email,
       password: request.password,
       nickname: request.nickname,
+      provider: "email",
+      providerId: null,
     });
 
     const today = new Date();

@@ -7,22 +7,23 @@ type TitleItemProps = {
 };
 
 const RenderTitleItem = ({ title, index }: TitleItemProps) => {
-    const imageUrl = title.titleId ? `/titles/title_df.png` : `${title.img}`;
+    const isLocked = title.titleId === "df";
+    const imageUrl = isLocked ? "/icons/lock.png" : `${title.img}`;
     return (
-        <div key={index} className="items-center justify-center text-center">
-            <Image 
-                className="mx-auto" 
-                src={imageUrl} 
-                alt={`${title.name || "칭호"} 이미지`} 
-                width={120} // 기본 이미지 크기
-                height={120} 
-                loading={index === 0 ? "eager" : "lazy"} // 첫 번째 이미지는 eager 로드
-                priority={index === 0} // 첫 번째 이미지는 우선 로드
-                sizes="(max-width: 414px) 100px, 120px"
-                placeholder="blur"
-                blurDataURL="/titles/title_blur.png" // 블러 처리된 이미지
-            />
-            <p className="mt-2 text-sm">{title.name}</p>
+        <div key={index} className="flex flex-col items-center text-center">
+            <div className="bg-[#e8dfc8] is-rounded p-1 aspect-square flex items-center justify-center w-full">
+                <Image
+                    className={`mx-auto h-auto ${isLocked ? "max-w-[30px]" : "w-full max-w-[55px]"}`}
+                    src={imageUrl}
+                    alt={`${title.name || "칭호"} 이미지`}
+                    width={isLocked ? 30 : 55}
+                    height={isLocked ? 30 : 55}
+                    loading={index === 0 ? "eager" : "lazy"}
+                    priority={index === 0}
+                    unoptimized
+                />
+            </div>
+            <p className="text-[9px] text-gray-700 leading-tight mt-1 truncate w-full">{title.name}</p>
         </div>
     );
 }

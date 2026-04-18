@@ -31,13 +31,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <Header />
-      <body className={"antialiased flex flex-col min-h-screen"}>
-        <main className="flex-1 flex flex-col">
-          <InstallPrompt />
-          {children}
-        </main>
-        <Toaster position="top-center" />
-        <NavigationWrapper /> {/* 클라이언트 전용 네비게이션 */}
+      <body className={"antialiased"}>
+        <div className="max-w-[430px] mx-auto min-h-screen bg-white flex flex-col relative shadow-xl">
+          <main className="flex-1 flex flex-col">
+            <InstallPrompt />
+            {children}
+          </main>
+          <Toaster position="top-center" />
+          <NavigationWrapper /> {/* 클라이언트 전용 네비게이션 */}
+        </div>
       </body>
     </html>
   );

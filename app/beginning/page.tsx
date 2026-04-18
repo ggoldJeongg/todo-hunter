@@ -30,26 +30,26 @@ const Beginning = () => {
     {
       content: (
         <>
-        <Image className="mb-6" src="/images/beginning/01.png" width={326} height={259} alt="" />
-        <span className="text-white text-[24px]">지겨운 할 일,<br />게임처럼 즐길 수 없을까?</span>
+        <Image className="mb-6 w-full max-w-[300px] h-auto" src="/images/beginning/01.png" width={326} height={259} alt="" />
+        <span className="text-white text-xl sm:text-2xl">지겨운 할 일,<br />게임처럼 즐길 수 없을까?</span>
         <br />
-        <span className="text-white text-[24px]">할 일을 사냥하세요.</span>
+        <span className="text-white text-xl sm:text-2xl">할 일을 사냥하세요.</span>
         </>
       ),
     },
     {
       content: (
         <>
-        <Image className="mb-6" src="/images/beginning/02.png" width={292} height={319} alt="" />
-        <span className="text-white text-[24px]">한 주간의 노력을<br />엔딩으로 확인하세요.</span>
+        <Image className="mb-6 w-full max-w-[280px] h-auto" src="/images/beginning/02.png" width={292} height={319} alt="" />
+        <span className="text-white text-xl sm:text-2xl">한 주간의 노력을<br />엔딩으로 확인하세요.</span>
         </>
       ),
     },
     {
       content: (
         <>
-        <Image className="mb-6" src="/images/beginning/03.png" width={220} height={348} alt="" />
-        <span className="text-white text-[24px]">성장하는 내 모습을<br />확인해보세요.</span>
+        <Image className="mb-6 w-full max-w-[220px] h-auto" src="/images/beginning/03.png" width={220} height={348} alt="" />
+        <span className="text-white text-xl sm:text-2xl">성장하는 내 모습을<br />확인해보세요.</span>
         <Button className="mt-6 text-white" size={"S"} state={"current"} onClick={handleStartClick}>
           TODO START
         </Button>

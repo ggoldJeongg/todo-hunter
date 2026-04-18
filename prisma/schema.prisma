@@ -14,24 +14,32 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  loginId   String   @unique @map("login_id")
-  email     String   @unique
-  password  String
-  nickname  String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @map("updated_at")
-  
+  id         Int      @id @default(autoincrement())
+  loginId    String   @unique @map("login_id")
+  email      String   @unique
+  password   String?
+  nickname   String
+  provider   String   @default("email")
+  providerId String?  @unique @map("provider_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @map("updated_at")
+
   characters Character[]
 }
 
 model Character {
-  id          Int  @id @default(autoincrement())
-  user        User @relation(fields: [userId], references: [id])
-  userId      Int  @map("user_id")
-  endingCount Int  @default(0) @map("ending_count")
-  // 0: pending, 1: disable, 2: enable
-  endingState Int  @map("ending_state")
+  id           Int     @id @default(autoincrement())
+  user         User    @relation(fields: [userId], references: [id])
+  userId       Int     @map("user_id")
+  level        Int     @default(1)
+  exp          Int     @default(0)
+  willpower    Int     @default(100)
+  maxWillpower Int     @default(100) @map("max_willpower")
+  endingCount  Int     @default(0) @map("ending_count")
+  // 0: pending, 1: disable, 2: enable, 3: checked
+  endingState  Int     @map("ending_state")
+  // 판정된 엔딩 코드 (예: "STEEL_WARRIOR", "MAGIC_SWORDSMAN")
+  endingCode   String? @map("ending_code")
 
   status     Status?
   quests     Quest[]
@@ -56,6 +64,7 @@ model Quest {
   tagged      String
   name        String
   isWeekly    Boolean   @default(false) @map("is_weekly")
+  difficulty  String    @default("normal")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @default(now()) @map("updated_at")
   // null: 무기한 반복, 날짜 지정: 해당 날짜에 만료

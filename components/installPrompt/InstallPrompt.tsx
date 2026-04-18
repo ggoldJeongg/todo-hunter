@@ -17,12 +17,7 @@ export default function InstallPrompt() {
   const installHandler = () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult: { outcome: 'accepted' | 'dismissed' }) => {
-        if (choiceResult.outcome === "accepted") {
-          console.log("User accepted the install prompt");
-        } else {
-          console.log("User dismissed the install prompt");
-        }
+      deferredPrompt.userChoice.then(() => {
         localStorage.setItem("pwaPromptDismissed", "true");
         setDeferredPrompt(null);
       });

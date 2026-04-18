@@ -6,6 +6,7 @@ export interface GetQuestDTO {
     name: string;         // 퀘스트 제목
     tagged: keyof typeof STATUS;  // 태그
     isWeekly: boolean;
+    difficulty?: string;
     expiredAt?: Date;
     createdAt: Date;
     completedDates?: Date[];

@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useEffect } from "react";
+import Image from "next/image";
 import { useQuestStore } from "@/utils/stores/questStore";
 import { Tag } from "@/components/common/Tag";
 import { Button } from "@/components/common/Button";
 import { useRouter } from "next/navigation";
 
-const WeeklyQuest = () => {
+const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hideAddButton?: boolean }) => {
   const { quests, fetchQuests, completeQuest, deleteQuest, loading, error } = useQuestStore();
   const router = useRouter();
 
@@ -25,66 +26,69 @@ const WeeklyQuest = () => {
 
   return (
     <div className="pt-0">
-      <h2 className="p-3 w-fit bg-black text-white font-bold">
-        주간 퀘스트 ({quests.filter((q) => q.isWeekly && q.completed).length}/
-        {quests.filter((q) => q.isWeekly).length})
-      </h2>
+      {!hideHeader && (
+        <h2 className="p-3 w-fit bg-black text-white font-bold">
+          주간 퀘스트 ({quests.filter((q) => q.isWeekly && q.completed).length}/
+          {quests.filter((q) => q.isWeekly).length})
+        </h2>
+      )}
 
       {loading ? (
         <p className="text-center text-gray-500">로딩 중...</p>
       ) : error ? (
         <p className="text-center text-red-500">{error}</p>
       ) : (
-        <div className="max-h-[300px] overflow-y-auto space-y-2 pt-2">
+        <div className="space-y-3">
           {quests
-            .filter((q) => q.isWeekly) // 주간 퀘스트만 필터링
+            .filter((q) => q.isWeekly)
             .map(({ id, name, tagged, completed, expiredAt }) => (
               <div
                 key={id}
-                className={`flex justify-between items-center border-2 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] shadow-black p-2  
-                ${completed ? "opacity-50 bg-gray-100" : "bg-white"}`}
+                className={`flex items-center gap-3 is-rounded p-3 ${completed ? "opacity-50 bg-gray-100" : "bg-white"}`}
               >
-                {/* 왼쪽: 체크박스 & 이름 */}
-                <div className="flex flex-col">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      className="w-5 h-5 border-2 border-black"
-                      checked={completed}
-                      disabled={completed} // 완료된 항목은 체크 불가능
-                      onChange={() => {
-                        if (!completed) {
-                          completeQuest(id);
-                        }
-                      }}
-                    />
-                    <span className="text-lg">{name}</span>
-                  </div>
-
-                  {/* 만료 날짜 표시 */}
+                <button
+                  className="shrink-0 cursor-pointer"
+                  disabled={completed}
+                  onClick={() => { if (!completed) completeQuest(id); }}
+                >
+                  <Image
+                    src={completed ? "/icons/check_on.svg" : "/icons/check_off.svg"}
+                    width={24}
+                    height={24}
+                    alt={completed ? "완료" : "미완료"}
+                  />
+                </button>
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm truncate block">{name}</span>
                   {expiredAt && (
-                    <p className="text-sm text-gray-500">{formatDate(expiredAt)}</p>
+                    <p className="text-xs text-gray-500">{formatDate(expiredAt)}</p>
                   )}
                 </div>
-
-                {/* 오른쪽: 태그 & 삭제 버튼 */}
-                <div className="flex items-center space-x-2">
-                  <Tag variant={tagged}>{tagged}</Tag>
-                  <button onClick={() => deleteQuest(id)}>
-                  <div className="pt-1">
-                  <i className="hn hn-octagon-times-solid text-[35px] text-red-500"></i>  
-                  </div>
+                <Tag variant={tagged}>{tagged}</Tag>
+                {!completed && (
+                  <button
+                    className="shrink-0 cursor-pointer"
+                    onClick={() => router.push(`/play/quest/edit-quest/${id}`)}
+                  >
+                    <Image src="/icons/pencil.svg" width={20} height={20} alt="수정" />
                   </button>
-                </div>
+                )}
+                {!completed && (
+                  <button className="shrink-0 cursor-pointer" onClick={() => deleteQuest(id)}>
+                    <Image src="/icons/circle-x.svg" width={24} height={24} alt="삭제" />
+                  </button>
+                )}
               </div>
             ))}
         </div>
       )}
-      <div className="flex justify-center">
-        <Button size="L" className="mt-2" onClick={onAddQuestHandler}>
-          ⚡ 할 일 추가
-        </Button>
-      </div>
+      {!hideAddButton && (
+        <div className="flex justify-center">
+          <Button size="L" className="mt-2" onClick={onAddQuestHandler}>
+            ⚡ 할 일 추가
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

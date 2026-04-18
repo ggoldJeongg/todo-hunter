@@ -3,12 +3,15 @@
 import { LoginError } from "@/application/usecases/auth/errors/LoginError";
 import { Button, Input } from "@/components/common";
 import { useUserStore } from "@/utils/stores/userStore";
-import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useRef, useState } from "react";
 
 const SignUp = () => {
   // React Router 호출
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isKakao = searchParams.get("provider") === "kakao";
   // Zustand에서 fetchUser 가져오기
   const { fetchUser } = useUserStore();
 
@@ -372,253 +375,191 @@ const SignUp = () => {
     router.push("/play/character");
   };
   /* 가입 끝 */
-  
+
+
+  /* 카카오 가입 시작 */
+  const handleKakaoSignUp = async () => {
+    const nickname = nicknameRef.current?.value;
+
+    setNicknameEmpty(!nickname);
+    if (!nickname) return;
+
+    try {
+      const response = await fetch('/api/auth/kakao/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nickname }),
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        alert(data.error || "가입 중 오류가 발생했습니다.");
+        return;
+      }
+    } catch (error) {
+      console.error("카카오 가입 오류:", error);
+      return;
+    }
+
+    alert("가입이 완료되었습니다!");
+    await fetchUser();
+    router.push("/play/character");
+  };
+  /* 카카오 가입 끝 */
+
 
   return (
-    <div className={
-        `
-        flex
-            flex-col
-            justify-center
-            items-center
-        mx-3
-        min-h-screen
-        `
-        .replace(/\s+/g, ' ').trim()
-        }>
-        <h1 className={
-        `
-        mb-[40px]
-        text-center
-        text-[38px]
-        `
-        .replace(/\s+/g, ' ').trim()
-        }>
-            <span>회원가입</span>
+    <div className="flex flex-col min-h-screen bg-[#2a2a2a]">
+      {/* 상단 헤더 */}
+      <div className="flex items-center px-4 pt-6 pb-4">
+        <button onClick={() => router.back()} className="text-white text-2xl cursor-pointer">←</button>
+        <h1 className="flex-1 text-center text-xl font-galmuri11-bold text-white mr-6">
+          {isKakao ? "닉네임 설정" : "회원가입"}
         </h1>
-        <div className="row relative w-full flex flex-col">
-            <div className={`
-                w-full
-                flex
-                    items-center
-                    gap-2
-                `
-                .replace(/\s+/g, ' ').trim()
-            }>
-                <Input placeholder="아이디" className="is-rounded-form w-full shadow-none"
-                  ref={loginIdRef} onChange={handleLoginIdChange} />
-                <Button style={{padding: "4px 16px",marginRight: 0}}
-                  onClick={handleCheckExistLoginId}>중복확인</Button>
-            </div>
-            {(loginIdEmpty
-              || loginIdInvalid
-              || loginIdExists !== null
-              || showLoginIdCheckMessage
-            ) && (
-            <span className={
-              `
-              absolute
-              ${loginIdEmpty || loginIdInvalid || loginIdExists || showLoginIdCheckMessage ?
-                "text-[#A72F35]" : "text-[#2FA770]"}
-              -bottom-[22px]
-              `
-              .replace(/\s+/g, ' ').trim()}>
-                {loginIdEmpty ? "아이디를 입력해주세요." :
-                showLoginIdCheckMessage ? "아이디 중복확인이 필요합니다." :
-                loginIdInvalid ? "올바르지 않은 아이디 형식입니다." :
-                loginIdExists ? "가입된 아이디가 존재합니다." : "사용 가능한 아이디입니다."}
+      </div>
+
+      {/* 폼 영역 */}
+      <div className="flex-1 flex flex-col items-center px-6 pt-6 overflow-y-auto">
+      <div className="w-full max-w-[360px] space-y-5">
+      {/* 아이디 */}
+      {!isKakao && (
+        <div>
+          <div className="flex items-center gap-2">
+            <Input placeholder="아이디" className="is-rounded-form w-full shadow-none"
+              ref={loginIdRef} onChange={handleLoginIdChange} />
+            <Button style={{ padding: "4px 16px", marginRight: 0 }} state="primary"
+              onClick={handleCheckExistLoginId}>중복확인</Button>
+          </div>
+          {(loginIdEmpty || loginIdInvalid || loginIdExists !== null || showLoginIdCheckMessage) && (
+            <span className={`block mt-1 text-sm ${loginIdEmpty || loginIdInvalid || loginIdExists || showLoginIdCheckMessage ? "text-[#A72F35]" : "text-[#2FA770]"}`}>
+              {loginIdEmpty ? "아이디를 입력해주세요."
+                : showLoginIdCheckMessage ? "아이디 중복확인이 필요합니다."
+                : loginIdInvalid ? "올바르지 않은 아이디 형식입니다."
+                : loginIdExists ? "가입된 아이디가 존재합니다." : "사용 가능한 아이디입니다."}
             </span>
-            )}
+          )}
         </div>
-        <div className="row relative w-full flex flex-col mt-[26px]">
-            <Input placeholder="닉네임" className="is-rounded-form w-full shadow-none"
-              ref={nicknameRef} onChange={handleNicknameChange} />
-            {nicknameEmpty && (
-            <span className={
-                `
-                absolute
-                text-[#A72F35]
-                -bottom-[26px]
-                `
-                .replace(/\s+/g, ' ').trim()
-            }>
-                닉네임을 입력해 주세요.
+      )}
+
+      {/* 닉네임 */}
+      <div>
+        <Input placeholder="닉네임" className="is-rounded-form w-full shadow-none"
+          ref={nicknameRef} onChange={handleNicknameChange} />
+        {nicknameEmpty && (
+          <span className="block mt-1 text-sm text-[#A72F35]">
+            닉네임을 입력해 주세요.
+          </span>
+        )}
+      </div>
+
+      {/* 이메일 */}
+      {!isKakao && (
+        <div>
+          <div className="flex items-center gap-2">
+            <Input placeholder="이메일" className="is-rounded-form w-full shadow-none"
+              type="email" ref={emailRef} onChange={handleEmailChange} />
+            <Button style={{ padding: "4px 16px", marginRight: 0 }} state="primary" onClick={handleCheckExistEmail}>중복확인</Button>
+          </div>
+          {(emailEmpty || showEmailCheckMessage || emailInvalid || emailExists !== null || showVerificationMessage) && (
+            <span className={`block mt-1 text-sm ${emailEmpty || showEmailCheckMessage || emailInvalid || emailExists || showVerificationMessage ? "text-[#A72F35]" : "text-[#2FA770]"}`}>
+              {emailEmpty ? "이메일을 입력하세요."
+                : showVerificationMessage && !isCodeSent ? "인증번호 발송이 필요합니다."
+                : showVerificationMessage ? "인증코드 인증이 필요합니다."
+                : showEmailCheckMessage ? "이메일 중복확인이 필요합니다."
+                : emailInvalid ? "올바르지 않은 이메일 형식입니다."
+                : emailExists ? "가입된 이메일입니다."
+                : "사용 가능한 이메일입니다."}
             </span>
-            )}
+          )}
         </div>
-        <div className="row relative w-full flex flex-col mt-[26px]">
-            <div className={`
-                w-full
-                flex
-                    items-center
-                    gap-2
-                `
-                .replace(/\s+/g, ' ').trim()
-            }>
-                <Input
-                  placeholder="이메일"
-                  className={
-                    `
-                    is-rounded-form
-                    w-full
-                    shadow-none
-                  `}
-                  type="email"
-                  ref={emailRef}
-                  onChange={handleEmailChange} />
-                <Button style={{padding: "4px 16px",marginRight: 0}} onClick={handleCheckExistEmail}>중복확인</Button>
-            </div>
-            {(emailEmpty
-              || showEmailCheckMessage
-              || emailInvalid
-              || (emailExists !== null)
-              || showVerificationMessage
-            ) && (
-            <span className={
-                `
-                absolute
-                ${emailEmpty || showEmailCheckMessage || emailInvalid || emailExists || showVerificationMessage ?
-                  "text-[#A72F35]" : "text-[#2FA770]"}
-                -bottom-[22px]
-                `
-                .replace(/\s+/g, ' ').trim()
-              }>
-                {
-                emailEmpty
-                ? "이메일을 입력하세요."
-                : showVerificationMessage && !isCodeSent
-                ? "인증번호 발송이 필요합니다."
-                : showVerificationMessage
-                ? "인증코드 인증이 필요합니다."
-                : showEmailCheckMessage
-                ? "이메일 중복확인이 필요합니다."
-                : emailInvalid
-                ? "올바르지 않은 이메일 형식입니다."
-                : emailExists
-                ? "가입된 이메일입니다."
-                : "사용 가능한 이메일입니다."
-                }
-            </span>
-            )}
-        </div>
-        <div className="row relative w-full flex flex-col mt-[26px]">
+      )}
+
+      {!isKakao && (
+        <>
+          {/* 비밀번호 */}
+          <div>
             <Input placeholder="비밀번호" className="is-rounded-form w-full shadow-none" type="password"
               ref={passwordRef} value={password} onChange={handlePasswordChange} />
             {passwordEmpty && (
-            <span className={
-                `
-                absolute
-                text-[#A72F35]
-                -bottom-[26px]
-                `
-                .replace(/\s+/g, ' ').trim()
-            }>
+              <span className="block mt-1 text-sm text-[#A72F35]">
                 비밀번호를 입력해 주세요.
-            </span>
+              </span>
             )}
-        </div>
-        <div className="row relative w-full flex mt-[30px]">
+          </div>
+
+          {/* 비밀번호 재입력 */}
+          <div>
             <Input placeholder="비밀번호 재입력" className="is-rounded-form w-full shadow-none" type="password"
               ref={confirmPasswordRef} value={confirmPassword} onChange={handleConfirmPasswordChange} />
             {(confirmPasswordEmpty || passwordsMatch !== null) && (
-                <span className={
-                    `absolute
-                    ${confirmPasswordEmpty || !passwordsMatch ?
-                      "text-[#A72F35]" : "text-[#2FA770]"}
-                    -bottom-[26px]`
-                    .replace(/\s+/g, ' ').trim()
-                }>
-                    {confirmPasswordEmpty ? "비밀번호를 상기 기재란에도 입력해주세요." :
-                    passwordsMatch ? "비밀번호가 일치합니다." : "비밀번호가 일치하지 않습니다."}
-                </span>
+              <span className={`block mt-1 text-sm ${confirmPasswordEmpty || !passwordsMatch ? "text-[#A72F35]" : "text-[#2FA770]"}`}>
+                {confirmPasswordEmpty ? "비밀번호를 상기 기재란에도 입력해주세요."
+                  : passwordsMatch ? "비밀번호가 일치합니다." : "비밀번호가 일치하지 않습니다."}
+              </span>
             )}
-        </div>
-        <div className={
-            `
-            row
-            relative
-            w-full
-            flex
-              flex-col
-            ${isVerified ? "mt-[30px]" : "mt-[26px]"}
-            `
-            .replace(/\s+/g, ' ').trim()
-          }>
-            <div className={`
-                w-full
-                flex
-                    items-center
-                    gap-2
-                `
-                .replace(/\s+/g, ' ').trim()
-            }>
-                <Input
-                    placeholder={isCodeSent ? "인증코드" : "인증번호 발송"}
-                    className={
-                      `
-                      is-rounded-form
-                      w-full
-                      shadow-none
-                      ${isCodeSent && isVerified ? "text-muted-foreground" : ""}
-                      `
-                      .replace(/\s+/g, ' ').trim()
-                    }
-                    ref={isCodeSent ? verificationCodeRef : null}
-                    readOnly={isCodeSent && !!isVerified}
-                    onChange={handleVerificationCodeChange}
-                />
-                {/* isCodeSent가 true이고 isVerified가 false일 때만 버튼 표시 */}
-                {isCodeSent && !isVerified && (
-                  <Button
-                    style={{ padding: "4px 16px", marginRight: 0 }}
-                    onClick={handleSendVerificationCode}
-                  >
-                    재전송
-                  </Button>
-                )}
-                {isCodeSent && !isVerified && (
-                  <Button
-                    style={{ padding: "4px 16px", marginRight: 0 }}
-                    onClick={handleVerifyCode}
-                  >
-                    인증하기
-                  </Button>
-                )}
-                {!isCodeSent && (
-                  <Button
-                    style={{ padding: "4px 16px", marginRight: 0 }}
-                    onClick={handleSendVerificationCode}
-                  >
-                    발송하기
-                  </Button>
-                )}
+          </div>
+
+          {/* 인증코드 */}
+          <div>
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder={isCodeSent ? "인증코드" : "인증번호 발송"}
+                className={`is-rounded-form w-full shadow-none ${isCodeSent && isVerified ? "text-muted-foreground" : ""}`}
+                ref={isCodeSent ? verificationCodeRef : null}
+                readOnly={isCodeSent && !!isVerified}
+                onChange={handleVerificationCodeChange}
+              />
+              {isCodeSent && !isVerified && (
+                <Button style={{ padding: "4px 16px", marginRight: 0 }} state="primary" onClick={handleSendVerificationCode}>재전송</Button>
+              )}
+              {isCodeSent && !isVerified && (
+                <Button style={{ padding: "4px 16px", marginRight: 0 }} state="primary" onClick={handleVerifyCode}>인증하기</Button>
+              )}
+              {!isCodeSent && (
+                <Button style={{ padding: "4px 16px", marginRight: 0 }} state="primary" onClick={handleSendVerificationCode}>발송하기</Button>
+              )}
             </div>
             {isCodeSent && (
-            <span
-              className={
-                `
-                absolute
-                ${verificationCodeEmpty || showVerificationMessage ||
-                  isVerified === false ? "text-[#A72F35]"
-                  : isVerified === null ? "text-[#2FA770]" : "text-[#2FA770]"}
-                ${isVerified ? "-bottom-[26px]" : "-bottom-[22px]"}
-                `
-                .replace(/\s+/g, " ").trim()
-              }
-            >
-              {verificationCodeEmpty ? "인증코드를 입력해주세요."
-              : showVerificationMessage ? "인증코드 인증이 필요합니다."
-              : isVerified === null ? "이메일을 발송하였습니다."
-              : isVerified ? "인증코드가 일치합니다." : "인증코드가 일치하지 않습니다."}
-            </span>
+              <span className={`block mt-1 text-sm ${verificationCodeEmpty || showVerificationMessage || isVerified === false ? "text-[#A72F35]" : "text-[#2FA770]"}`}>
+                {verificationCodeEmpty ? "인증코드를 입력해주세요."
+                  : showVerificationMessage ? "인증코드 인증이 필요합니다."
+                  : isVerified === null ? "이메일을 발송하였습니다."
+                  : isVerified ? "인증코드가 일치합니다." : "인증코드가 일치하지 않습니다."}
+              </span>
             )}
-        </div>
-        <div className="row w-full mt-[60px]">
-            <Button style={{ width: "100%", marginLeft: 0, marginRight: 0 }} state="success" size="L"
-              onClick={handleSignUp}>가입하기</Button>
-        </div>
+          </div>
+        </>
+      )}
+
+      {/* 버튼 */}
+      <div className="mt-6">
+        <Button className="w-full max-w-none" state="primary" size="L"
+          onClick={isKakao ? handleKakaoSignUp : handleSignUp}>회원가입하기</Button>
+      </div>
+
+      </div>
+      </div>
+
+      {/* 성 이미지 - 바닥 배경 */}
+      <div className="fixed bottom-0 left-0 right-0 flex justify-center pointer-events-none">
+        <Image
+          src="/images/backgrounds/landing-page-castle2.png"
+          width={320}
+          height={320}
+          alt=""
+          className="w-full max-w-[320px] h-auto opacity-60"
+          unoptimized
+        />
+      </div>
     </div>
   );
 };
 
-export default SignUp;
+const SignUpPage = () => (
+  <Suspense>
+    <SignUp />
+  </Suspense>
+);
+
+export default SignUpPage;

@@ -8,11 +8,7 @@ export class RdAuthenticationRepository implements IRdAuthenticationRepository {
     }
 
     async getRefreshToken(userId: string): Promise<string | null> {
-        // return await redisClient.get(userId);
-        console.log('Fetching refresh token for userId:', userId);
-        const result = await redisClient.get(userId);
-        console.log('Result from Redis:', result);
-        return result;
+        return await redisClient.get(userId);
     }
 
     async deleteRefreshToken(userId: string): Promise<void> {

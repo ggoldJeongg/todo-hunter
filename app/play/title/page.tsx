@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@/components/common";
 import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import RenderTitleItem from "./_components/renderTitleItem";
 import { useUserStore } from "@/utils/stores/userStore";
 
@@ -15,50 +15,82 @@ export default function TitlePage(){
         try {
             const res = await fetch(`/api/title?page=${page}`, {
                 headers: {
-                    "user-id": id?.toString() || "",                 
+                    "user-id": id?.toString() || "",
                 }
             });
             const data = await res.json();
             setTitles(data);
         }
-        catch (error) {
-            console.log(error);
+        catch {
+            // 칭호 조회 실패
         }
     }, [id]);
-    
-    const gridItems = Array.from({ length: 9 }, (_, index) => titles[index] || 
+
+    const gridItems = Array.from({ length: 9 }, (_, index) => titles[index] ||
         { name: "잠금", titleId: "df" });
 
+    const hasPrevPage = page > 1;
+    const hasNextPage = titles.length > 0 && titles.length % 9 === 0;
+
     const handlePreviousPage = () => {
-        if (page > 1) {
-            setPage(page - 1);
-        }
+        if (hasPrevPage) setPage(page - 1);
     };
 
     const handleNextPage = () => {
-        if (titles.length && titles.length % 9 === 0) {
-            setPage(page + 1);
-        }
+        if (hasNextPage) setPage(page + 1);
     };
-    
+
     useEffect(() => {
         getTitle(page);
     }, [getTitle, page]);
 
     return (
-        <div className="bg-slate-400 flex items-center justify-center p-5 flex-1 min-h-screen overscroll-none">
-            <div className="bg-white p-8 w-full overflow-hidden">
-                <h1 className="mb-10 text-2xl">칭호 도감</h1>
-                <div className="grid grid-cols-3 gap-5">
-                    {gridItems.map((title, index) => (
-                        <RenderTitleItem key={index} title={title} index={index} />
-                    ))}                
+        <div
+            className="flex-1 flex flex-col items-center justify-center min-h-screen"
+            style={{
+                backgroundImage: "url('/images/backgrounds/table-background1.png')",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+            }}
+        >
+            {/* 책 배경 */}
+            <div className="relative w-full mx-auto" style={{ height: "calc(100vh - 90px)" }}>
+                <Image
+                    src="/images/backgrounds/titlebook-backround.png"
+                    alt="칭호 도감 책"
+                    fill
+                    className="object-contain"
+                    unoptimized
+                    priority
+                />
+
+                {/* 책 위에 콘텐츠 오버레이 */}
+                <div className="absolute top-[2%] bottom-[12%] left-[20%] right-[12%] flex flex-col">
+                    {/* 칭호 그리드 */}
+                    <div className="flex-1 grid grid-cols-3 gap-6 content-center px-1">
+                        {gridItems.map((title, index) => (
+                            <RenderTitleItem key={index} title={title} index={index} />
+                        ))}
+                    </div>
+
+                    {/* 이전/다음 버튼 */}
+                    <div className="flex justify-between items-center pb-11">
+                        <button
+                            className={`text-sm font-galmuri11-bold cursor-pointer ${hasPrevPage ? "text-gray-800" : "text-gray-400"}`}
+                            onClick={handlePreviousPage}
+                            disabled={!hasPrevPage}
+                        >
+                            ≪ 이전
+                        </button>
+                        <button
+                            className={`text-sm font-galmuri11-bold cursor-pointer ${hasNextPage ? "text-gray-800" : "text-gray-400"}`}
+                            onClick={handleNextPage}
+                            disabled={!hasNextPage}
+                        >
+                            다음 ≫
+                        </button>
+                    </div>
                 </div>
-                <div className="flex justify-between items-center mt-10">
-                    <Button size="XS" onClick={handlePreviousPage}>{"<<"}</Button>
-                    <p>{page}</p>
-                    <Button size="XS" onClick={handleNextPage}>{">>"}</Button>  
-                </div> 
             </div>
         </div>
     );

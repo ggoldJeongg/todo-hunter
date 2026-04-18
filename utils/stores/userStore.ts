@@ -13,6 +13,10 @@ interface UserStore {
   liv?: number;
   endingCount?: number;
   endingState?: number;
+  level?: number;
+  exp?: number;
+  willpower?: number;
+  maxWillpower?: number;
   setId: (id: number) => void;
   setLoginId: (loginId: string) => void;
   clearUser: () => void;
@@ -36,6 +40,10 @@ export const useUserStore = create<UserStore>()(
       liv: undefined,
       endingCount: undefined,
       endingState: undefined,
+      level: undefined,
+      exp: undefined,
+      willpower: undefined,
+      maxWillpower: undefined,
       setId: (id: number) => set({ id }),
       setLoginId: (loginId: string) => set({ loginId }),
       clearUser: () => {
@@ -51,6 +59,10 @@ export const useUserStore = create<UserStore>()(
           liv: undefined,
           endingCount: undefined,
           endingState: undefined,
+          level: undefined,
+          exp: undefined,
+          willpower: undefined,
+          maxWillpower: undefined,
         });
         sessionStorage.removeItem("user-session-data"); // 세션 초기화
       },
@@ -91,6 +103,10 @@ export const useUserStore = create<UserStore>()(
             fin: data.fin,
             liv: data.liv,
             endingCount: data.endingCount,
+            level: data.level,
+            exp: data.exp,
+            willpower: data.willpower,
+            maxWillpower: data.maxWillpower,
           });
         } catch (error) {
           console.error("캐릭터 데이터를 가져오는 중 오류 발생:", error);

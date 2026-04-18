@@ -1,12 +1,8 @@
 import { LoginError } from "@/application/usecases/auth/errors/LoginError";
 import { Button, Input } from "@/components/common";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-const FindIdForm = ({ onFindId, onError }: { onFindId: (id: string) => void, onError: (error: string) => void }) => {
-    const handleBack = () => {
-        window.history.back();
-    };
-    
+const FindIdForm = ({ onFindId, onError, onRegisterSubmit }: { onFindId: (id: string) => void, onError: (error: string) => void, onRegisterSubmit?: (submitFn: () => void) => void }) => {
     const [email, setEmail] = useState("");
 
     const handleSubmit = async () => {
@@ -41,27 +37,26 @@ const FindIdForm = ({ onFindId, onError }: { onFindId: (id: string) => void, onE
         }
     };
     
+    const submitRef = useRef(handleSubmit);
+    submitRef.current = handleSubmit;
+
+    useEffect(() => {
+        onRegisterSubmit?.(() => submitRef.current());
+    }, [onRegisterSubmit]);
+
     return (
         <>
-        <div className="row w-full mt-[30px]">
+        <div className="w-full max-w-[360px]">
             <Input
                 placeholder="이메일"
                 className="is-rounded-form w-full shadow-none"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                />
+            />
         </div>
-        <div className="row w-full mt-[60px]">
-            <Button style={{ width: "100%", marginLeft: 0, marginRight: 0 }} state="warning" size="L"  onClick={handleBack}>뒤로 가기</Button>
-        </div>
-        <div className="row w-full mt-[20px]">
-            <Button
-                style={{ width: "100%", marginLeft: 0, marginRight: 0 }}
-                state="success"
-                size="L"
-                onClick={handleSubmit}
-                >아이디 찾기</Button>
+        <div className="w-full max-w-[360px] mt-6">
+            <Button className="w-full max-w-none" state="primary" size="L" onClick={handleSubmit}>아이디 찾기</Button>
         </div>
         </>
     );

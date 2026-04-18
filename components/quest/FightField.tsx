@@ -1,75 +1,111 @@
 "use client";
 
-import React from "react";
-import Image from "next/image";
-import CharacterMotion from "./CharactersMotion";
+import React, { useRef, useEffect } from "react";
+import HudOverlay from "./HudOverlay";
 import { useQuestStore } from "@/utils/stores/questStore";
-import useProgressStore from "@/utils/stores/useProgressStore";
+import { BATTLE_THEMES, type BattleThemeId } from "@/utils/pixi/BattleThemes";
+import { getMonsterByKillCount } from "@/utils/pixi/MonsterRegistry";
 
-// FightField에서 상태 추가
-const FightField = () => {
-  const { isMoving, isMovingForward, isAttacking, isDefeated, setDefeated } = useQuestStore();
-  const { progress } = useProgressStore();
+interface FightFieldProps {
+  theme?: BattleThemeId;
+}
 
-  React.useEffect(() => {
-    if (progress >= 100) {
-      setDefeated(true);
-    }
-  }, [progress, setDefeated]);
+const FightField = ({ theme = "night" }: FightFieldProps) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<{
+    destroy: () => void;
+    setTheme: (id: BattleThemeId) => void;
+    swapMonster: (killCount: number) => Promise<void>;
+  } | null>(null);
 
-  const playerIdleFrames = [
-    "/images/characters/player/idle01.png",
-    "/images/characters/player/idle02.png",
-    "/images/characters/player/idle03.png",
-    "/images/characters/player/idle04.png",
-  ];
+  const { killCount } = useQuestStore();
 
-  const playerAttackFrames = [
-    "/images/characters/player/attack1.png",
-    "/images/characters/player/attack2.png",
-    "/images/characters/player/attack3.png",
-    "/images/characters/player/attack4.png",
-  ];
+  // killCount 변경 시 몬스터 교체
+  useEffect(() => {
+    sceneRef.current?.swapMonster(killCount);
+  }, [killCount]);
 
-  const werewolfIdleFrames = [
-    "/images/characters/werewolf/werewolf-idle1.png",
-    "/images/characters/werewolf/werewolf-idle2.png",
-    "/images/characters/werewolf/werewolf-idle3.png",
-  ];
+  // 런타임 테마 변경
+  useEffect(() => {
+    sceneRef.current?.setTheme(theme);
+  }, [theme]);
+
+  // PixiJS 씬 초기화
+  useEffect(() => {
+    let destroyed = false;
+
+    (async () => {
+      const { PixiBattleScene } = await import(
+        "@/utils/pixi/PixiBattleScene"
+      );
+      if (destroyed) return;
+
+      const container = containerRef.current;
+      const canvas = canvasRef.current;
+      if (!container || !canvas) return;
+
+      const width = container.clientWidth;
+      const height = 192;
+
+      const scene = new PixiBattleScene();
+      await scene.init(canvas, width, height, theme);
+      if (destroyed) {
+        scene.destroy();
+        return;
+      }
+      sceneRef.current = scene;
+
+      // 반응형 리사이즈
+      const ro = new ResizeObserver((entries) => {
+        const w = entries[0].contentRect.width;
+        scene.resize(w, 192);
+      });
+      ro.observe(container);
+
+      // cleanup에 ResizeObserver 해제 추가
+      const originalDestroy = scene.destroy.bind(scene);
+      scene.destroy = () => {
+        ro.disconnect();
+        originalDestroy();
+      };
+    })();
+
+    return () => {
+      destroyed = true;
+      sceneRef.current?.destroy();
+      sceneRef.current = null;
+    };
+  }, []);
+
+  const currentMonster = getMonsterByKillCount(killCount);
 
   return (
-    <div className="relative w-auto h-[150px]">
-      <Image
-        src="/images/backgrounds/underwater-fantasy-background3.png"
-        alt="field image"
-        fill
-        style={{ objectFit: "cover" }}
-        priority
-      />
+    <div className="relative w-full overflow-hidden">
+      {/* 전투 영역 */}
+      <div ref={containerRef} className="relative h-[192px] overflow-hidden">
+        <canvas
+          ref={canvasRef}
+          className="w-full h-full"
+          style={{ imageRendering: "pixelated" }}
+        />
+        <HudOverlay
+          mapName={BATTLE_THEMES[theme].name}
+          monsterName={currentMonster.name}
+        />
+      </div>
 
-      {/* 플레이어 (이동 & 공격 반영) */}
-      <CharacterMotion
-        idleFrames={playerIdleFrames}
-        attackFrames={playerAttackFrames}
-        alt="Player"
-        top="60%"
-        left="30%"
-        isMoving={isMoving}
-        isMovingForward={isMovingForward} // 이동 방향 전달
-        isAttacking={isAttacking}
+      {/* 집중선 프레임 오버레이 (최상단 레이어, 흰색 반전) */}
+      <div
+        className="absolute inset-0 pointer-events-none z-10"
+        style={{
+          backgroundImage: "url('/images/backgrounds/cartoon_style_bg.png')",
+          backgroundSize: "130% 130%",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center",
+          filter: "invert(1)",
+        }}
       />
-
-      {/* 몬스터 (werewolf) */}
-      {!isDefeated && (
-        <CharacterMotion
-          idleFrames={werewolfIdleFrames}
-          alt="Werewolf"
-          top="60%"
-          left="70%"
-          flip={true}
-          isShaking={isAttacking}
-          isDefeated={isDefeated} attackFrames={[]}        />
-      )}
     </div>
   );
 };

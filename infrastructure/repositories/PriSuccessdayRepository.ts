@@ -19,7 +19,6 @@ export class PriSuccessDayRepository implements ISuccessDayRepository {
       }
 
       async findCurrentQuests(currentQuestIds: number[], currentDay: Date): Promise<SuccessDay[] | null> {
-        console.log("findCurrentQuests 실행됨! currentQuestIds:", currentQuestIds, "currentDay:", currentDay);
     
         const successDays = await this.prisma.successDay.findMany({
             where: {

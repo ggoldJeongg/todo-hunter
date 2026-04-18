@@ -7,4 +7,8 @@ export interface CharacterDto {
     fin: number;
     liv: number;
     endingCount?: number;
+    level: number;
+    exp: number;
+    willpower: number;
+    maxWillpower: number;
 }
