@@ -46,29 +46,31 @@ const QuestPage = () => {
         </button>
       </div>
 
-      {/* 퀘스트 리스트 */}
-      <div className="flex-1 overflow-y-auto p-4 pb-24">
-        {activeTab === "daily" && dailyCount.length === 0 && (
-          <div className="flex-1 flex items-center justify-center h-full">
-            <p className="text-gray-400 text-center text-sm">할일 추가 버튼을 눌러<br/>퀘스트를 추가하세요</p>
-          </div>
-        )}
-        {activeTab === "weekly" && weeklyCount.length === 0 && (
-          <div className="flex-1 flex items-center justify-center h-full">
-            <p className="text-gray-400 text-center text-sm">할일 추가 버튼을 눌러<br/>퀘스트를 추가하세요</p>
-          </div>
-        )}
-        {activeTab === "daily" ? <DailyQuest hideHeader hideAddButton /> : <WeeklyQuest hideHeader hideAddButton />}
-      </div>
+      {/* 퀘스트 리스트 (내부 스크롤) */}
+      <div className="flex-1 min-h-0 relative">
+        <div className="absolute inset-0 overflow-y-auto p-4 pb-14 scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+          {activeTab === "daily" && dailyCount.length === 0 && (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-gray-400 text-center text-sm">할일 추가 버튼을 눌러<br/>퀘스트를 추가하세요</p>
+            </div>
+          )}
+          {activeTab === "weekly" && weeklyCount.length === 0 && (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-gray-400 text-center text-sm">할일 추가 버튼을 눌러<br/>퀘스트를 추가하세요</p>
+            </div>
+          )}
+          {activeTab === "daily" ? <DailyQuest hideHeader hideAddButton /> : <WeeklyQuest hideHeader hideAddButton />}
+        </div>
 
-      {/* 플로팅 할일 추가 버튼 */}
-      <div className="sticky bottom-20 z-20 flex justify-end pr-4 pb-2 pointer-events-none">
-        <button
-          className="bg-[#C84B3A] text-white px-4 py-2 rounded-full shadow-lg active:bg-[#a33a2c] font-bold text-sm cursor-pointer pointer-events-auto"
-          onClick={() => router.push("/play/quest/add-quest")}
-        >
-          + 할일 추가
-        </button>
+        {/* 할일 추가 버튼 — 스크롤 영역 내 우측 하단 고정 */}
+        <div className="absolute bottom-24 right-4 z-20">
+          <button
+            className="bg-[#C84B3A] text-white px-4 py-2 rounded-full shadow-lg active:bg-[#a33a2c] font-bold text-sm cursor-pointer"
+            onClick={() => router.push("/play/quest/add-quest")}
+          >
+            + 할일 추가
+          </button>
+        </div>
       </div>
     </div>
   );

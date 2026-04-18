@@ -82,7 +82,15 @@ export const useQuestStore = create<QuestStore>((set) => ({
         ),
       }));
 
-      // 3. 애니메이션 실행
+      // 3. API 요청 (애니메이션과 병렬 실행)
+      const responsePromise = fetch("/api/quest/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ characterId, questId }),
+      });
+
+      // 4. 애니메이션 실행
       set({ isMoving: true, isMovingForward: true });
 
       setTimeout(() => {
@@ -97,21 +105,17 @@ export const useQuestStore = create<QuestStore>((set) => ({
         }, 1000);
       }, 600);
 
-      // 4. API 요청 (로그인한 유저의 `characterId`로 설정)
-      const response = await fetch("/api/quest/complete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include", // 인증 정보 포함
-        body: JSON.stringify({ characterId, questId }), // 로그인한 유저의 ID로 설정
-      });
-
+      // 5. 애니메이션 완료(공격 끝) 후 toast 표시
+      const response = await responsePromise;
       if (!response.ok) throw new Error("퀘스트 완료 실패");
 
-      // 5. 완료 후 상태 메시지 띄우기
-      toast.success(` ${STATUS[quest.tagged]} 스탯이 +1 증가했습니다!`);
+      // 공격 완료 시점(1600ms) 이후에 toast 표시
+      setTimeout(() => {
+        toast.success(` ${STATUS[quest.tagged]} 스탯이 +1 증가했습니다!`);
+      }, 1600);
 
-       // 6. 캐릭터 데이터 갱신
-      await useUserStore.getState().fetchCharacter(); // 캐릭터 정보 갱신
+      // 6. 캐릭터 데이터 갱신
+      await useUserStore.getState().fetchCharacter();
     } catch (err) {
       console.error("completeQuest 오류:", err);
 

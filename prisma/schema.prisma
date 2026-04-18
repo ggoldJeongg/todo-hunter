@@ -28,12 +28,16 @@ model User {
 }
 
 model Character {
-  id          Int  @id @default(autoincrement())
-  user        User @relation(fields: [userId], references: [id])
-  userId      Int  @map("user_id")
-  endingCount Int  @default(0) @map("ending_count")
+  id           Int  @id @default(autoincrement())
+  user         User @relation(fields: [userId], references: [id])
+  userId       Int  @map("user_id")
+  level        Int  @default(1)
+  exp          Int  @default(0)
+  willpower    Int  @default(100)
+  maxWillpower Int  @default(100) @map("max_willpower")
+  endingCount  Int  @default(0) @map("ending_count")
   // 0: pending, 1: disable, 2: enable
-  endingState Int  @map("ending_state")
+  endingState  Int  @map("ending_state")
 
   status     Status?
   quests     Quest[]
