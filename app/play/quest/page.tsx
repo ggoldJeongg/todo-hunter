@@ -1,29 +1,74 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import DailyQuest from "@/components/quest/DailyQuest";
 import WeeklyQuest from "@/components/quest/WeeklyQuest";
 import FightField from "@/components/quest/FightField";
+import { useRouter } from "next/navigation";
+import { useQuestStore } from "@/utils/stores/questStore";
 
 const QuestPage = () => {
+  const [activeTab, setActiveTab] = useState<"daily" | "weekly">("daily");
+  const router = useRouter();
+  const { quests } = useQuestStore();
+
+  const dailyCount = quests.filter((q) => !q.isWeekly);
+  const weeklyCount = quests.filter((q) => q.isWeekly);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-      {/* 경험치 진행 UI */}
+    <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-gray-50">
+      {/* 상단: 배틀 필드 */}
       <div className="shrink-0">
-        <div className="py-1 w-full bg-black text-white text-center font-bold text-sm">
-          경험치 쌓는 중...
-        </div>
         <FightField />
       </div>
 
-      {/* 퀘스트 영역 */}
-      <div className="flex-1 flex flex-col p-3 overflow-y-auto pb-20">
-          <div className="mt-2"></div>
-          <DailyQuest />
-          <div className="mt-6"></div>
-          <WeeklyQuest />
-          <br />
+      {/* 탭 버튼 */}
+      <div className="flex shrink-0">
+        <button
+          className={`flex-1 py-3 text-center font-bold text-sm transition-colors cursor-pointer ${
+            activeTab === "daily"
+              ? "bg-[#C84B3A] text-white"
+              : "bg-gray-200 text-gray-600"
+          }`}
+          onClick={() => setActiveTab("daily")}
+        >
+          일간 퀘스트({dailyCount.filter(q => q.completed).length}/{dailyCount.length})
+        </button>
+        <button
+          className={`flex-1 py-3 text-center font-bold text-sm transition-colors cursor-pointer ${
+            activeTab === "weekly"
+              ? "bg-[#C84B3A] text-white"
+              : "bg-gray-200 text-gray-600"
+          }`}
+          onClick={() => setActiveTab("weekly")}
+        >
+          주간 퀘스트({weeklyCount.filter(q => q.completed).length}/{weeklyCount.length})
+        </button>
+      </div>
+
+      {/* 퀘스트 리스트 */}
+      <div className="flex-1 overflow-y-auto p-4 pb-24">
+        {activeTab === "daily" && dailyCount.length === 0 && (
+          <div className="flex-1 flex items-center justify-center h-full">
+            <p className="text-gray-400 text-center text-sm">할일 추가 버튼을 눌러<br/>퀘스트를 추가하세요</p>
+          </div>
+        )}
+        {activeTab === "weekly" && weeklyCount.length === 0 && (
+          <div className="flex-1 flex items-center justify-center h-full">
+            <p className="text-gray-400 text-center text-sm">할일 추가 버튼을 눌러<br/>퀘스트를 추가하세요</p>
+          </div>
+        )}
+        {activeTab === "daily" ? <DailyQuest hideHeader hideAddButton /> : <WeeklyQuest hideHeader hideAddButton />}
+      </div>
+
+      {/* 플로팅 할일 추가 버튼 */}
+      <div className="sticky bottom-20 z-20 flex justify-end pr-4 pb-2 pointer-events-none">
+        <button
+          className="bg-[#C84B3A] text-white px-4 py-2 rounded-full shadow-lg active:bg-[#a33a2c] font-bold text-sm cursor-pointer pointer-events-auto"
+          onClick={() => router.push("/play/quest/add-quest")}
+        >
+          + 할일 추가
+        </button>
       </div>
     </div>
   );

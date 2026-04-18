@@ -38,64 +38,65 @@ const SignIn = () => {
   };
   
   return (
-    <div className={
-        `
-        flex
-            flex-col
-            justify-center
-            items-center
-        px-4 sm:px-6
-        min-h-screen
-        `
-        .replace(/\s+/g, ' ').trim()
-        }>
-      <h1 className={
-        `
-        mb-6 sm:mb-10
-        text-center
-        text-2xl sm:text-4xl
-        `
-        .replace(/\s+/g, ' ').trim()
-        }>
-        <span>로그인</span>
-      </h1>
-      <div className="block w-full max-w-[320px] mb-2">
-        <span className="block mb-2">ID</span>
-        <Input className="is-rounded-form w-full shadow-none" type="text"
-        value={loginId}
-        onChange={(e) => setLoginId(e.target.value)} />
-      </div>
-      <div className="block w-full max-w-[320px] mb-2">
-        <span className="block mb-2">PASSWORD</span>
-        <Input className="is-rounded-form w-full shadow-none" type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)} />
-      </div>
-      <div className="flex flex-col items-center gap-2 mt-8 w-full">
-        <Button value={"play"} onClick={handleSignIn} className="w-full max-w-[320px]" state="success" size="L">로그인하기</Button>
-        <Button value={"signup"} onClick={(e) => handleMove(e.currentTarget.value)} className="w-full max-w-[320px]" state="warning" size="L">회원가입</Button>
-      </div>
-      <div className="text-center mt-3 w-full">
-        <Link href="/findid" className="text-sm text-gray-500 hover:text-gray-700">아이디 찾기 &gt;</Link>
-      </div>
-      {/* 구분선 */}
-      <div className="flex items-center w-full max-w-[320px] mt-6 mb-4">
-        <div className="flex-1 h-px bg-gray-300"></div>
-        <span className="px-3 text-sm text-gray-500">또는</span>
-        <div className="flex-1 h-px bg-gray-300"></div>
+    <div
+      className="flex flex-col min-h-screen overflow-hidden"
+      style={{
+        backgroundImage: "url('/images/backgrounds/landing-page-background1.png')",
+        backgroundSize: "100% 100%",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      {/* 상단 다크 영역 - 제목 + 입력폼 */}
+      <div className="flex flex-col items-center justify-end pb-8 px-6" style={{ height: "55vh" }}>
+        <h1
+          className="mb-10 text-center text-3xl sm:text-4xl font-galmuri11-bold"
+          style={{ textShadow: "-4px -4px 0 #555, 4px -4px 0 #555, -4px 4px 0 #555, 4px 4px 0 #555, 0 -4px 0 #555, 0 4px 0 #555, -4px 0 0 #555, 4px 0 0 #555" }}
+        >
+          <span className="text-white">로그인</span>
+        </h1>
+
+        <div className="w-full max-w-[320px] space-y-4">
+          <Input className="is-rounded-form w-full shadow-none" type="text"
+            placeholder="Email"
+            value={loginId}
+            onChange={(e) => setLoginId(e.target.value)} />
+          <Input className="is-rounded-form w-full shadow-none" type="password"
+            placeholder="PASSWORD"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)} />
+        </div>
       </div>
 
-      {/* 카카오 로그인 */}
-      <a href="/api/auth/kakao">
-        <Image
-          src="/icons/kakao_login_medium_narrow.png"
-          alt="카카오 로그인"
-          width={183}
-          height={45}
-          priority
-          unoptimized
-        />
-      </a>
+      {/* 하단 밝은 영역 - 버튼 + 링크 + 카카오 */}
+      <div className="flex flex-col items-center flex-1 px-6" style={{ paddingTop: "70px" }}>
+        <div className="flex flex-col items-center gap-3 w-full max-w-[320px]">
+          <Button value={"play"} onClick={handleSignIn} className="w-full" state="primary" size="L">로그인하기</Button>
+          <Button value={"signup"} onClick={(e) => handleMove(e.currentTarget.value)} className="w-full" state="outline" size="L">이메일 회원가입</Button>
+        </div>
+
+        <div className="text-center mt-4 w-full">
+          <Link href="/findid" className="text-sm text-gray-500 hover:text-gray-700">아이디 찾기 &gt;</Link>
+        </div>
+
+        {/* 구분선 */}
+        <div className="flex items-center w-full max-w-[320px] my-6">
+          <div className="flex-1 h-px bg-gray-300"></div>
+          <span className="px-4 text-sm text-gray-500">또는</span>
+          <div className="flex-1 h-px bg-gray-300"></div>
+        </div>
+
+        {/* 카카오 로그인 */}
+        <a href="/api/auth/kakao">
+          <Image
+            src="/icons/kakao_login_medium_narrow.png"
+            alt="카카오 로그인"
+            width={183}
+            height={45}
+            priority
+            unoptimized
+          />
+        </a>
+      </div>
     </div>
   );
 };

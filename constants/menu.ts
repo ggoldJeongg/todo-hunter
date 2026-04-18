@@ -11,7 +11,7 @@ type MenusDto = {
 // 메뉴 정보 배열 (5개로 고정 필수)
 export const MENUS: MenusDto[] = [
     { menu: "character", icon: "user", label: "캐릭터" },
-    { menu: "cards", icon: "book-heart", label: ["버프", "카드"], disabled: true }, 
+    { menu: "square", icon: "book-heart", label: ["광장"], disabled: true }, 
     { menu: "quest", icon: "receipt", label: "퀘스트" }, // 중앙 버튼
     { menu: "title", icon: "trophy", label: ["칭호", "도감"] },
     { menu: "ending", icon: "octagon-check", label: "엔딩" }

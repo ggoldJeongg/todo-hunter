@@ -10,7 +10,7 @@ const buttonVariants = cva(
   {
     variants: {
       size:{
-        L: "w-full max-w-[320px] h-7",
+        L: "w-full max-w-[320px] h-10",
         M: "w-56 h-7",
         S: "w-32 h-7",
         XS: "w-12 h-7",
@@ -21,6 +21,8 @@ const buttonVariants = cva(
         success: "bg-[var(--success-color-blue)] text-white active:bg-blue-900",
         current: "bg-[var(--current-color-green)] text-white active:bg-green-900",
         warning: "bg-[var(--warning-color-yellow)] text-white active:bg-yellow-900",
+        primary: "bg-[#C84B3A] text-white active:bg-[#a33a2c] outline-[3px] outline-[#C84B3A]",
+        outline: "bg-white text-gray-800 active:bg-gray-100 outline-[3px] outline-white",
       },
     },
     

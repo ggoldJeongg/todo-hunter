@@ -30,11 +30,11 @@ const DateSelector = ({ onUpdate }: { onUpdate: (date: string) => void }) => {
   }, [selectedYear, selectedMonth, selectedDay, onUpdate]);
 
   return (
-    <div className="pt-3 bg-white flex gap-3 justify-center items-center">
+    <div className="flex gap-2 items-center w-full">
       {/* 연도 선택 */}
       <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(Number(value))}>
-        <SelectTrigger className="w-auto h-9 text-sm">
-          <SelectValue placeholder="연도 선택" />
+        <SelectTrigger className="flex-1 h-9 text-sm text-black bg-white">
+          <SelectValue placeholder="연도" />
         </SelectTrigger>
         <SelectContent>
           {getYears(currentYear, currentYear + 1).map((year) => (
@@ -45,8 +45,8 @@ const DateSelector = ({ onUpdate }: { onUpdate: (date: string) => void }) => {
 
       {/* 월 선택 */}
       <Select value={selectedMonth.toString()} onValueChange={(value) => setSelectedMonth(Number(value))}>
-        <SelectTrigger className="w-auto min-w-0 flex-1 h-9 text-sm px-2">
-          <SelectValue placeholder="월 선택" />
+        <SelectTrigger className="flex-1 h-9 text-sm text-black bg-white">
+          <SelectValue placeholder="월" />
         </SelectTrigger>
         <SelectContent>
           {months.map((month) => (
@@ -57,8 +57,8 @@ const DateSelector = ({ onUpdate }: { onUpdate: (date: string) => void }) => {
 
       {/* 일 선택 */}
       <Select value={selectedDay.toString()} onValueChange={(value) => setSelectedDay(Number(value))}>
-        <SelectTrigger className="w-auto min-w-0 flex-1 h-9 text-sm px-2">
-          <SelectValue placeholder="일 선택" />
+        <SelectTrigger className="flex-1 h-9 text-sm text-black bg-white">
+          <SelectValue placeholder="일" />
         </SelectTrigger>
         <SelectContent>
           {getDays(selectedYear, selectedMonth).map((day) => (

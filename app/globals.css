@@ -75,8 +75,17 @@ body {
          url('/fonts/Galmuri9.ttf') format('truetype');
     font-display: swap;
   }
+  @font-face {
+    font-family: 'Galmuri11Bold';
+    src: url('/fonts/Galmuri11-Bold.woff2') format('woff2'),
+         url('/fonts/Galmuri11-Bold.ttf') format('truetype');
+    font-display: swap;
+  }
   .font-galmuri9 {
     font-family: 'Galmuri9', sans-serif;
+  }
+  .font-galmuri11-bold {
+    font-family: 'Galmuri11Bold', sans-serif;
   }
   * {
     @apply border-border;
@@ -258,6 +267,15 @@ body {
     border-image-repeat:stretch;
     border-image-source:url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(174,174,174)" /></svg>');
     border-image-outset:2;
+    transition: background-image 0.1s;
+  }
+
+  .is-rounded-form:focus {
+    background-image: url('/icons/pick.png');
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 24px 24px;
+    padding-right: 40px;
   }
 
   .is-rounded-dialog {
