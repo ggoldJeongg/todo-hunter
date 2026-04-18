@@ -3,14 +3,8 @@
 import React, { useRef, useEffect } from "react";
 import HudOverlay from "./HudOverlay";
 import { useQuestStore } from "@/utils/stores/questStore";
-import useProgressStore from "@/utils/stores/useProgressStore";
-import type { BattleThemeId } from "@/utils/pixi/BattleThemes";
-
-const PIXELATED_BORDER = {
-  background:
-    "repeating-conic-gradient(rgba(0,0,0,0.15) 0% 25%, rgba(255,255,255,0.15) 0% 50%) 0 0 / 8px 8px",
-  imageRendering: "pixelated" as const,
-};
+import { BATTLE_THEMES, type BattleThemeId } from "@/utils/pixi/BattleThemes";
+import { getMonsterByKillCount } from "@/utils/pixi/MonsterRegistry";
 
 interface FightFieldProps {
   theme?: BattleThemeId;
@@ -19,17 +13,18 @@ interface FightFieldProps {
 const FightField = ({ theme = "night" }: FightFieldProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const sceneRef = useRef<{ destroy: () => void; setTheme: (id: BattleThemeId) => void } | null>(null);
+  const sceneRef = useRef<{
+    destroy: () => void;
+    setTheme: (id: BattleThemeId) => void;
+    swapMonster: (killCount: number) => Promise<void>;
+  } | null>(null);
 
-  const { progress } = useProgressStore();
-  const { setDefeated } = useQuestStore();
+  const { killCount } = useQuestStore();
 
-  // progress >= 100 시 defeat 처리
+  // killCount 변경 시 몬스터 교체
   useEffect(() => {
-    if (progress >= 100) {
-      setDefeated(true);
-    }
-  }, [progress, setDefeated]);
+    sceneRef.current?.swapMonster(killCount);
+  }, [killCount]);
 
   // 런타임 테마 변경
   useEffect(() => {
@@ -83,11 +78,10 @@ const FightField = ({ theme = "night" }: FightFieldProps) => {
     };
   }, []);
 
+  const currentMonster = getMonsterByKillCount(killCount);
+
   return (
     <div className="relative w-full overflow-hidden">
-      {/* 상단 도트 체크 테두리 */}
-      <div className="w-full h-[8px]" style={PIXELATED_BORDER} />
-
       {/* 전투 영역 */}
       <div ref={containerRef} className="relative h-[192px] overflow-hidden">
         <canvas
@@ -95,11 +89,23 @@ const FightField = ({ theme = "night" }: FightFieldProps) => {
           className="w-full h-full"
           style={{ imageRendering: "pixelated" }}
         />
-        <HudOverlay />
+        <HudOverlay
+          mapName={BATTLE_THEMES[theme].name}
+          monsterName={currentMonster.name}
+        />
       </div>
 
-      {/* 하단 도트 체크 테두리 */}
-      <div className="w-full h-[8px]" style={PIXELATED_BORDER} />
+      {/* 집중선 프레임 오버레이 (최상단 레이어, 흰색 반전) */}
+      <div
+        className="absolute inset-0 pointer-events-none z-10"
+        style={{
+          backgroundImage: "url('/images/backgrounds/cartoon_style_bg.png')",
+          backgroundSize: "130% 130%",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center",
+          filter: "invert(1)",
+        }}
+      />
     </div>
   );
 };
