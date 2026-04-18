@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     try {
         const isExist = await checkExistEmailUsecase.execute({ email });
         return NextResponse.json(isExist, { status: 200 });
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: "요청을 처리할 수 없습니다." }, { status: 500 });
     }
 }

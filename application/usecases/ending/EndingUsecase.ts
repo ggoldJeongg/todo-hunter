@@ -85,6 +85,15 @@ export class EndingUsecase {
       await this.saveOrUpdateUserTitle(character.id, matchingTitle.id);
     }
 
+    const defaultTitle = {
+      titleName: "방랑자",
+      description: "아직 자신만의 길을 찾지 못한 여행자",
+    };
+
+    const title = matchingTitle
+      ? { titleName: matchingTitle.titleName, description: matchingTitle.description }
+      : defaultTitle;
+
     // endingCode 기반 응답
     if (endingInfo) {
       return {
@@ -92,30 +101,22 @@ export class EndingUsecase {
         endingCode,
         endingName: endingInfo.name,
         endingStory: endingInfo.story,
+        endingDialogue: endingInfo.dialogue,
         endingImage: endingInfo.image,
-        achievableTitle: matchingTitle
-          ? {
-              titleName: matchingTitle.titleName,
-              description: matchingTitle.description,
-            }
-          : {
-              titleName: "방랑자",
-              description: "아직 자신만의 길을 찾지 못한 여행자",
-            },
+        achievableTitle: title,
       };
     }
 
     // endingCode에 매칭되는 엔딩이 없을 경우 기본값
+    const fallback = ENDING_MAP["ORDINARY_DAY"];
     return {
       endingState: character.endingState,
       endingCode: "ORDINARY_DAY",
       endingName: "평범한 하루",
-      endingStory: [DEFAULT_ENDING_PROMPT],
+      endingStory: fallback?.story ?? [DEFAULT_ENDING_PROMPT],
+      endingDialogue: fallback?.dialogue ?? [],
       endingImage: DEFAULT_ENDING_IMAGE,
-      achievableTitle: {
-        titleName: "방랑자",
-        description: "아직 자신만의 길을 찾지 못한 여행자",
-      },
+      achievableTitle: defaultTitle,
     };
   }
 }

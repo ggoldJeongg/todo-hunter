@@ -1,19 +1,37 @@
+import Image from "next/image";
+
 type ProgressBarProps = {
     nickname: string | undefined;
     progress: number | undefined;
 };
 
 const ProgressBar = ({ nickname, progress }: ProgressBarProps) => (
-    <div className="flex flex-col items-center">
-        <p className="mb-2 mt-14 text-xl text-white text-center">{nickname}님, 오늘의 경험치에요!</p>
-        <div className="flex items-center w-full px-6">
-            <p className="mr-2 text-white text-xl">{progress}%</p>
-            <progress
-                className="bg-white is-rounded-progress w-full"
-                value={progress}
-                max="100"
-                aria-label={`${nickname}님의 경험치 진행 상태`}
+    <div className="bubble-wrapper">
+        {/* 말풍선 배경 이미지 (absolute) */}
+        <div className="bubble-bg-container">
+            <Image
+                src="/images/backgrounds/text_bubble.png"
+                alt="말풍선"
+                fill
+                sizes="300px"
+                className="bubble-bg"
+                unoptimized
             />
+        </div>
+        {/* 콘텐츠 (relative, 크기 결정) */}
+        <div className="bubble-content">
+            <p className="bubble-text">
+                {nickname ?? "모험가"}님, 오늘의 경험치에요!
+            </p>
+            <div className="bubble-progress-row">
+                <span className="bubble-pct">{progress ?? 0}%</span>
+                <div className="bubble-progress-track">
+                    <div
+                        className="bubble-progress-fill"
+                        style={{ width: `${progress ?? 0}%` }}
+                    />
+                </div>
+            </div>
         </div>
     </div>
 );

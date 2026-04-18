@@ -1,21 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import type { DialogueLine } from "@/constants";
 
 interface EndingScriptBoxProps {
   name: string;
-  story: string[];
+  dialogue: DialogueLine[];
 }
 
-const TYPING_SPEED = 50; // ms per character
-const LINE_DELAY = 500; // ms between lines
+const TYPING_SPEED = 40; // ms per character
 
-const EndingScriptBox = ({ name, story }: EndingScriptBoxProps) => {
+const SPEAKER_CONFIG = {
+  narrator: { label: "", align: "center" as const, bg: "bg-black/60", text: "text-white/80 italic" },
+  player: { label: "나", align: "right" as const, bg: "bg-blue-900/60", text: "text-blue-100" },
+  npc: { label: "???", align: "left" as const, bg: "bg-amber-900/60", text: "text-amber-100" },
+};
+
+const EndingScriptBox = ({ name, dialogue }: EndingScriptBoxProps) => {
   const [nameVisible, setNameVisible] = useState(false);
-  const [displayedLines, setDisplayedLines] = useState<string[]>([]);
-  const [currentLineIndex, setCurrentLineIndex] = useState(0);
-  const [currentCharIndex, setCurrentCharIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [displayedText, setDisplayedText] = useState("");
+  const [charIndex, setCharIndex] = useState(0);
   const [isTypingDone, setIsTypingDone] = useState(false);
+  const [isAllDone, setIsAllDone] = useState(false);
+
+  const currentLine = dialogue[currentIndex];
+  const isLastLine = currentIndex >= dialogue.length - 1;
 
   // 엔딩명 슬라이드인
   useEffect(() => {
@@ -25,62 +35,99 @@ const EndingScriptBox = ({ name, story }: EndingScriptBoxProps) => {
 
   // 타이핑 애니메이션
   useEffect(() => {
-    if (currentLineIndex >= story.length) {
+    if (!currentLine || isAllDone) return;
+
+    if (charIndex < currentLine.text.length) {
+      const timer = setTimeout(() => {
+        setDisplayedText(currentLine.text.slice(0, charIndex + 1));
+        setCharIndex((prev) => prev + 1);
+      }, TYPING_SPEED);
+      return () => clearTimeout(timer);
+    } else {
+      setIsTypingDone(true);
+    }
+  }, [charIndex, currentLine, isAllDone]);
+
+  // 다음 대사로 넘기기
+  const handleNext = useCallback(() => {
+    if (!isTypingDone) {
+      // 타이핑 중이면 즉시 완성
+      setDisplayedText(currentLine.text);
+      setCharIndex(currentLine.text.length);
       setIsTypingDone(true);
       return;
     }
 
-    const currentLine = story[currentLineIndex];
-
-    if (currentCharIndex < currentLine.length) {
-      // 한 글자씩 타이핑
-      const timer = setTimeout(() => {
-        setDisplayedLines((prev) => {
-          const newLines = [...prev];
-          newLines[currentLineIndex] = currentLine.slice(0, currentCharIndex + 1);
-          return newLines;
-        });
-        setCurrentCharIndex((prev) => prev + 1);
-      }, TYPING_SPEED);
-
-      return () => clearTimeout(timer);
-    } else {
-      // 현재 줄 완료, 다음 줄로
-      const timer = setTimeout(() => {
-        setCurrentLineIndex((prev) => prev + 1);
-        setCurrentCharIndex(0);
-        setDisplayedLines((prev) => [...prev, ""]);
-      }, LINE_DELAY);
-
-      return () => clearTimeout(timer);
+    if (isLastLine) {
+      setIsAllDone(true);
+      return;
     }
-  }, [currentLineIndex, currentCharIndex, story]);
+
+    // 다음 대사
+    setCurrentIndex((prev) => prev + 1);
+    setDisplayedText("");
+    setCharIndex(0);
+    setIsTypingDone(false);
+  }, [isTypingDone, isLastLine, currentLine]);
+
+  if (!currentLine && !isAllDone) return null;
+
+  const config = currentLine ? SPEAKER_CONFIG[currentLine.speaker] : null;
 
   return (
-    <div className="is-rounded bg-black/70 w-full p-6 space-y-4">
-      {/* 엔딩명 슬라이드인 */}
+    <div className="w-full p-4 space-y-4" onClick={handleNext}>
+      {/* 엔딩명 */}
       <h2
         className={`text-xl font-bold text-center text-amber-400 transition-all duration-700 ${
-          nameVisible
-            ? "opacity-100 translate-y-0"
-            : "opacity-0 translate-y-4"
+          nameVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
         }`}
       >
         {name}
       </h2>
 
-      {/* 스토리 타이핑 */}
-      <div className="space-y-2 min-h-[80px]">
-        {displayedLines.map((line, index) => (
-          <p key={index} className="text-base text-center text-white/90">
-            {line}
-            {/* 현재 타이핑 중인 줄에 커서 표시 */}
-            {index === currentLineIndex && !isTypingDone && (
-              <span className="animate-pulse">|</span>
-            )}
+      {/* 대화 박스 */}
+      {!isAllDone && config && (
+        <div
+          className={`relative ${config.bg} rounded-lg p-4 min-h-[80px] flex flex-col justify-center cursor-pointer`}
+        >
+          {/* 화자 이름 */}
+          {config.label && (
+            <span
+              className={`absolute -top-3 ${
+                config.align === "right" ? "right-3" : "left-3"
+              } text-[11px] font-bold px-2 py-0.5 rounded bg-black/70 text-white`}
+            >
+              {config.label}
+            </span>
+          )}
+
+          {/* 대사 */}
+          <p className={`text-base ${config.text} ${config.align === "center" ? "text-center" : ""}`}>
+            {displayedText}
+            {!isTypingDone && <span className="animate-pulse">|</span>}
           </p>
-        ))}
-      </div>
+
+          {/* 다음 표시 */}
+          {isTypingDone && !isLastLine && (
+            <span className="absolute bottom-2 right-3 text-[10px] text-white/50 animate-bounce">
+              ▼ 탭하여 계속
+            </span>
+          )}
+
+          {isTypingDone && isLastLine && (
+            <span className="absolute bottom-2 right-3 text-[10px] text-amber-400/70 animate-pulse">
+              ▼ 탭하여 종료
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* 모든 대화 종료 */}
+      {isAllDone && (
+        <div className="text-center text-white/50 text-sm animate-pulse">
+          — {name} —
+        </div>
+      )}
     </div>
   );
 };

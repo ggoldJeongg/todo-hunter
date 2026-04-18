@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/common";
 import FindIdForm from "@/components/auth/FindIdForm";
 import FindIdView from "@/components/auth/FindIdView";
 import Image from "next/image";

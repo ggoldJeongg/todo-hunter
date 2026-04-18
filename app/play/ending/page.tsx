@@ -136,7 +136,7 @@ const EndingPage = () => {
             <EndingImage image={endingData.endingImage} />
             <EndingScriptBox
               name={endingData.endingName}
-              story={endingData.endingStory}
+              dialogue={endingData.endingDialogue}
             />
             <div
               className={`transition-opacity duration-1000 z-10 relative ${

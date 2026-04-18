@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     try {
         const loginId = await findLoginIdByEmailUsecase.execute(email);
         return NextResponse.json({ loginId }, { status: 200 });
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: "요청을 처리할 수 없습니다." }, { status: 500 });
     }
 }

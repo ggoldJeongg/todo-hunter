@@ -122,7 +122,7 @@ export class PixiCharacter {
     this.sprite = new Sprite(Texture.EMPTY);
     this.sprite.width = SPRITE_SIZE;
     this.sprite.height = SPRITE_SIZE;
-    this.sprite.anchor.set(0.5);
+    this.sprite.anchor.set(0.5, 1.0); // 바닥 중앙 기준
 
     if (flip) {
       this.sprite.scale.x = -1;
@@ -131,7 +131,7 @@ export class PixiCharacter {
     this.defeatOverlay = new Graphics();
     this.defeatOverlay.rect(
       -SPRITE_SIZE / 2,
-      -SPRITE_SIZE / 2,
+      -SPRITE_SIZE,
       SPRITE_SIZE,
       SPRITE_SIZE
     );
@@ -156,7 +156,7 @@ export class PixiCharacter {
       }),
     });
     this.clearText.anchor.set(0.5);
-    this.clearText.y = -10;
+    this.clearText.y = -SPRITE_SIZE / 2;
     this.clearText.alpha = 0;
 
     this.container.addChild(this.sprite);
@@ -200,14 +200,14 @@ export class PixiCharacter {
   }
 
   /** 몬스터: 이미지 프레임 설정 */
-  setMonsterFrames(textures: Texture[]) {
+  setMonsterFrames(textures: Texture[], scale: number = 1.0) {
     this.isCanvasMode = false;
     this.monsterTextures = textures;
     if (textures.length > 0) {
       this.sprite.texture = textures[0];
       // 몬스터는 flip이면 scale.x가 이미 -1
-      const absScaleX = SPRITE_SIZE / textures[0].width;
-      const absScaleY = SPRITE_SIZE / textures[0].height;
+      const absScaleX = (SPRITE_SIZE / textures[0].width) * scale;
+      const absScaleY = (SPRITE_SIZE / textures[0].height) * scale;
       this.sprite.scale.set(
         this.flip ? -absScaleX : absScaleX,
         absScaleY
@@ -325,7 +325,7 @@ export class PixiCharacter {
     // 몬스터: 프레임 순환
     if (!this.isCanvasMode && this.monsterTextures.length > 1) {
       this.monsterFrameElapsed += deltaMS;
-      if (this.monsterFrameElapsed >= 333) {
+      if (this.monsterFrameElapsed >= 150) {
         this.monsterFrameElapsed = 0;
         this.monsterFrameIdx =
           (this.monsterFrameIdx + 1) % this.monsterTextures.length;
