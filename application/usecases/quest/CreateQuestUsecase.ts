@@ -23,6 +23,7 @@ export class CreateQuestUseCase {
       name: dto.name,
       tagged: dto.tagged,
       isWeekly: dto.isWeekly,
+      difficulty: dto.difficulty ?? "normal",
       expiredAt,
       createdAt: new Date(),
       updatedAt: new Date(),
