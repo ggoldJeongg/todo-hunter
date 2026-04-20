@@ -93,6 +93,8 @@ jobs:
           DEFAULT_API_URL=${{ secrets.DEFAULT_API_URL }}
 
           # 운영
+          NEXT_PUBLIC_GA_ID=${{ secrets.NEXT_PUBLIC_GA_ID }}
+
           NODE_ENV=production
           TZ=Asia/Seoul
           EOF
