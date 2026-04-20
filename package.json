@@ -15,6 +15,7 @@
   "dependencies": {
     "@fullpage/react-fullpage": "^0.1.48",
     "@hackernoon/pixel-icon-library": "^1.0.4",
+    "@next/third-parties": "^16.2.4",
     "@prisma/client": "^6.4.1",
     "@radix-ui/react-dialog": "^1.1.6",
     "@radix-ui/react-label": "^2.1.2",

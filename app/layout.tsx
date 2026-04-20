@@ -5,11 +5,12 @@ import InstallPrompt from "@/components/installPrompt/InstallPrompt";
 import NavigationWrapper from "@/components/common/NavigationWrapper"; // 클라이언트 전용 네비게이션
 import Header from "./header";
 import { Toaster } from "@/components/common";
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 export const metadata: Metadata = {
 
   title: {
-    default: "투두헌터", // ✅ Google 검색에서 보이는 타이틀
+    default: "투두헌터", // Google 검색에서 보이는 타이틀
     template: "%s | TODO HUNTER", // 서브 페이지에 타이틀 추가 시
   },
   applicationName: "TODO HUNTER",
@@ -40,6 +41,9 @@ export default function RootLayout({
           <Toaster position="top-center" />
           <NavigationWrapper /> {/* 클라이언트 전용 네비게이션 */}
         </div>
+          {process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_GA_ID && (
+            <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+          )}  
       </body>
     </html>
   );
