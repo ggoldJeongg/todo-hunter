@@ -88,6 +88,7 @@ jobs:
           NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
           SENTRY_ORG=${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT=${{ secrets.SENTRY_PROJECT }}
+          SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
 
           # 앱 기본 URL (서버사이드에서 쓸 경우)
           DEFAULT_API_URL=${{ secrets.DEFAULT_API_URL }}
