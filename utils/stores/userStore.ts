@@ -87,11 +87,7 @@ export const useUserStore = create<UserStore>()(
       fetchCharacter: async () => {
         if (!get().id) throw new Error("사용자 id가 존재하지 않습니다.");
         try {
-          const res = await fetch("/api/character", {
-            headers: {
-              "user-id": get().id!.toString(),
-            },
-          });
+          const res = await fetch("/api/character", { credentials: "include" });
           if (!res.ok) throw new Error("캐릭터 데이터 호출 실패");
           const data = await res.json();
           set({
@@ -116,11 +112,7 @@ export const useUserStore = create<UserStore>()(
         if (!get().id) return;
 
         try {
-          const res = await fetch("/api/ending", {
-            headers: {
-              "X-User-Id": get().id!.toString(),
-            },
-          });
+          const res = await fetch("/api/ending", { credentials: "include" });
           if (!res.ok) throw new Error("엔딩 정보 요청 실패");
           const data = await res.json();
           set({ endingState: data.endingState });

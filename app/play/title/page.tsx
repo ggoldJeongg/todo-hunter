@@ -3,28 +3,21 @@
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import RenderTitleItem from "./_components/renderTitleItem";
-import { useUserStore } from "@/utils/stores/userStore";
 
 export default function TitlePage(){
     const [titles, setTitles] = useState([]);
     const [page, setPage] = useState(1);
 
-    const { id } = useUserStore();
-
     const getTitle = useCallback(async (page: number) => {
         try {
-            const res = await fetch(`/api/title?page=${page}`, {
-                headers: {
-                    "user-id": id?.toString() || "",
-                }
-            });
+            const res = await fetch(`/api/title?page=${page}`, { credentials: "include" });
             const data = await res.json();
             setTitles(data);
         }
         catch {
             // 칭호 조회 실패
         }
-    }, [id]);
+    }, []);
 
     const gridItems = Array.from({ length: 9 }, (_, index) => titles[index] ||
         { name: "잠금", titleId: "df" });

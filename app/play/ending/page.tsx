@@ -9,7 +9,6 @@ import {
 } from "@/constants";
 import { toast } from "sonner";
 import { EndingImage, EndingScriptBox } from "@/app/play/ending/_components";
-import { useUserStore } from "@/utils/stores/userStore";
 import { useRouter } from "next/navigation";
 
 const EndingPage = () => {
@@ -17,22 +16,12 @@ const EndingPage = () => {
   const [fadeStep, setFadeStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUser = useUserStore((state) => state.fetchUser);
   const router = useRouter();
 
   useEffect(() => {
     const initializeData = async () => {
-      await fetchUser();
-      const userId = useUserStore.getState().id;
-
-      if (!userId) return;
-
       try {
-        const response = await fetch("/api/ending", {
-          headers: {
-            "X-User-Id": userId.toString(),
-          },
-        });
+        const response = await fetch("/api/ending", { credentials: "include" });
 
         if (!response.ok) {
           throw new Error("엔딩 정보를 가져오는데 실패했습니다.");
@@ -83,7 +72,7 @@ const EndingPage = () => {
     };
 
     initializeData();
-  }, [fetchUser]);
+  }, []);
 
   // 엔딩 확인 완료 처리
   const handleConfirm = async () => {
