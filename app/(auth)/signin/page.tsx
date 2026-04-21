@@ -6,37 +6,106 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
+
+type FieldErrors = {
+  loginId?: string;
+  password?: string;
+};
 
 const SignIn = () => {
   const router = useRouter();
   const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
-  const { fetchUser } = useUserStore(); // zustand에서 fetchUser 가져오기
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { fetchUser } = useUserStore();
+
+  const showToast = (message: string) => {
+    toast.error(message, {
+      id: "signin-error",
+      className:
+        "!text-base !break-keep !whitespace-normal !text-center !leading-snug !py-3",
+    });
+  };
+
+  const clearAllErrors = () => {
+    setErrors({});
+    setFormError(null);
+  };
 
   const handleSignIn = async () => {
-    try {
-      const response = await fetch('/api/auth/signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ loginId, password }),
-        credentials: "include", // 쿠키 포함
-      });
-      if (response.ok) {
-        // 로그인 성공 시 fetchUser 호출
-        await fetchUser();
-        router.push("/play/character"); // 인게임으로 이동
-      }
-    } catch (error) {
-      console.error('로그인 중 오류 발생:', error);
+    if (isSubmitting) return;
+
+    const trimmedLoginId = loginId.trim();
+    const nextErrors: FieldErrors = {};
+    if (!trimmedLoginId) nextErrors.loginId = "아이디를 입력해주세요.";
+    if (!password) nextErrors.password = "비밀번호를 입력해주세요.";
+
+    if (nextErrors.loginId || nextErrors.password) {
+      setErrors(nextErrors);
+      setFormError(null);
+      return;
     }
+
+    clearAllErrors();
+    setIsSubmitting(true);
+
+    let response: Response;
+    try {
+      response = await fetch("/api/auth/signin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ loginId: trimmedLoginId, password }),
+        credentials: "include",
+      });
+    } catch (error) {
+      console.error("로그인 네트워크 오류:", error);
+      showToast("네트워크 연결을 확인하고 다시 시도해주세요.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (response.ok) {
+      try {
+        await fetchUser();
+        router.push("/play/character");
+      } catch (error) {
+        console.error("로그인 후 유저 정보 조회 실패:", error);
+        showToast("일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    if (response.status === 401 || response.status === 400) {
+      setFormError("아이디 또는 비밀번호가 올바르지 않습니다.");
+    } else if (response.status === 429) {
+      const retryAfter = response.headers.get("Retry-After");
+      const seconds = retryAfter ? Number(retryAfter) : NaN;
+      showToast(
+        Number.isFinite(seconds) && seconds > 0
+          ? `로그인 시도가 너무 많습니다. ${seconds}초 후 다시 시도해주세요.`
+          : "로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요."
+      );
+    } else if (response.status >= 500) {
+      showToast("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+    } else {
+      showToast("로그인에 실패했습니다. 잠시 후 다시 시도해주세요.");
+    }
+
+    setIsSubmitting(false);
   };
-  
+
   const handleMove = (value: string) => {
-    router.push(`/${value}`); // URL 해시 변경
+    router.push(`/${value}`);
   };
-  
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") handleSignIn();
+  };
+
   return (
     <div
       className="flex flex-col min-h-screen overflow-hidden"
@@ -56,21 +125,76 @@ const SignIn = () => {
         </h1>
 
         <div className="w-full max-w-[320px] space-y-4">
-          <Input className="is-rounded-form w-full shadow-none" type="text"
-            placeholder="Email"
-            value={loginId}
-            onChange={(e) => setLoginId(e.target.value)} />
-          <Input className="is-rounded-form w-full shadow-none" type="password"
-            placeholder="PASSWORD"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)} />
+          {formError && (
+            <div
+              role="alert"
+              className="w-full rounded-md bg-red-500/90 text-white text-sm text-center px-3 py-2 break-keep leading-snug"
+            >
+              {formError}
+            </div>
+          )}
+          <div>
+            <Input
+              className="is-rounded-form w-full shadow-none"
+              type="text"
+              placeholder="ID"
+              value={loginId}
+              state={errors.loginId ? "error" : "default"}
+              aria-invalid={!!errors.loginId}
+              aria-describedby={errors.loginId ? "loginId-error" : undefined}
+              onChange={(e) => {
+                setLoginId(e.target.value);
+                if (errors.loginId) setErrors((prev) => ({ ...prev, loginId: undefined }));
+                if (formError) setFormError(null);
+              }}
+              onKeyDown={handleKeyDown}
+              disabled={isSubmitting}
+            />
+            {errors.loginId && (
+              <p id="loginId-error" className="mt-1 text-xs text-red-500 pl-2">
+                {errors.loginId}
+              </p>
+            )}
+          </div>
+          <div>
+            <Input
+              className="is-rounded-form w-full shadow-none"
+              type="password"
+              placeholder="PASSWORD"
+              value={password}
+              state={errors.password ? "error" : "default"}
+              aria-invalid={!!errors.password}
+              aria-describedby={errors.password ? "password-error" : undefined}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
+                if (formError) setFormError(null);
+              }}
+              onKeyDown={handleKeyDown}
+              disabled={isSubmitting}
+            />
+            {errors.password && (
+              <p id="password-error" className="mt-1 text-xs text-red-500 pl-2">
+                {errors.password}
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
       {/* 하단 밝은 영역 - 버튼 + 링크 + 카카오 */}
       <div className="flex flex-col items-center flex-1 px-6" style={{ paddingTop: "70px" }}>
         <div className="flex flex-col items-center gap-3 w-full max-w-[320px]">
-          <Button value={"play"} onClick={handleSignIn} className="w-full" state="primary" size="L">로그인하기</Button>
+          <Button
+            value={"play"}
+            onClick={handleSignIn}
+            className="w-full"
+            state="primary"
+            size="L"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "로그인 중..." : "로그인하기"}
+          </Button>
           <Button value={"signup"} onClick={(e) => handleMove(e.currentTarget.value)} className="w-full" state="outline" size="L">이메일 회원가입</Button>
         </div>
 
