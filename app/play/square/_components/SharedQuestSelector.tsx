@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuestStore } from "@/utils/stores/questStore";
 import { useSquareStore } from "@/utils/stores/squareStore";
 import { STATUS } from "@/constants";
+import { FEATURES } from "@/constants/features";
 
 interface SharedQuestSelectorProps {
   open: boolean;
@@ -20,6 +21,7 @@ export default function SharedQuestSelector({
     sharedQuest?.id ?? null
   );
 
+  if (!FEATURES.SHARED_QUEST) return null;
   if (!open) return null;
 
   const handleConfirm = () => {
