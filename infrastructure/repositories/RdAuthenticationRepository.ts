@@ -4,11 +4,11 @@ import redisClient from '@/infrastructure/databases/redis/server';
 
 export class RdAuthenticationRepository implements IRdAuthenticationRepository {
     async saveRefreshToken(userId: string, refreshToken: string): Promise<void> {
-        await redisClient.set(userId, refreshToken, 'EX', 86400); // 24시간 만료
+        await redisClient.set(userId, refreshToken, { ex: 86400 }); // 24시간 만료
     }
 
     async getRefreshToken(userId: string): Promise<string | null> {
-        return await redisClient.get(userId);
+        return await redisClient.get<string>(userId);
     }
 
     async deleteRefreshToken(userId: string): Promise<void> {
