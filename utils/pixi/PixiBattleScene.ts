@@ -17,6 +17,9 @@ const PLAYER_IDLE_LAYERS = [
   `${IDLE_PATH}/char_a_p1_0bas_humn_v00.png`,
   `${IDLE_PATH}/1out/char_a_p1_1out_fstr_v01.png`,
   `${IDLE_PATH}/4har/char_a_p1_4har_bob1_v01.png`,
+  // idle 시트(char_a_p1)에는 무기 폴더가 없어서 attack 시트의 sword 레이어를 빌려옴.
+  // 두 시트가 같은 8행 매핑이라 frame 48(오른쪽 idle) 위치에 칼이 정상 합성됨.
+  `${ATTACK_PATH}/6tla/char_a_pONE1_6tla_sw01_v01.png`,
 ];
 
 const PLAYER_ATTACK_LAYERS = [
@@ -121,16 +124,28 @@ export class PixiBattleScene {
   private async _buildCharacters(width: number, height: number) {
     if (!this.app) return;
 
-    this.player = new PixiCharacter(25, 75, false, {
-      moveForwardTarget: { xPercent: 65, yPercent: 75 },
-    });
+    // player yPercent를 monster보다 아래로 둠 — LPC 64x64 frame 안에서 캐릭터가
+    // 위쪽에 그려져 anchor 1.0(frame bottom)이 시각적 발보다 아래쪽 padding을 가짐.
+    // 그래서 같은 yPercent면 player가 위에 떠보임. yPercent를 키워 frame bottom을
+    // 그라운드 라인 아래로 보내면 시각적 발이 그라운드와 일치.
+    // 둘 다 yPercent 90 (화면 밑에서 10% 위)에 발 정렬.
+    // player는 LPC frame 안 캐릭터가 위쪽~중간에 그려져 있으므로 anchorY=0.85
+    // (frame bottom의 15% 위가 시각적 발). monster는 mushroom이 이미지를 꽉 채워 anchorY=1.0.
+    this.player = new PixiCharacter(
+      30,
+      90,
+      false,
+      { moveForwardTarget: { xPercent: 65, yPercent: 90 } },
+      0.8
+    );
     this.player.setSceneSize(width, height);
 
-    this.monster = new PixiCharacter(72, 75, true);
+    this.monster = new PixiCharacter(72, 90, true, {}, 1.2);
     this.monster.setSceneSize(width, height);
 
-    this.app.stage.addChild(this.player.container);
+    // monster 먼저, player 나중에 addChild → 겹칠 때 player가 위에 그려짐
     this.app.stage.addChild(this.monster.container);
+    this.app.stage.addChild(this.player.container);
 
     const initialMonster = getMonsterByKillCount(useQuestStore.getState().killCount);
 
@@ -142,8 +157,22 @@ export class PixiBattleScene {
 
     const renderer = this.app.renderer;
 
+    // 시트 매핑 (8행 × 8열, 행 단위 동작):
+    //   1행 [0~7]   점프
+    //   2행 [8~15]  사다리
+    //   3행 [16~23] 오른쪽 때리기  ← 공격 (캐릭터가 오른쪽 몬스터를 침)
+    //   4행 [24~31] 왼쪽 때리기
+    //   5행 [32~39] 앞으로 전진
+    //   6행 [40~47] 뒤로
+    //   7행 [48~55] 오른쪽 걷기/뛰기 ← walk forward (몬스터 쪽으로) + idle 첫 프레임을 오른쪽 보는 자세로 사용
+    //   8행 [56~63] 왼쪽 걷기/뛰기   ← walk back (홈 복귀)
     this.player.setIdleLayers(renderer, idleLayers, 48);
-    this.player.setAttackLayers(attackLayers, [0, 1, 2, 3, 4, 5, 6, 7]);
+    this.player.setAttackLayers(attackLayers, [16, 17, 18, 19, 20, 21, 22, 23]);
+    this.player.setWalkLayers(
+      idleLayers,
+      [48, 49, 50, 51, 52, 53, 54, 55],
+      [56, 57, 58, 59, 60, 61, 62, 63]
+    );
     this.monster.setMonsterFrames(monsterTextures, initialMonster.scale ?? 1.0);
   }
 
