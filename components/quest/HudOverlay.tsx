@@ -90,7 +90,7 @@ const HudOverlay = ({ mapName, monsterName }: HudOverlayProps) => {
             backgroundRepeat: "no-repeat",
             backgroundPosition: "center",
             width: "120px",
-            height: "42px",
+            height: "30px",
             paddingTop: "4px",
           }}
         >

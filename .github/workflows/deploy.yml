@@ -42,7 +42,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ggoldJeongg/todo-hunter-cron
-          ref: main
+          ref: develop
           path: todo-hunter-cron
 
       - name: Verify ending codes are in sync with cron repo
