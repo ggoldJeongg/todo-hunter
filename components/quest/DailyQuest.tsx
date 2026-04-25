@@ -39,8 +39,32 @@ const DailyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hideA
             .map(({ id, name, tagged, completed }) => (
               <div
                 key={id}
-                className={`flex items-center gap-3 is-rounded p-2.5 ${completed ? "opacity-50 bg-gray-100" : "bg-white"}`}
+                className={`relative flex items-center gap-3 is-rounded p-2.5 ${completed ? "opacity-60 bg-gray-100" : "bg-white"}`}
               >
+                {/* 완료 시 DEFEATED 띠 (카드 가운데 가로로, 살짝 회전) */}
+                {completed && (
+                  <div
+                    className="absolute pointer-events-none select-none z-10 text-center"
+                    style={{
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%) rotate(-4deg)",
+                      width: "55%",
+                      background: "#86a48b",
+                      color: "#ffffff",
+                      fontFamily: "Galmuri11Bold, monospace",
+                      fontSize: "13px",
+                      letterSpacing: "5px",
+                      padding: "2px 0",
+                      borderTop: "2px solid rgba(255,255,255,0.5)",
+                      borderBottom: "2px solid rgba(255,255,255,0.5)",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+                      textShadow: "1px 1px 0 rgba(0,0,0,0.3)",
+                    }}
+                  >
+                    DEFEATED
+                  </div>
+                )}
                 <button
                   className="shrink-0 cursor-pointer"
                   disabled={completed}
