@@ -3,6 +3,7 @@
 import Status from "@/app/play/character/_components/status";
 import "@/app/play/character/_components/character.css";
 import Character from "./_components/character";
+import TitleLoot from "./_components/TitleLoot";
 import { useUserStore } from "@/utils/stores/userStore";
 import { Button } from "@/components/common";
 import { useRouter, usePathname } from "next/navigation";
@@ -122,12 +123,15 @@ export default function CharacterPage() {
                     <p className="progress-card-msg">{getProgressMessage(progress)}</p>
                 </div>
 
-                {/* ===== 캐릭터 스프라이트 (풀밭 위) ===== */}
+                {/* ===== 캐릭터 스프라이트 (풀밭 위) + 전리품 ===== */}
                 <div className="char-sprite-area">
                     <Suspense>
                         <Character />
                     </Suspense>
                 </div>
+                <Suspense>
+                    <TitleLoot />
+                </Suspense>
 
                 {/* 하단 여백 */}
                 <div className="pb-24" />
