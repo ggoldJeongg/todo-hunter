@@ -6,7 +6,4 @@ export interface ICharacterRepository {
     addEndingCount: (id: number) => Promise<number>;
     create: (userId: number, endingState: number) => Promise<Character>;
     updateCharacterStats: (id: number, data: { level?: number; exp?: number; willpower?: number; maxWillpower?: number }) => Promise<Character>;
-    resetAllWillpower: () => Promise<void>;
-    updateForSunday: () => Promise<void>;
-    updateForMonday: () => Promise<void>;
 }

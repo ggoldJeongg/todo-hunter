@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useUserStore } from "@/utils/stores/userStore";
 import { useQuestStore } from "@/utils/stores/questStore";
 import { useSquareStore } from "@/utils/stores/squareStore";
+import { FEATURES } from "@/constants/features";
 import { NPC_USERS, type SquareUser } from "./_components/NpcData";
 import SquareAvatar from "./_components/SquareAvatar";
 import FocusTimer from "./_components/FocusTimer";
@@ -24,7 +26,21 @@ const NPC_POSITIONS = [
 
 const MOVE_SPEED = 25; // %/초
 
+// 피처 플래그 OFF 시 직접 URL 접근 방어 — 캐릭터 페이지로 리다이렉트
+function PlazaDisabledRedirect() {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace("/play/character");
+  }, [router]);
+  return null;
+}
+
 export default function SquarePage() {
+  if (!FEATURES.PLAZA) return <PlazaDisabledRedirect />;
+  return <SquarePageContent />;
+}
+
+function SquarePageContent() {
   const { nickname, level, fetchUser } = useUserStore();
   const { fetchQuests } = useQuestStore();
   const {

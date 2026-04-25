@@ -35,6 +35,26 @@ export class PriUserTitleRepository implements IUserTitleRepository {
     });
   }
 
+  async findAllByCharacterIdNoPaging(characterId: number): Promise<UserTitle[]> {
+    return await this.prisma.userTitle.findMany({
+      where: { characterId },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  async findSelectedByCharacterId(characterId: number): Promise<UserTitle | null> {
+    return await this.prisma.userTitle.findFirst({
+      where: { characterId, isSelected: true },
+    });
+  }
+
+  async unselectAllByCharacterId(characterId: number): Promise<void> {
+    await this.prisma.userTitle.updateMany({
+      where: { characterId, isSelected: true },
+      data: { isSelected: false },
+    });
+  }
+
   // 모든 정보를 읽어오는 메서드
   async findOneByCharacterIdAndTitleId(characterId: number, titleId: number): Promise<UserTitle | null> {
     return await this.prisma.userTitle.findUnique({

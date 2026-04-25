@@ -1,4 +1,5 @@
 // 타이틀 이미지
+// id 10-15 (FIN/LIV) 의 전용 이미지가 아직 없어 1-6 을 임시로 재사용한다.
 export const TITLE_IMAGES: Record<number, string> = {
     1: "/titles/title_01.png",
     2: "/titles/title_02.png",
@@ -9,4 +10,12 @@ export const TITLE_IMAGES: Record<number, string> = {
     7: "/titles/title_07.png",
     8: "/titles/title_08.png",
     9: "/titles/title_09.png",
-    };
+    10: "/titles/title_01.png",
+    11: "/titles/title_02.png",
+    12: "/titles/title_03.png",
+    13: "/titles/title_04.png",
+    14: "/titles/title_05.png",
+    15: "/titles/title_06.png",
+};
+
+export const TITLE_FALLBACK_IMAGE = "/titles/title_df.png";

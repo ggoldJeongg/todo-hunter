@@ -38,6 +38,19 @@ jobs:
       - name: Check code style
         run: npm run lint
 
+      - name: Checkout cron repo for ending sync check
+        uses: actions/checkout@v4
+        with:
+          repository: ggoldJeongg/todo-hunter-cron
+          ref: main
+          path: todo-hunter-cron
+
+      - name: Verify ending codes are in sync with cron repo
+        working-directory: todo-hunter-cron
+        env:
+          MAIN_DATA_FILE: ${{ github.workspace }}/constants/ending.ts
+        run: node scripts/check-ending-sync.mjs
+
       - name: Check for npm audit vulnerabilities
         run: npm run audit
         continue-on-error: true
@@ -88,6 +101,7 @@ jobs:
           NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
           SENTRY_ORG=${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT=${{ secrets.SENTRY_PROJECT }}
+          SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
 
           # 앱 기본 URL (서버사이드에서 쓸 경우)
           DEFAULT_API_URL=${{ secrets.DEFAULT_API_URL }}

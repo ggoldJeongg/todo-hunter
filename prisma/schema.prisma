@@ -69,6 +69,8 @@ model Quest {
   updatedAt   DateTime  @default(now()) @map("updated_at")
   // null: 무기한 반복, 날짜 지정: 해당 날짜에 만료
   expiredAt   DateTime? @map("expired_at")
+  // 주간 퀘스트의 반복 요일 (예: ["월", "수", "금"]). 일간 퀘스트는 빈 배열.
+  days        String[]  @default([])
 
   successDays SuccessDay[]
 }

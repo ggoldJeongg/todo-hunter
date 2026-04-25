@@ -1,6 +1,10 @@
 "use client";
 
+import { FEATURES } from "@/constants/features";
+
 export default function ChatArea() {
+  if (!FEATURES.CHAT) return null;
+
   return (
     <div className="bg-black/50 backdrop-blur-sm rounded-xl p-3 flex flex-col h-[160px]">
       <div className="flex items-center justify-between mb-2">

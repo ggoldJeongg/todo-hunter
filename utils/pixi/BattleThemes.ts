@@ -1,6 +1,6 @@
-import { Container, Graphics } from "pixi.js";
+import { Container, Graphics, Sprite, Assets, type Texture } from "pixi.js";
 
-export type BattleThemeId = "night" | "forest" | "dungeon" | "volcano";
+export type BattleThemeId = "night" | "forest" | "dungeon" | "volcano" | "field";
 
 export interface BattleTheme {
   id: BattleThemeId;
@@ -332,6 +332,23 @@ function buildVolcano(width: number, height: number): Container {
   return bg;
 }
 
+// ─── 들판 (이미지 배경) ───
+
+function buildField(width: number, height: number): Container {
+  const bg = new Container();
+
+  // 비동기로 텍스처 로드 후 sprite 추가. 컨테이너가 destroy 되었으면 취소.
+  Assets.load<Texture>("/images/backgrounds/field_01.png").then((texture) => {
+    if (bg.destroyed) return;
+    const sprite = new Sprite(texture);
+    sprite.width = width;
+    sprite.height = height;
+    bg.addChild(sprite);
+  });
+
+  return bg;
+}
+
 // ─── 테마 레지스트리 ───
 
 export const BATTLE_THEMES: Record<BattleThemeId, BattleTheme> = {
@@ -358,5 +375,11 @@ export const BATTLE_THEMES: Record<BattleThemeId, BattleTheme> = {
     name: "화산",
     bgColor: 0x1a0a0a,
     buildBackground: buildVolcano,
+  },
+  field: {
+    id: "field",
+    name: "모험의 시작",
+    bgColor: 0x000000,
+    buildBackground: buildField,
   },
 };

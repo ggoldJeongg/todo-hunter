@@ -17,6 +17,9 @@ export class CreateQuestUseCase {
     // 종료일이 없으면 반복 설정
     const expiredAt = dto.expiredAt ?? null;
 
+    // days: 주간 퀘스트일 때만 의미 있음. 일간 퀘스트는 무시(빈 배열).
+    const days = dto.isWeekly ? dto.days ?? [] : [];
+
     // 퀘스트 생성
     const quest = await this.PriQuestRepository.create({
       characterId: dto.characterId,
@@ -25,6 +28,7 @@ export class CreateQuestUseCase {
       isWeekly: dto.isWeekly,
       difficulty: dto.difficulty ?? "normal",
       expiredAt,
+      days,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -45,6 +49,7 @@ export class CreateQuestUseCase {
       expiredAt: quest.expiredAt ?? undefined,
       createdAt: quest.createdAt,
       completedDates: [], // 생성 시 완료된 날짜 없음
+      days: quest.days,
     };
   }
 }

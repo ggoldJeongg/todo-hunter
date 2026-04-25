@@ -10,7 +10,7 @@ import { Tag } from "@/components/common/Tag";
 import { format } from "date-fns";
 
 const QUEST_NAME_MAX = 40;
-const DAYS = ["월", "화", "수", "목", "금", "토"] as const;
+const DAYS = ["월", "화", "수", "목", "금", "토", "일"] as const;
 const STATUS_KEYS = Object.keys(STATUS) as (keyof typeof STATUS)[];
 
 const DIFFICULTY_CONFIG = {
@@ -99,7 +99,8 @@ const QuestForm = ({ title, submitLabel, onSubmit }: QuestFormProps) => {
               <button key={key} onClick={() => setTagged(key)} className="cursor-pointer">
                 <Tag
                   variant={key}
-                  className={`w-full justify-center py-2 text-xs transition-all ${
+                  size="lg"
+                  className={`w-full transition-all ${
                     tagged === key
                       ? "ring-2 ring-white scale-105"
                       : "opacity-60"
@@ -143,7 +144,7 @@ const QuestForm = ({ title, submitLabel, onSubmit }: QuestFormProps) => {
             </button>
           </div>
           <p className="text-[11px] text-gray-500 mt-1.5">
-            {isWeekly ? "특정 요일에 반복되는 퀘스트" : "특정 요일에 반복되는 할일"}
+            {isWeekly ? "특정 요일에 반복되는 퀘스트" : "오늘 한 번 하는 일회성 할일"}
           </p>
         </section>
 
@@ -153,11 +154,11 @@ const QuestForm = ({ title, submitLabel, onSubmit }: QuestFormProps) => {
             <h3 className="text-sm font-bold mb-3 flex items-center gap-1.5">
               <span className="text-green-400"></span> 반복 요일
             </h3>
-            <div className="grid grid-cols-6 gap-2">
+            <div className="grid grid-cols-7 gap-[1px]">
               {DAYS.map((day) => (
                 <button
                   key={day}
-                  className={`is-rounded py-2.5 text-sm font-bold cursor-pointer transition-all flex items-center justify-center ${
+                  className={`is-rounded py-2 text-sm font-bold cursor-pointer transition-all flex items-center justify-center ${
                     selectedDays.includes(day)
                       ? "bg-[#C84B3A] text-white ring-2 ring-white"
                       : "bg-gray-700 text-gray-400"
@@ -203,20 +204,22 @@ const QuestForm = ({ title, submitLabel, onSubmit }: QuestFormProps) => {
           </p>
         </section>
 
-        {/* 6. 시작일 */}
-        <section>
-          <h3 className="text-sm font-bold mb-3 flex items-center gap-1.5">
-            <span className="text-purple-400"></span> Q. 언제부터 하나요?
-          </h3>
-          <button
-            type="button"
-            onClick={() => setCalendarOpen(true)}
-            className="is-rounded-form w-full bg-gray-800 text-white px-4 py-3 text-sm text-left cursor-pointer flex items-center justify-between"
-          >
-            <span>{selectedDate || format(new Date(), "yyyy-MM-dd")}</span>
-            <span className="text-gray-400">&#128197;</span>
-          </button>
-        </section>
+        {/* 6. 시작일 (주간 퀘스트일 때만 노출 — 일간은 오늘 처리되는 일회성이라 의미 없음) */}
+        {isWeekly && (
+          <section>
+            <h3 className="text-sm font-bold mb-3 flex items-center gap-1.5">
+              <span className="text-purple-400"></span> Q. 언제부터 하나요?
+            </h3>
+            <button
+              type="button"
+              onClick={() => setCalendarOpen(true)}
+              className="is-rounded-form w-full bg-gray-800 text-white px-4 py-3 text-sm text-left cursor-pointer flex items-center justify-between"
+            >
+              <span>{selectedDate || format(new Date(), "yyyy-MM-dd")}</span>
+              <span className="text-gray-400">&#128197;</span>
+            </button>
+          </section>
+        )}
 
         {/* 캘린더 모달 */}
         {calendarOpen && (

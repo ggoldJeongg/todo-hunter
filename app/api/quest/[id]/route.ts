@@ -31,7 +31,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     const body = await req.json();
-    const { name, tagged, isWeekly, difficulty, expiredAt } = body;
+    const { name, tagged, isWeekly, difficulty, expiredAt, days } = body;
 
     const updated = await prisma.quest.update({
       where: { id: questId },
@@ -41,6 +41,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         ...(isWeekly !== undefined && { isWeekly }),
         ...(difficulty !== undefined && { difficulty }),
         ...(expiredAt !== undefined && { expiredAt: expiredAt ? new Date(expiredAt) : null }),
+        ...(Array.isArray(days) && { days }),
         updatedAt: new Date(),
       },
     });
@@ -86,6 +87,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     return NextResponse.json({ success: true, message: "퀘스트가 삭제되었습니다." }, { status: 200 });
   } catch (error) {
     console.error("퀘스트 삭제 중 오류 발생:", error);
-    return NextResponse.json({ success: false, error: "알 수 없는 오류 발생" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "알 수 없는 오류 발생";
+    return NextResponse.json({ success: false, error: message }, { status: 400 });
   }
 }

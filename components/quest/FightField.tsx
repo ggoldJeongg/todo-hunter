@@ -19,7 +19,7 @@ const FightField = ({ theme = "night" }: FightFieldProps) => {
     swapMonster: (killCount: number) => Promise<void>;
   } | null>(null);
 
-  const { killCount } = useQuestStore();
+  const { killCount, isAttacking } = useQuestStore();
 
   // killCount 변경 시 몬스터 교체
   useEffect(() => {
@@ -89,15 +89,27 @@ const FightField = ({ theme = "night" }: FightFieldProps) => {
           className="w-full h-full"
           style={{ imageRendering: "pixelated" }}
         />
+
+        {/* B: 비네트(가장자리 어둡게) — 캐릭터/몬스터에 시선 집중 */}
+        <div
+          className="absolute inset-0 pointer-events-none z-[5]"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.6) 100%)",
+          }}
+        />
+
         <HudOverlay
           mapName={BATTLE_THEMES[theme].name}
           monsterName={currentMonster.name}
         />
       </div>
 
-      {/* 집중선 프레임 오버레이 (최상단 레이어, 흰색 반전) */}
+      {/* A: 집중선 — 공격 순간에만 번쩍 표시 (평소엔 깨끗한 들판) */}
       <div
-        className="absolute inset-0 pointer-events-none z-10"
+        className={`absolute inset-0 pointer-events-none z-30 transition-opacity duration-100 ${
+          isAttacking ? "opacity-100" : "opacity-0"
+        }`}
         style={{
           backgroundImage: "url('/images/backgrounds/cartoon_style_bg.png')",
           backgroundSize: "130% 130%",

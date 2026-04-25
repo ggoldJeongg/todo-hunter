@@ -7,4 +7,5 @@ export interface CreateQuestDTO {
     isWeekly: boolean;   // 반복 여부
     difficulty?: string; // 난이도 (easy, normal, hard)
     expiredAt?: Date;    // 만료일
+    days?: string[];     // 주간 퀘스트의 반복 요일 (예: ["월", "수", "금"])
   }

@@ -18,7 +18,7 @@ export const MONSTERS: MonsterDef[] = [
     id: "mushroom",
     name: "Mushroom",
     hp: 30,
-    scale: 0.3,
+    scale: 0.5,
     frames: [
       "/images/characters/mushroom/0__0000_Layer-1.png",
       "/images/characters/mushroom/0__0001_Layer-2.png",
@@ -36,7 +36,7 @@ export const MONSTERS: MonsterDef[] = [
     id: "snake",
     name: "Snake",
     hp: 50,
-    scale: 3.5,
+    scale: 0.5,
     frames: [
       "/images/characters/snake/_0000_Layer-1.png",
       "/images/characters/snake/_0001_Layer-2.png",
@@ -48,7 +48,7 @@ export const MONSTERS: MonsterDef[] = [
     id: "flying-bird",
     name: "Flying Bird",
     hp: 70,
-    scale: 3.0,
+    scale: 0.5,
     frames: [
       "/images/characters/flying-bird/frame1.png",
       "/images/characters/flying-bird/frame2.png",
@@ -63,7 +63,7 @@ export const MONSTERS: MonsterDef[] = [
     id: "werewolf",
     name: "Werewolf",
     hp: 100,
-    scale: 1.0,
+    scale: 0.5,
     frames: [
       "/images/characters/werewolf/werewolf-idle1.png",
       "/images/characters/werewolf/werewolf-idle2.png",

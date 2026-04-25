@@ -121,11 +121,6 @@ export async function POST(req: NextRequest) {
       maxAge: parseInt((process.env.REFRESH_TOKEN_EXPIRES || "3600").replace("s", ""), 10),
     });
 
-    response.cookies.set("isBeginned", "true", {
-      path: "/",
-      maxAge: 31536000,
-    });
-
     // 사용 완료된 kakao_pending 쿠키 삭제
     response.cookies.delete("kakao_pending");
 

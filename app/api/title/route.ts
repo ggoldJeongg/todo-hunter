@@ -5,14 +5,11 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromCookie } from "@/utils/auth";
 
-export async function GET(req: NextRequest){
+export async function GET(req: NextRequest) {
     const { user } = await getUserFromCookie(req);
     if (!user || !user.id) {
         return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
     }
-
-    const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get("page") || "1");
 
     const characterRepository = new PriCharacterRepository(prisma);
     const character = await characterRepository.findByUserId(Number(user.id));
@@ -21,24 +18,21 @@ export async function GET(req: NextRequest){
     }
     const characterId = Number(character.id);
 
-    // 리포지토리 인스턴스 생성
     const userTitleRepository: IUserTitleRepository = new PriUserTitleRepository(prisma);
     const titleRepository: ITitleRepository = new PriTitleRepository(prisma);
     const statusRepository: IStatusRepository = new PriStatusRepository(prisma);
 
-    // UserTitleUsecase 인스턴스 생성
     const userTitleUsecase = new UserTitleUsecase(
         userTitleRepository,
         titleRepository,
-        statusRepository
+        statusRepository,
     );
 
     try {
-        // 사용자의 타이틀 목록 가져오기
-        const userTitles = await userTitleUsecase.getUserTitles(characterId, page);
-        return NextResponse.json(userTitles);
+        const dex = await userTitleUsecase.getTitleDex(characterId);
+        return NextResponse.json(dex);
     } catch (error) {
-        console.error("Error fetching user titles:", error);
-        return NextResponse.json({ error: "Failed to fetch user titles" }, { status: 500 });
+        console.error("Error fetching title dex:", error);
+        return NextResponse.json({ error: "Failed to fetch title dex" }, { status: 500 });
     }
 }

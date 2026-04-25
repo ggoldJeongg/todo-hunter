@@ -5,13 +5,13 @@ import { IVerificationRepository } from '@/domain/repositories/IVerificationRepo
 export class RdVerificationRepository implements IVerificationRepository {
 
     async saveVerificationCode(email: string, code: string, expiresIn: number = 300): Promise<void> {
-        await redisClient.set(`email:${email}`, code, "EX", expiresIn);
+        await redisClient.set(`email:${email}`, code, { ex: expiresIn });
     };
 
     async getVerificationCode(email: string): Promise<string | null> {
-        return await redisClient.get(`email:${email}`);
+        return await redisClient.get<string>(`email:${email}`);
     }
-    
+
     async deleteVerificationCode(email: string): Promise<void> {
         await redisClient.del(`email:${email}`);
     }

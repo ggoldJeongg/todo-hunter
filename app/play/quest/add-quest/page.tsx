@@ -8,7 +8,7 @@ import QuestForm from "@/components/quest/QuestForm";
 const AddQuestPage = () => {
   const router = useRouter();
   const { addQuest } = useQuestStore();
-  const { questName, tagged, selectedDate, isWeekly, difficulty, resetForm } = useQuestFormStore();
+  const { questName, tagged, selectedDate, isWeekly, difficulty, selectedDays, resetForm } = useQuestFormStore();
 
   const handleCreate = async () => {
     await addQuest({
@@ -17,6 +17,7 @@ const AddQuestPage = () => {
       isWeekly,
       difficulty,
       expiredAt: selectedDate || null,
+      days: isWeekly ? selectedDays : [],
       completed: false,
       characterId: 0,
     });

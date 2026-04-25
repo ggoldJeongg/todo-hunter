@@ -36,7 +36,6 @@ const Status = ({ str, int, emo, fin, liv }: Pick<CharacterDto, "str" | "int" | 
                             }}
                         />
                     </div>
-                    <span className="stat-value" style={{ color }}>{values[key]}</span>
                 </div>
             ))}
         </div>

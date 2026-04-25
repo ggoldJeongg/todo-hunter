@@ -1,14 +1,34 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { VerifyRefreshTokenUsecase } from "@/application/usecases/auth/VerifyRefreshTokenUsecase";
+import { RdAuthenticationRepository } from "@/infrastructure/repositories/RdAuthenticationRepository";
 
-export async function POST() {
+export async function POST(req: NextRequest) {
+    const refreshToken = req.cookies.get("refreshToken")?.value;
+
+    // 서버 측 Refresh Token 무효화 (best-effort)
+    if (refreshToken) {
+        try {
+            const verifyRefreshTokenUsecase = new VerifyRefreshTokenUsecase();
+            const payload = await verifyRefreshTokenUsecase.execute(refreshToken);
+
+            if (payload?.loginId) {
+                const authenticationRepository = new RdAuthenticationRepository();
+                await authenticationRepository.deleteRefreshToken(payload.loginId as string);
+            }
+        } catch (error) {
+            // Redis 삭제 실패해도 쿠키는 제거해 로그아웃 UX는 정상 처리
+            console.error("Redis refresh token 삭제 실패:", error);
+        }
+    }
+
     const response = NextResponse.json({ message: "Logged out" });
 
-    // 쿠키를 빈 값으로 설정하고 만료 날짜를 과거로 지정하여 삭제
+    // 쿠키 만료 처리로 클라이언트 측 토큰 제거
     response.cookies.set("accessToken", "", {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // 프로덕션 환경에서만 Secure 적용
-        path: "/", // 모든 경로에서 사용 가능
-        expires: new Date(0), // 만료 시간을 과거로 설정하여 쿠키 삭제
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
+        expires: new Date(0),
     });
 
     response.cookies.set("refreshToken", "", {

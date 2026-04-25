@@ -31,53 +31,163 @@
 .cozy-page {
     position: relative;
     width: 100%;
-    min-height: 100vh;
-    overflow-y: auto;
-    overflow-x: hidden;
+    height: 100vh;
+    overflow: hidden;
     background: #C8B88A;
     image-rendering: pixelated;
 }
 
 
 /* ============================================
-   Character Row (sprite + info side)
+   Parchment Panel (양피지 배경 카드)
    ============================================ */
-.char-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding: 8px 16px 8px;
-    margin-top: 48px;
-    width: 100%;
+.parchment-wrap {
+    position: relative;
+    width: 92%;
     max-width: 400px;
+    margin-top: calc(48px + 0.5rem);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
 }
 
+.parchment-panel {
+    position: relative;
+    width: 100%;
+    background-image: url('/images/backgrounds/pannel_parchment_01.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
+    /* padding은 찢어진 가장자리의 안전 영역 */
+    padding: 7% 8% 8% 10%;
+}
+
+.parchment-content {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* 레벨 배지 줄 - 말린 귀퉁이 피해 우측 정렬 */
+.parchment-level-row {
+    display: flex;
+    justify-content: flex-end;
+    padding-left: 18%;
+}
+
+/* 능력치 타이틀(좌) + 의지력/EXP(우) */
+.parchment-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+}
+
+.parchment-badge-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+/* 능력치 = 텍스트 + 언더바, 배지 아님 */
+.parchment-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #4A3F2F;
+    margin: 0;
+    padding: 0;
+}
+
+.parchment-divider {
+    width: 100%;
+    height: 2px;
+    background: #8A7D55;
+    margin: 2px 0 6px;
+    opacity: 0.6;
+}
+
+/* ===== Character Sprite (풀밭 위) ===== */
 .char-sprite-area {
-    flex-shrink: 0;
-    width: 150px;
-    height: 150px;
-    background: rgba(250, 244, 230, 0.6);
-    border: 3px solid #C4AA78;
-    border-radius: 50%;
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin-top: -8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
-    box-shadow: 0 3px 0 #B49A68;
+    overflow: visible;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.35));
 }
 
 .char-sprite-area canvas {
-    width: 130px !important;
-    height: 130px !important;
+    width: 200px !important;
+    height: 200px !important;
     image-rendering: pixelated;
 }
 
-.char-info-side {
+/* ===== 장착 칭호 표시 — 우측 하단 고정 ===== */
+.title-loot {
+    position: fixed;
+    right: 56px;
+    bottom: 110px; /* 하단 네비 높이 위 */
+    width: 64px;
+    height: 64px;
     display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.loot-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.4));
+    pointer-events: none;
+}
+
+.loot-equipped {
+    filter:
+        drop-shadow(0 0 6px rgba(255, 215, 100, 0.9))
+        drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+    animation: loot-equipped-pulse 2s ease-in-out infinite;
+}
+
+
+@keyframes loot-equipped-pulse {
+    0%, 100% {
+        filter:
+            drop-shadow(0 0 5px rgba(255, 215, 100, 0.7))
+            drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+    }
+    50% {
+        filter:
+            drop-shadow(0 0 10px rgba(255, 215, 100, 1))
+            drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+    }
+}
+
+.loot-overflow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 22px;
+    padding: 0 6px;
+    margin-left: 4px;
+    background: rgba(58, 42, 24, 0.85);
+    color: #ffd96b;
+    font-size: 11px;
+    font-weight: 800;
+    border: 2px solid #b8862c;
+    border-radius: 2px;
+    z-index: 50;
 }
 
 /* Shared badge base */
@@ -100,8 +210,17 @@
     background: #5B8C5A;
     color: #fff;
     font-weight: 800;
+    font-size: 13px;
+    padding: 6px 14px;
     border-image-source: url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(61,92,60)" /></svg>');
     box-shadow: 0 2px 0 #3D5C3C;
+}
+
+.wp-badge {
+    background: #F5D76E;
+    color: #6B4E1C;
+    border-image-source: url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(168,128,44)" /></svg>');
+    box-shadow: 0 2px 0 #B8923E;
 }
 
 .exp-badge {
@@ -152,6 +271,11 @@
 /* ============================================
    Progress Card (오늘의 모험)
    ============================================ */
+.progress-card {
+    padding: calc(16px - 0.5rem) calc(18px - 0.5rem);
+    margin-top: 24px;
+}
+
 .progress-card-header {
     display: flex;
     justify-content: space-between;
@@ -173,10 +297,10 @@
 
 .progress-card-track {
     width: 100%;
-    height: 16px;
+    height: 21px;
     background: #E8DFC8;
     overflow: hidden;
-    border: 3px solid #4A3F2F;
+    border: 4px solid #4A3F2F;
 }
 
 .progress-card-fill {
@@ -221,23 +345,24 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+    width: 100%;
 }
 
 .stat-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 /* Pixel square icon */
 .stat-icon-circle {
     flex-shrink: 0;
-    width: 30px;
-    height: 30px;
+    width: 26px;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid rgba(0, 0, 0, 0.15);
+    border: 2px solid rgba(74, 63, 47, 0.3);
     border-radius: 0;
     box-shadow:
         -1px 0 0 0 rgba(0,0,0,0.1),
@@ -247,9 +372,9 @@
 }
 
 .stat-label {
-    width: 48px;
+    width: 44px;
     flex-shrink: 0;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     color: #4A3F2F;
 }
@@ -257,11 +382,12 @@
 /* Pixel bar */
 .stat-bar-track {
     flex: 1;
-    height: 16px;
+    height: 19px;
     background: #E8DFC8;
     overflow: hidden;
     border: 3px solid #4A3F2F;
     min-width: 0;
+    border-radius: 6px;
 }
 
 .stat-bar-fill {
@@ -306,13 +432,13 @@
    ============================================ */
 @media (max-width: 360px) {
     .char-sprite-area {
-        width: 120px;
-        height: 120px;
+        width: 130px;
+        height: 130px;
     }
 
     .char-sprite-area canvas {
-        width: 100px !important;
-        height: 100px !important;
+        width: 120px !important;
+        height: 120px !important;
     }
 
     .info-badge {
@@ -324,17 +450,30 @@
         padding: 14px 14px;
     }
 
+    .parchment-content {
+        padding: 13% 10% 10% 10%;
+    }
+
+    .parchment-title {
+        font-size: 14px;
+    }
+
     .stat-label {
-        width: 40px;
-        font-size: 12px;
+        width: 38px;
+        font-size: 11px;
     }
 
     .stat-icon-circle {
-        width: 26px;
-        height: 26px;
+        width: 22px;
+        height: 22px;
     }
 
     .stat-bar-track {
-        height: 14px;
+        height: 17px;
+    }
+
+    .stat-value {
+        font-size: 12px;
+        width: 24px;
     }
 }

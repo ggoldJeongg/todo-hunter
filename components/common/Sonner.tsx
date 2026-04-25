@@ -14,8 +14,11 @@ const Toaster = ({ position = "top-center", ...props }: ToasterProps) => {
       position={position}
       className="toaster group fixed top-0 left-1/2 transform -translate-x-1/2 z-50"
       toastOptions={{
-        classNames: {          
-          toast: "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:text-xl group-[.toaster]:two-step-border flex items-center justify-center text-center",
+        classNames: {
+          // text-xl → text-base 로 상하 슬림.
+          // break-keep + whitespace-normal 로 단어(띄어쓰기) 단위 줄바꿈, 글자 단위 끊김 방지.
+          // py-2 로 상하 패딩 명시해 더 컴팩트하게.
+          toast: "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:text-base group-[.toaster]:two-step-border flex items-center justify-center text-center break-keep whitespace-normal py-2 max-w-[90vw]",
         },
       }}
       {...props}

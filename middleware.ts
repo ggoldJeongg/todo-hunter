@@ -1,57 +1,55 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getUserFromCookie } from "@/utils/auth";
 
+// 공개 경로 (인증 불필요) — Fail-safe default: 이 Set에 없으면 모두 인증 필수
+const PUBLIC_PATHS = new Set<string>([
+  "/",
+  "/signin",
+  "/signup",
+  "/findid",
+]);
+
+// 차단 경로 (사용 중단된 페이지)
+const BLOCKED_PATHS = new Set<string>([
+  "/beginning",
+]);
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // '/play' 및 '/signin' 경로를 미들웨어가 처리하지 않도록 제외
-  if (pathname === "/signin"
-    || pathname === "/signup"
-    || pathname === "/findid"
-    || pathname.startsWith("/play")) {
-    return NextResponse.next();
-  }
-
-  // '/beginning' 접근 차단 — 랜딩 페이지로 리다이렉트
-  if (pathname === "/beginning") {
+  // 차단 경로: 루트로 리다이렉트
+  if (BLOCKED_PATHS.has(pathname)) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  const { user } = await getUserFromCookie(request);
-  
-  // 쿠키로부터 accessToken과 refreshToken 값 저장
-  const accessToken = request.cookies.get("accessToken");
-  const refreshToken = request.cookies.get("refreshToken");
-  // 쿠키로부터 accessToken과 refreshToken 존재 여부 확인
-  const hasAccessToken = request.cookies.get("accessToken") ? true : false;
-  const hasRefreshToken = request.cookies.get("refreshToken") ? true : false;
+  // 토큰 검증 (+ 만료 시 자동 갱신)
+  const { user, response: refreshedResponse } = await getUserFromCookie(request);
 
-  const response = NextResponse.next();
-
-  if (user) {
-    // accessToken이 유효한 경우 /play/character로 리다이렉트
-    if (accessToken && pathname !== "/play/character") {
+  // 공개 경로 처리
+  if (PUBLIC_PATHS.has(pathname)) {
+    // 이미 로그인된 사용자는 게임으로 리다이렉트
+    if (user) {
       return NextResponse.redirect(new URL("/play/character", request.url));
     }
-    return NextResponse.next();
-  } else if (!accessToken && refreshToken) {
-    // refreshToken만 존재하고 accessToken이 없는 경우 루트로 리다이렉트
 
-    try {
-      // refreshToken 존재 여부만 헤더에 설정 (토큰 값 자체는 절대 노출하지 않음)
-      response.headers.set("X-Has-AccessToken", String(hasAccessToken));
-      response.headers.set("X-Has-RefreshToken", String(hasRefreshToken));
-    } catch {
-      return NextResponse.next();
-    }
-  } else {
+    // 미로그인 사용자: 토큰 상태를 헤더로 노출 (랜딩 페이지 useEffect에서 사용)
+    const hasAccessToken = !!request.cookies.get("accessToken");
+    const hasRefreshToken = !!request.cookies.get("refreshToken");
+    const response = refreshedResponse ?? NextResponse.next();
     response.headers.set("X-Has-AccessToken", String(hasAccessToken));
     response.headers.set("X-Has-RefreshToken", String(hasRefreshToken));
+    return response;
   }
 
-  return response;
+  // 보호 경로: 인증 필수
+  if (!user) {
+    return NextResponse.redirect(new URL("/signin", request.url));
+  }
+
+  // 인증된 사용자 통과 (토큰 갱신된 경우 새 쿠키 포함한 응답 반환)
+  return refreshedResponse ?? NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/((?!_next/|api/|endings/|titles/|fonts/|icons/|images/|js/|manifest.json).*)"], // _next, /api, /icons, /images 경로 제외, /mainfest.json 예외 처리
+  matcher: ["/((?!_next/|api/|endings/|titles/|fonts/|icons/|images/|js/|manifest.json).*)"],
 };

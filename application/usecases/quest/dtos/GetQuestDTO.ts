@@ -10,4 +10,5 @@ export interface GetQuestDTO {
     expiredAt?: Date;
     createdAt: Date;
     completedDates?: Date[];
+    days?: string[];
   }

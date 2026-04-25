@@ -1,97 +1,217 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import Image from "next/image";
-import RenderTitleItem from "./_components/renderTitleItem";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useUserStore } from "@/utils/stores/userStore";
+import type { RenderTitleDTO, TitleDexDTO } from "@/application/usecases/title/dtos/RenderTitleDTO";
+import EquippedCard from "./_components/EquippedCard";
+import FilterChips, { type FilterValue } from "./_components/FilterChips";
+import TitleCell from "./_components/TitleCell";
+import TitleDetailModal from "./_components/TitleDetailModal";
+import PageNav from "./_components/PageNav";
+import { isStatKey, type StatKey } from "./_components/statMeta";
 
-export default function TitlePage(){
-    const [titles, setTitles] = useState([]);
-    const [page, setPage] = useState(1);
+const PAGE_SIZE = 9;
 
-    const { id } = useUserStore();
+const EMPTY_BY_STAT: Record<StatKey, number> = { str: 0, int: 0, emo: 0, fin: 0, liv: 0 };
 
-    const getTitle = useCallback(async (page: number) => {
-        try {
-            const res = await fetch(`/api/title?page=${page}`, {
-                headers: {
-                    "user-id": id?.toString() || "",
-                }
-            });
-            const data = await res.json();
-            setTitles(data);
-        }
-        catch {
-            // 칭호 조회 실패
-        }
-    }, [id]);
+export default function TitlePage() {
+  const { str, int, emo, fin, liv, fetchUser } = useUserStore();
 
-    const gridItems = Array.from({ length: 9 }, (_, index) => titles[index] ||
-        { name: "잠금", titleId: "df" });
+  const userStats: Record<StatKey, number> = useMemo(() => ({
+    str: str ?? 0, int: int ?? 0, emo: emo ?? 0, fin: fin ?? 0, liv: liv ?? 0,
+  }), [str, int, emo, fin, liv]);
 
-    const hasPrevPage = page > 1;
-    const hasNextPage = titles.length > 0 && titles.length % 9 === 0;
+  const [titles, setTitles] = useState<RenderTitleDTO[]>([]);
+  const [equippedTitleId, setEquippedTitleId] = useState<number | null>(null);
+  const [filter, setFilter] = useState<FilterValue>("all");
+  const [page, setPage] = useState(0);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
-    const handlePreviousPage = () => {
-        if (hasPrevPage) setPage(page - 1);
-    };
+  const loadDex = useCallback(async () => {
+    try {
+      const res = await fetch("/api/title", { credentials: "include" });
+      if (!res.ok) return;
+      const data: TitleDexDTO = await res.json();
+      setTitles(data.titles);
+      setEquippedTitleId(data.equippedTitleId);
+    } catch {
+      // 칭호 도감 조회 실패 시 빈 상태 유지
+    }
+  }, []);
 
-    const handleNextPage = () => {
-        if (hasNextPage) setPage(page + 1);
-    };
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
 
-    useEffect(() => {
-        getTitle(page);
-    }, [getTitle, page]);
+  useEffect(() => {
+    loadDex();
+  }, [loadDex]);
 
-    return (
+  useEffect(() => {
+    setPage(0);
+  }, [filter]);
+
+  const filtered = useMemo(
+    () => (filter === "all" ? titles : titles.filter(t => t.reqStat === filter)),
+    [titles, filter],
+  );
+
+  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const visible = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+
+  const totalAll = titles.length;
+  const totalUnlocked = titles.filter(t => t.unlocked).length;
+  const percent = totalAll > 0 ? Math.round((totalUnlocked / totalAll) * 100) : 0;
+
+  const totalByStat = useMemo(() => {
+    const acc: Record<StatKey, number> = { ...EMPTY_BY_STAT };
+    for (const t of titles) {
+      if (isStatKey(t.reqStat)) acc[t.reqStat] += 1;
+    }
+    return acc;
+  }, [titles]);
+
+  const unlockedByStat = useMemo(() => {
+    const acc: Record<StatKey, number> = { ...EMPTY_BY_STAT };
+    for (const t of titles) {
+      if (t.unlocked && isStatKey(t.reqStat)) acc[t.reqStat] += 1;
+    }
+    return acc;
+  }, [titles]);
+
+  const equipped = equippedTitleId != null
+    ? titles.find(t => t.titleId === equippedTitleId) ?? null
+    : null;
+
+  const selectedTitle = selectedId != null
+    ? titles.find(t => t.titleId === selectedId) ?? null
+    : null;
+
+  const openDetail = (t: RenderTitleDTO) => {
+    setSelectedId(t.titleId);
+    setModalOpen(true);
+  };
+
+  const handleToggleEquip = async (id: number) => {
+    const next = equippedTitleId === id ? null : id;
+    // 낙관적 업데이트
+    const prevTitles = titles;
+    const prevEquipped = equippedTitleId;
+    setEquippedTitleId(next);
+    setTitles(ts => ts.map(t => ({ ...t, equipped: t.titleId === next })));
+    setModalOpen(false);
+
+    try {
+      const res = await fetch("/api/title/equip", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ titleId: next }),
+      });
+      if (!res.ok) throw new Error("equip failed");
+    } catch {
+      // 롤백
+      setTitles(prevTitles);
+      setEquippedTitleId(prevEquipped);
+    }
+  };
+
+  const handleFilter = (v: FilterValue) => {
+    if (v === "all" || isStatKey(v)) setFilter(v);
+  };
+
+  return (
+    <div
+      className="font-galmuri9 flex flex-col flex-1 min-h-screen relative overflow-hidden"
+      style={{
+        background: "url('/images/backgrounds/table-background1.png') center/cover, #2a1d10",
+        imageRendering: "pixelated",
+      }}
+    >
+      {/* 헤더 — 카운터만 우측 상단 */}
+      <div
+        className="flex items-center justify-end"
+        style={{
+          padding: "12px 16px 8px",
+          color: "#fff",
+          textShadow: "1px 1px 0 #000, 2px 2px 0 #000",
+        }}
+      >
         <div
-            className="flex-1 flex flex-col items-center justify-center min-h-screen"
-            style={{
-                backgroundImage: "url('/images/backgrounds/table-background1.png')",
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-            }}
+          className="font-galmuri11-bold flex items-center"
+          style={{
+            gap: 6,
+            background: "rgba(0,0,0,0.6)",
+            padding: "5px 10px",
+            border: "2px solid #b8862c",
+          }}
         >
-            {/* 책 배경 */}
-            <div className="relative w-full mx-auto" style={{ height: "calc(100vh - 90px)" }}>
-                <Image
-                    src="/images/backgrounds/titlebook-backround.png"
-                    alt="칭호 도감 책"
-                    fill
-                    className="object-contain"
-                    unoptimized
-                    priority
-                />
-
-                {/* 책 위에 콘텐츠 오버레이 */}
-                <div className="absolute top-[2%] bottom-[12%] left-[20%] right-[12%] flex flex-col">
-                    {/* 칭호 그리드 */}
-                    <div className="flex-1 grid grid-cols-3 gap-6 content-center px-1">
-                        {gridItems.map((title, index) => (
-                            <RenderTitleItem key={index} title={title} index={index} />
-                        ))}
-                    </div>
-
-                    {/* 이전/다음 버튼 */}
-                    <div className="flex justify-between items-center pb-11">
-                        <button
-                            className={`text-sm font-galmuri11-bold cursor-pointer ${hasPrevPage ? "text-gray-800" : "text-gray-400"}`}
-                            onClick={handlePreviousPage}
-                            disabled={!hasPrevPage}
-                        >
-                            ≪ 이전
-                        </button>
-                        <button
-                            className={`text-sm font-galmuri11-bold cursor-pointer ${hasNextPage ? "text-gray-800" : "text-gray-400"}`}
-                            onClick={handleNextPage}
-                            disabled={!hasNextPage}
-                        >
-                            다음 ≫
-                        </button>
-                    </div>
-                </div>
-            </div>
+          <span style={{ color: "#ffd96b", fontSize: 13 }}>{totalUnlocked}</span>
+          <span style={{ fontSize: 10, opacity: 0.7 }}>/ {totalAll}</span>
+          <span style={{ fontSize: 9, color: "#ffd96b", marginLeft: 2 }}>{percent}%</span>
         </div>
-    );
+      </div>
+
+      {/* 장착 슬롯 */}
+      <EquippedCard
+        equipped={equipped}
+        onClick={equipped ? () => openDetail(equipped) : undefined}
+      />
+
+      {/* 필터 칩 */}
+      <FilterChips
+        value={filter}
+        onChange={handleFilter}
+        totalAll={totalAll}
+        totalByStat={totalByStat}
+        unlockedByStat={unlockedByStat}
+      />
+
+      {/* 두루마리 그리드 */}
+      <div
+        className="flex flex-col relative flex-1"
+        style={{
+          margin: "0 10px 90px",
+          background: "url('/images/backgrounds/title-scroll.png') center/100% 100% no-repeat",
+          padding: "56px 70px 61px 76px",
+        }}
+      >
+        {/* 두루마리 안쪽 상단 타이틀 */}
+        <div
+          className="font-galmuri11-bold text-center"
+          style={{ fontSize: 17, color: "#3a2a18", marginTop: 20, marginBottom: 8 }}
+        >
+          칭호 도감
+        </div>
+
+        <div
+          className="flex-1 grid"
+          style={{ gridTemplateColumns: "repeat(3, 1fr)", gap: 6, alignContent: "start" }}
+        >
+          {Array.from({ length: PAGE_SIZE }).map((_, i) => {
+            const t = visible[i];
+            if (!t) return <div key={`empty-${i}`} />;
+            return (
+              <TitleCell
+                key={t.titleId}
+                title={t}
+                onClick={() => openDetail(t)}
+              />
+            );
+          })}
+        </div>
+
+        <PageNav page={page} pages={pages} onChange={setPage} />
+      </div>
+
+      <TitleDetailModal
+        title={selectedTitle}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        userStats={userStats}
+        onToggleEquip={handleToggleEquip}
+      />
+    </div>
+  );
 }

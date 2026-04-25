@@ -118,12 +118,6 @@ export async function GET(req: NextRequest) {
       maxAge: parseInt((process.env.REFRESH_TOKEN_EXPIRES || "3600").replace("s", ""), 10),
     });
 
-    // 온보딩 스킵 (소셜 로그인은 바로 진입)
-    response.cookies.set("isBeginned", "true", {
-      path: "/",
-      maxAge: 31536000,
-    });
-
     deleteCsrfCookie(response);
 
     return response;

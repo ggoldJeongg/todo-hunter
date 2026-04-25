@@ -3,6 +3,7 @@
 import Status from "@/app/play/character/_components/status";
 import "@/app/play/character/_components/character.css";
 import Character from "./_components/character";
+import TitleLoot from "./_components/TitleLoot";
 import { useUserStore } from "@/utils/stores/userStore";
 import { Button } from "@/components/common";
 import { useRouter, usePathname } from "next/navigation";
@@ -49,7 +50,7 @@ export default function CharacterPage() {
         <div className="cozy-page">
             {/* 배경 */}
             <Image
-                src="/images/backgrounds/Character-Page-Bg.png"
+                src="/images/backgrounds/bg_01.png"
                 alt="배경"
                 fill
                 loading="eager"
@@ -57,7 +58,7 @@ export default function CharacterPage() {
                 unoptimized
             />
 
-            <div className="relative z-10 flex flex-col items-center w-full">
+            <div className="relative flex flex-col items-center w-full">
                 {/* 로그아웃 */}
                 <div className="w-full flex justify-end px-4 pt-3 absolute top-0 right-0 z-20">
                     <Button size={"S"} state={"error"} onClick={handleLogout}>
@@ -65,30 +66,49 @@ export default function CharacterPage() {
                     </Button>
                 </div>
 
-                {/* ===== 캐릭터 + 오른쪽 정보 ===== */}
-                <div className="char-row">
-                    <div className="char-sprite-area">
-                        <Suspense>
-                            <Character />
-                        </Suspense>
-                    </div>
-                    <div className="char-info-side">
-                        <div className="info-badge level-badge">
-                            LV.{currentLevel} {nickname ?? "모험가"}
-                        </div>
-                        <div className="info-badge wp-badge">
-                            ⚡ 의지력 {willpower ?? 100}/{maxWillpower ?? 100}
-                        </div>
-                        <div className="info-badge exp-badge">
-                            <span className="exp-badge-label">✨ EXP {currentExp}/{expToNext}</span>
-                            <div className="exp-bar-mini-track">
-                                <div className="exp-bar-mini-fill" style={{ width: `${expPercent}%` }} />
+                {/* ===== 양피지 패널 영역 ===== */}
+                <div className="parchment-wrap">
+                    {/* 양피지 패널 */}
+                    <div className="parchment-panel">
+                        <div className="parchment-content">
+                            {/* 상단 row: 레벨 배지 (우측정렬) */}
+                            <div className="parchment-level-row">
+                                <div className="info-badge level-badge">
+                                    Lv.{currentLevel} {nickname ?? "모험가"}
+                                </div>
                             </div>
+
+                            {/* 중간 row: 능력치 제목(좌) + 의지력/EXP(우) */}
+                            <div className="parchment-header-row">
+                                <h2 className="parchment-title">능력치</h2>
+                                <div className="parchment-badge-row">
+                                    <div className="info-badge wp-badge">
+                                        의지력 {willpower ?? 100}/{maxWillpower ?? 100}
+                                    </div>
+                                    <div className="info-badge exp-badge">
+                                        EXP {currentExp}/{expToNext}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 언더바 */}
+                            <div className="parchment-divider" />
+
+                            {/* 능력치 리스트 */}
+                            <Suspense>
+                                <Status
+                                    str={str ?? 0}
+                                    int={int ?? 0}
+                                    emo={emo ?? 0}
+                                    fin={fin ?? 0}
+                                    liv={liv ?? 0}
+                                />
+                            </Suspense>
                         </div>
                     </div>
                 </div>
 
-                {/* ===== 오늘의 진척도 카드 ===== */}
+                {/* ===== 오늘의 진척도 ===== */}
                 <div className="cozy-card progress-card">
                     <div className="progress-card-header">
                         <span className="progress-card-title">오늘의 모험</span>
@@ -103,19 +123,15 @@ export default function CharacterPage() {
                     <p className="progress-card-msg">{getProgressMessage(progress)}</p>
                 </div>
 
-                {/* ===== 능력치 카드 ===== */}
-                <div className="cozy-card status-card">
-                    <h2 className="status-card-title">능력치</h2>
+                {/* ===== 캐릭터 스프라이트 (풀밭 위) + 전리품 ===== */}
+                <div className="char-sprite-area">
                     <Suspense>
-                        <Status
-                            str={str ?? 0}
-                            int={int ?? 0}
-                            emo={emo ?? 0}
-                            fin={fin ?? 0}
-                            liv={liv ?? 0}
-                        />
+                        <Character />
                     </Suspense>
                 </div>
+                <Suspense>
+                    <TitleLoot />
+                </Suspense>
 
                 {/* 하단 여백 */}
                 <div className="pb-24" />

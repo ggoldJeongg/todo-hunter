@@ -13,6 +13,8 @@ interface Quest {
   difficulty?: string;
   completed: boolean;
   characterId: number;
+  days?: string[]; // 주간 퀘스트의 반복 요일 (예: ["월", "수", "금"])
+  streak?: number; // 주간 퀘스트의 연속 성공 주 수 (days 모두 만족한 주 카운트)
 }
 
 interface QuestStore {
@@ -55,7 +57,7 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
     if (value && !prev) {
       const newKillCount = get().killCount + 1;
       set({ isDefeated: true, killCount: newKillCount });
-      toast.success(`몬스터를 처치했습니다! 🎉`);
+      toast.success(`몬스터를 처치했습니다!`);
 
       // CLEAR 연출 후 자동으로 다음 몬스터 젠 (2초 뒤)
       setTimeout(() => {
@@ -74,7 +76,7 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
       monsterHp: next.hp,
       monsterMaxHp: next.hp,
     });
-    toast(`${next.name}이(가) 나타났다! 🐺`);
+    toast(`${next.name}이(가) 나타났다!`);
   },
 
   fetchQuests: async () => {
@@ -201,13 +203,17 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
         credentials: "include",
       });
 
-      if (!response.ok) throw new Error("삭제 실패");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "삭제 실패");
+      }
 
       set((state) => ({
         quests: state.quests.filter((q) => q.id !== questId),
       }));
     } catch (err) {
       console.error("deleteQuest 오류:", err);
+      toast.error(err instanceof Error ? err.message : "퀘스트 삭제 중 오류 발생");
     }
   },
 

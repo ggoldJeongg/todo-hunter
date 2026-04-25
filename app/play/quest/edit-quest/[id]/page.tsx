@@ -11,8 +11,8 @@ const EditQuestPage = () => {
   const { id } = useParams<{ id: string }>();
   const { quests, fetchQuests, updateQuest } = useQuestStore();
   const {
-    questName, tagged, selectedDate, isWeekly, difficulty,
-    setQuestName, setTagged, setSelectedDate, setIsWeekly, setDifficulty,
+    questName, tagged, selectedDate, isWeekly, difficulty, selectedDays,
+    setQuestName, setTagged, setSelectedDate, setIsWeekly, setDifficulty, setSelectedDays,
     resetForm,
   } = useQuestFormStore();
 
@@ -36,12 +36,13 @@ const EditQuestPage = () => {
     }
   }, [id, quests, loaded]);
 
-  const fillForm = (quest: { name: string; tagged: string; isWeekly: boolean; difficulty?: string; expiredAt?: string | null }) => {
+  const fillForm = (quest: { name: string; tagged: string; isWeekly: boolean; difficulty?: string; expiredAt?: string | null; days?: string[] }) => {
     setQuestName(quest.name);
     setTagged(quest.tagged as "STR" | "INT" | "EMO" | "FIN" | "LIV");
     setIsWeekly(quest.isWeekly);
     if (quest.difficulty) setDifficulty(quest.difficulty as "easy" | "normal" | "hard");
     if (quest.expiredAt) setSelectedDate(quest.expiredAt.split("T")[0]);
+    setSelectedDays(quest.days ?? []);
     setLoaded(true);
   };
 
@@ -52,6 +53,7 @@ const EditQuestPage = () => {
       isWeekly,
       difficulty,
       expiredAt: selectedDate || null,
+      days: isWeekly ? selectedDays : [],
     });
     resetForm();
     router.push("/play/quest");
