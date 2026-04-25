@@ -4,6 +4,7 @@ import { PriQuestRepository, PriStatusRepository } from '@/infrastructure/reposi
 import { prisma } from '@/lib/prisma';
 import { CreateQuestDTO } from '@/application/usecases/quest/dtos';
 import { getUserFromCookie } from '@/utils/auth';
+import { getTodayStart, getThisWeekStart } from '@/utils/date';
 
 // POST 요청 (새 퀘스트 생성)
 export async function POST(req: NextRequest) {
@@ -69,17 +70,29 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: "캐릭터를 찾을 수 없습니다." }, { status: 404 });
     }
 
+    // 데일리는 "오늘 0시 이후", 주간은 "이번 주 월요일 0시 이후" SuccessDay 만 보고 완료 여부 판정.
+    // 영구 히스토리는 보존하여 스트릭/통계 등 추후 활용 가능.
+    const todayStart = getTodayStart();
+    const weekStart = getThisWeekStart();
+
     const quests = await prisma.quest.findMany({
       where: { characterId: character.id },
-      include: { successDays: true },
+      include: {
+        successDays: {
+          // 가장 넓은 범위(weekStart) 로 한 번에 가져온 뒤 isWeekly 별로 필터
+          where: { createdAt: { gte: weekStart } },
+        },
+      },
       orderBy: { updatedAt: "desc" },
     });
 
-    // API에서 completed 필드 추가하여 반환
-    const formattedQuests = quests.map((quest) => ({
-      ...quest,
-      completed: quest.successDays.length > 0, // DB에서 직접 계산하여 반환
-    }));
+    const formattedQuests = quests.map((quest) => {
+      const since = quest.isWeekly ? weekStart : todayStart;
+      const completed = quest.successDays.some((s) => s.createdAt >= since);
+      const { successDays: _omit, ...rest } = quest;
+      void _omit;
+      return { ...rest, completed };
+    });
 
     return NextResponse.json({ success: true, quests: formattedQuests }, { status: 200 });
   } catch (error) {

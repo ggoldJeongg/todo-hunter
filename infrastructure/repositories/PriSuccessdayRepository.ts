@@ -18,6 +18,24 @@ export class PriSuccessDayRepository implements ISuccessDayRepository {
         });
       }
 
+    async findByQuestIdSince(questId: number, since: Date): Promise<SuccessDay[]> {
+      return this.prisma.successDay.findMany({
+        where: {
+          questId,
+          createdAt: { gte: since },
+        },
+      });
+    }
+
+    async findByQuestIdsSince(questIds: number[], since: Date): Promise<SuccessDay[]> {
+      return this.prisma.successDay.findMany({
+        where: {
+          questId: { in: questIds },
+          createdAt: { gte: since },
+        },
+      });
+    }
+
       async findCurrentQuests(currentQuestIds: number[], currentDay: Date): Promise<SuccessDay[] | null> {
     
         const successDays = await this.prisma.successDay.findMany({

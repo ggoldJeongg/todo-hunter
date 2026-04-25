@@ -1,6 +1,7 @@
 import { CompleteQuestError } from "@/application/usecases/quest/errors/CompleteQuestError";
 import { ICharacterRepository, IQuestRepository, IStatusRepository, ISuccessDayRepository } from "@/domain/repositories";
 import { EXP_PER_QUEST, WILLPOWER_COST, EXP_TO_LEVEL_UP, MAX_WILLPOWER, DIFFICULTY_MULTIPLIER } from "@/constants/game";
+import { getTodayStart, getThisWeekStart } from "@/utils/date";
 
 export class CompleteQuestUsecase {
   constructor(
@@ -31,8 +32,10 @@ export class CompleteQuestUsecase {
         throw new CompleteQuestError("WILLPOWER_DEPLETED", "의지력이 부족하여 퀘스트를 완료할 수 없습니다.");
     }
 
-    // 3. SuccessDay에 이미 완료된 퀘스트인지 확인 (중복 방지)
-    const existingSuccess = await this.PriSuccessDayRepository.findByQuestId(questId);
+    // 3. 현재 주기(데일리=오늘, 주간=이번 주) 내 중복 완료 방지.
+    //    SuccessDay 자체는 영구 보존하여 스트릭/통계 등 추후 활용 가능.
+    const since = quest.isWeekly ? getThisWeekStart() : getTodayStart();
+    const existingSuccess = await this.PriSuccessDayRepository.findByQuestIdSince(questId, since);
     if (existingSuccess.length > 0) {
         return;
     }
