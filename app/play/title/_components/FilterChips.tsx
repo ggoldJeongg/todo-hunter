@@ -49,8 +49,16 @@ export default function FilterChips({
 }: Props) {
   return (
     <div
-      className="flex justify-center"
-      style={{ gap: 4, margin: "0 12px 8px", overflowX: "auto", scrollbarWidth: "none" }}
+      className="flex"
+      style={{
+        gap: 4,
+        margin: "0 auto 8px",
+        maxWidth: "calc(100% - 24px)",
+        width: "fit-content",
+        overflowX: "auto",
+        scrollbarWidth: "none",
+        WebkitOverflowScrolling: "touch",
+      }}
     >
       <Chip active={value === "all"} color="#3a2a18" onClick={() => onChange("all")}>
         전체 {totalAll}
