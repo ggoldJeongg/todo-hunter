@@ -25,7 +25,8 @@ jobs:
       - name: Set test environment variables
         run: |
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
-          echo "REDIS_URL=${{ secrets.REDIS_URL }}" >> .env
+          echo "UPSTASH_REDIS_REST_URL=${{ secrets.UPSTASH_REDIS_REST_URL }}" >> .env
+          echo "UPSTASH_REDIS_REST_TOKEN=${{ secrets.UPSTASH_REDIS_REST_TOKEN }}" >> .env
           echo "NODE_ENV=test" >> .env
           echo "NEXT_PUBLIC_GA_ID=${{ secrets.NEXT_PUBLIC_GA_ID }}" >> .env
 
@@ -75,7 +76,8 @@ jobs:
           cat > .env <<EOF
           # DB / Cache
           DATABASE_URL=${{ secrets.DATABASE_URL }}
-          REDIS_URL=${{ secrets.REDIS_URL }}
+          UPSTASH_REDIS_REST_URL=${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN=${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
 
           # JWT
           ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}
