@@ -60,7 +60,7 @@ const DailyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hideA
                     className="shrink-0 cursor-pointer"
                     onClick={() => router.push(`/play/quest/edit-quest/${id}`)}
                   >
-                    <Image src="/icons/pencil.png" width={20} height={20} alt="수정" />
+                    <Image src="/icons/Pencil.png" width={20} height={20} alt="수정" />
                   </button>
                 )}
                 {!completed && (
