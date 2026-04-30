@@ -1,6 +1,6 @@
 import { CompleteQuestError } from "@/application/usecases/quest/errors/CompleteQuestError";
 import { ICharacterRepository, IQuestRepository, IStatusRepository, ISuccessDayRepository } from "@/domain/repositories";
-import { EXP_PER_QUEST, WILLPOWER_COST, EXP_TO_LEVEL_UP, MAX_WILLPOWER, DIFFICULTY_MULTIPLIER } from "@/constants/game";
+import { EXP_PER_QUEST, WILLPOWER_COST, EXP_TO_LEVEL_UP, MAX_WILLPOWER, DIFFICULTY_MULTIPLIER, getStatGain } from "@/constants/game";
 import { getTodayStart, getThisWeekStart, getNextDayStart } from "@/utils/date";
 
 export class CompleteQuestUsecase {
@@ -55,24 +55,25 @@ export class CompleteQuestUsecase {
         throw new CompleteQuestError("STATUS_NOT_FOUND", "캐릭터 상태 정보를 찾을 수 없습니다.");
     }
 
-    // 5. 퀘스트의 태그 값을 기반으로 상태 업데이트
+    // 5. 퀘스트의 태그 값을 기반으로 상태 업데이트 (난이도별 증가량)
     const { tagged } = quest;
+    const statGain = getStatGain(quest.difficulty);
 
     switch (tagged) {
         case "STR":
-            characterStatus.str += 1;
+            characterStatus.str += statGain;
             break;
         case "INT":
-            characterStatus.int += 1;
+            characterStatus.int += statGain;
             break;
         case "EMO":
-            characterStatus.emo += 1;
+            characterStatus.emo += statGain;
             break;
         case "FIN":
-            characterStatus.fin += 1;
+            characterStatus.fin += statGain;
             break;
         case "LIV":
-            characterStatus.liv += 1;
+            characterStatus.liv += statGain;
             break;
         default:
             throw new CompleteQuestError("INVALID_TAG", "유효하지 않은 태그입니다.");
