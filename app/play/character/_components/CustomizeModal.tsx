@@ -21,16 +21,29 @@ import {
 } from "@/constants/appearance";
 import { toast } from "sonner";
 
-const PIXEL_BORDER_SOFT = `url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(168,152,104)" /></svg>')`;
+// ===== 픽셀 보더 (캐릭터 페이지와 동일 톤) =====
+const PIXEL_BORDER_DARK = `url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(74,63,47)" /></svg>')`;
 
-const pixelBorder = {
+const pixelPanel = {
   borderStyle: "solid" as const,
-  borderWidth: "2px",
+  borderWidth: "4px",
   borderImageSlice: 3,
-  borderImageWidth: 2,
-  borderImageSource: PIXEL_BORDER_SOFT,
+  borderImageWidth: 3,
+  borderImageSource: PIXEL_BORDER_DARK,
+  borderImageRepeat: "stretch" as const,
+  borderImageOutset: 2,
+  imageRendering: "pixelated" as const,
+};
+
+const pixelChip = {
+  borderStyle: "solid" as const,
+  borderWidth: "3px",
+  borderImageSlice: 3,
+  borderImageWidth: 3,
+  borderImageSource: PIXEL_BORDER_DARK,
   borderImageRepeat: "stretch" as const,
   borderImageOutset: 1,
+  imageRendering: "pixelated" as const,
 };
 
 const BASE_PATH = "/images/asprites/char_a_p1";
@@ -42,12 +55,11 @@ interface CustomizeModalProps {
 }
 
 // ==================== 미리보기 캔버스 ====================
-// 외부에서 outfitId/hairId/hatId 받아 즉시 합성 렌더 (저장 전 미리보기 용)
 function PreviewCanvas({
   outfitId,
   hairId,
   hatId,
-  size = 180,
+  size = 160,
 }: {
   outfitId: string;
   hairId: string;
@@ -77,7 +89,8 @@ function PreviewCanvas({
       if (cancelled) return;
       sheetsRef.current = sheets;
       ctx.clearRect(0, 0, size, size);
-      renderLayers(ctx, sheets, 0, size, size);
+      // 앞모습 idle 프레임 (row 4 col 0 = frame 32)
+      renderLayers(ctx, sheets, 32, size, size);
     });
 
     return () => {
@@ -95,8 +108,7 @@ function PreviewCanvas({
   );
 }
 
-// ==================== 옵션 썸네일 (작은 캔버스) ====================
-// 각 옵션에 해당하는 레이어만 합성한 미리보기
+// ==================== 옵션 썸네일 ====================
 function OptionThumb({
   category,
   optionId,
@@ -116,10 +128,6 @@ function OptionThumb({
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, size, size);
 
-    // 카테고리별로 보여줄 레이어 조합 결정
-    // - outfit: 몸 + 해당 옷 + 기본 머리 (사람 형태로 보이도록)
-    // - hair: 몸 + 기본 옷 + 해당 머리
-    // - hat: 몸 + 기본 옷 + 기본 머리 + 해당 모자 (없음 = 모자 미적용)
     const layers: LayerConfig[] = [{ src: BODY_SRC }];
 
     if (category === "outfit") {
@@ -139,7 +147,7 @@ function OptionThumb({
     loadLayers(layers).then((sheets) => {
       if (cancelled) return;
       ctx.clearRect(0, 0, size, size);
-      renderLayers(ctx, sheets, 0, size, size);
+      renderLayers(ctx, sheets, 32, size, size); // 앞모습
     });
 
     return () => {
@@ -164,7 +172,6 @@ export default function CustomizeModal({ open, onClose }: CustomizeModalProps) {
   const storeHat = useUserStore((s) => s.hatId);
   const updateAppearance = useUserStore((s) => s.updateAppearance);
 
-  // 모달 내부의 임시 선택 (저장 전 미리보기)
   const [tab, setTab] = useState<AppearanceCategory>("outfit");
   const [selectedOutfit, setSelectedOutfit] = useState<string>(
     storeOutfit ?? DEFAULT_OUTFIT_ID
@@ -177,7 +184,6 @@ export default function CustomizeModal({ open, onClose }: CustomizeModalProps) {
   );
   const [saving, setSaving] = useState(false);
 
-  // 모달이 열릴 때마다 store 값으로 초기화
   useEffect(() => {
     if (open) {
       setSelectedOutfit(storeOutfit ?? DEFAULT_OUTFIT_ID);
@@ -187,7 +193,6 @@ export default function CustomizeModal({ open, onClose }: CustomizeModalProps) {
     }
   }, [open, storeOutfit, storeHair, storeHat]);
 
-  // ESC 닫기
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -216,7 +221,7 @@ export default function CustomizeModal({ open, onClose }: CustomizeModalProps) {
         hairId: selectedHair,
         hatId: selectedHat,
       });
-      toast.success("외형을 변경했어요 ✨");
+      toast.success("외형을 변경했어요");
       onClose();
     } catch (err) {
       toast.error(
@@ -227,13 +232,12 @@ export default function CustomizeModal({ open, onClose }: CustomizeModalProps) {
     }
   };
 
-  const TABS: { id: AppearanceCategory; label: string; icon: string }[] = [
-    { id: "outfit", label: "옷", icon: "👕" },
-    { id: "hair", label: "머리", icon: "💇" },
-    { id: "hat", label: "모자", icon: "🎩" },
+  const TABS: { id: AppearanceCategory; label: string }[] = [
+    { id: "outfit", label: "옷" },
+    { id: "hair", label: "머리" },
+    { id: "hat", label: "모자" },
   ];
 
-  // 현재 탭에 해당하는 옵션 리스트
   const options =
     tab === "outfit" ? OUTFITS : tab === "hair" ? HAIRS : HATS;
   const selectedId =
@@ -252,25 +256,37 @@ export default function CustomizeModal({ open, onClose }: CustomizeModalProps) {
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      style={{ background: "rgba(0,0,0,0.65)", imageRendering: "pixelated" }}
+      style={{ background: "rgba(0,0,0,0.7)", imageRendering: "pixelated" }}
       onClick={() => !saving && onClose()}
     >
       <div
-        className="relative w-full max-w-[380px] p-4"
+        className="relative w-full max-w-[400px] p-5"
         style={{
-          background: "#FAF4E6",
-          boxShadow: "0 6px 0 #B49A68",
-          ...pixelBorder,
+          background: "linear-gradient(180deg, #FAF4E6 0%, #F2E9D0 100%)",
+          boxShadow: "0 6px 0 #B49A68, 0 10px 16px rgba(0,0,0,0.25)",
+          ...pixelPanel,
         }}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* 점선 골드 inner trim */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: "4px",
+            border: "2px dashed #C8A04E",
+            opacity: 0.5,
+            pointerEvents: "none",
+          }}
+        />
+
         {/* 헤더 */}
-        <div className="flex flex-col items-center gap-1 mb-3">
+        <div className="relative flex flex-col items-center gap-1 mb-3">
           <h2
-            className="text-base font-extrabold tracking-wide"
+            className="text-base font-extrabold tracking-wider"
             style={{ color: "#4A3F2F" }}
           >
-            👗 옷 갈아입기
+            ━━ 외형 변경 ━━
           </h2>
           <p
             className="text-[11px] font-semibold"
@@ -280,13 +296,13 @@ export default function CustomizeModal({ open, onClose }: CustomizeModalProps) {
           </p>
         </div>
 
-        {/* 미리보기 + 탭 영역 */}
+        {/* 미리보기 영역 */}
         <div
-          className="flex flex-col items-center p-3 mb-3"
+          className="relative flex flex-col items-center justify-center mb-3 p-3"
           style={{
-            background: "#F2E9D0",
-            boxShadow: "0 4px 0 #B49A68",
-            ...pixelBorder,
+            background: "linear-gradient(180deg, #BFE0EF 0%, #DCEDC8 65%, #98C56B 100%)",
+            ...pixelPanel,
+            boxShadow: "0 3px 0 #B49A68, inset 0 -4px 0 rgba(0,0,0,0.12)",
           }}
         >
           <PreviewCanvas
@@ -298,7 +314,7 @@ export default function CustomizeModal({ open, onClose }: CustomizeModalProps) {
         </div>
 
         {/* 탭 */}
-        <div className="flex gap-1 mb-2">
+        <div className="relative flex gap-2 mb-3">
           {TABS.map((t) => {
             const active = tab === t.id;
             return (
@@ -306,16 +322,17 @@ export default function CustomizeModal({ open, onClose }: CustomizeModalProps) {
                 key={t.id}
                 onClick={() => setTab(t.id)}
                 disabled={saving}
-                className="flex-1 py-2 text-xs font-extrabold flex items-center justify-center gap-1"
+                className="flex-1 py-2 text-xs font-extrabold tracking-wider"
                 style={{
                   color: active ? "#fff" : "#4A3F2F",
-                  background: active ? "#5B8C5A" : "#FAF4E6",
-                  boxShadow: `0 2px 0 ${active ? "#3D5C3C" : "#B49A68"}`,
-                  ...pixelBorder,
+                  background: active
+                    ? "linear-gradient(180deg, #6BA86A 0%, #4A8048 100%)"
+                    : "linear-gradient(180deg, #FAF4E6 0%, #F2E9D0 100%)",
+                  boxShadow: `0 3px 0 ${active ? "#2D4A2C" : "#B49A68"}`,
+                  ...pixelChip,
                 }}
               >
-                <span>{t.icon}</span>
-                <span>{t.label}</span>
+                {t.label}
               </button>
             );
           })}
@@ -323,37 +340,38 @@ export default function CustomizeModal({ open, onClose }: CustomizeModalProps) {
 
         {/* 옵션 그리드 */}
         <div
-          className="p-2 mb-3 overflow-y-auto"
+          className="relative p-2 mb-3 overflow-y-auto"
           style={{
-            background: "#F2E9D0",
-            boxShadow: "0 4px 0 #B49A68",
-            maxHeight: "240px",
-            ...pixelBorder,
+            background: "linear-gradient(180deg, #F2E9D0 0%, #E8DFC0 100%)",
+            boxShadow: "0 3px 0 #B49A68",
+            maxHeight: "220px",
+            ...pixelPanel,
           }}
         >
-          <div className="grid grid-cols-3 gap-1.5">
-            {/* 모자 탭에서만 "없음" 옵션 노출 */}
+          <div className="grid grid-cols-3 gap-2">
             {tab === "hat" && (
               <button
                 onClick={() => handleSelect(null)}
                 disabled={saving}
                 className="flex flex-col items-center gap-1 p-1.5"
                 style={{
-                  background: selectedHat === null ? "#4A3F2F" : "#FAF4E6",
+                  background: selectedHat === null
+                    ? "linear-gradient(180deg, #5D4A33 0%, #4A3F2F 100%)"
+                    : "linear-gradient(180deg, #FAF4E6 0%, #F2E9D0 100%)",
                   color: selectedHat === null ? "#fff" : "#4A3F2F",
-                  boxShadow: `0 2px 0 ${
+                  boxShadow: `0 3px 0 ${
                     selectedHat === null ? "#1F1408" : "#B49A68"
                   }`,
-                  ...pixelBorder,
+                  ...pixelChip,
                 }}
               >
                 <div
                   className="flex items-center justify-center"
                   style={{ width: 56, height: 56, fontSize: 24 }}
                 >
-                  🚫
+                  ✕
                 </div>
-                <span className="text-[10px] font-extrabold">모자 없음</span>
+                <span className="text-[10px] font-extrabold">없음</span>
               </button>
             )}
 
@@ -366,10 +384,12 @@ export default function CustomizeModal({ open, onClose }: CustomizeModalProps) {
                   disabled={saving}
                   className="flex flex-col items-center gap-1 p-1.5"
                   style={{
-                    background: active ? "#4A3F2F" : "#FAF4E6",
+                    background: active
+                      ? "linear-gradient(180deg, #5D4A33 0%, #4A3F2F 100%)"
+                      : "linear-gradient(180deg, #FAF4E6 0%, #F2E9D0 100%)",
                     color: active ? "#fff" : "#4A3F2F",
-                    boxShadow: `0 2px 0 ${active ? "#1F1408" : "#B49A68"}`,
-                    ...pixelBorder,
+                    boxShadow: `0 3px 0 ${active ? "#1F1408" : "#B49A68"}`,
+                    ...pixelChip,
                   }}
                 >
                   <OptionThumb
@@ -387,16 +407,16 @@ export default function CustomizeModal({ open, onClose }: CustomizeModalProps) {
         </div>
 
         {/* 액션 버튼 */}
-        <div className="flex gap-2">
+        <div className="relative flex gap-2">
           <button
             onClick={onClose}
             disabled={saving}
-            className="flex-1 py-2.5 text-xs font-extrabold disabled:opacity-50"
+            className="flex-1 py-3 text-xs font-extrabold tracking-wider disabled:opacity-50"
             style={{
               color: "#4A3F2F",
-              background: "#FAF4E6",
-              boxShadow: "0 3px 0 #B49A68",
-              ...pixelBorder,
+              background: "linear-gradient(180deg, #FAF4E6 0%, #F2E9D0 100%)",
+              boxShadow: "0 4px 0 #B49A68",
+              ...pixelChip,
             }}
           >
             취소
@@ -404,15 +424,17 @@ export default function CustomizeModal({ open, onClose }: CustomizeModalProps) {
           <button
             onClick={handleConfirm}
             disabled={saving || !isDirty}
-            className="flex-1 py-2.5 text-xs font-extrabold disabled:opacity-50"
+            className="flex-1 py-3 text-xs font-extrabold tracking-wider disabled:opacity-50"
             style={{
               color: "#fff",
-              background: isDirty ? "#5B8C5A" : "#B0A082",
-              boxShadow: `0 3px 0 ${isDirty ? "#3D5C3C" : "#8A7D6B"}`,
-              ...pixelBorder,
+              background: isDirty
+                ? "linear-gradient(180deg, #6BA86A 0%, #4A8048 100%)"
+                : "linear-gradient(180deg, #C0AC8C 0%, #A89570 100%)",
+              boxShadow: `0 4px 0 ${isDirty ? "#2D4A2C" : "#7E6E50"}`,
+              ...pixelChip,
             }}
           >
-            {saving ? "저장중..." : "✨ 확인"}
+            {saving ? "저장중..." : "확인"}
           </button>
         </div>
       </div>

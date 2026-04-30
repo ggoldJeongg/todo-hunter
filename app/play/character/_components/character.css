@@ -1,9 +1,9 @@
 /* ============================================
-   Cozy Pixel Game UI — Character Page
-   Warm palette + pixel-art borders
+   Character Page — Princess Maker / RPG Status
+   Pixel art parchment + dark top bar + sky/grass
    ============================================ */
 
-/* Pixel border mixin via SVG */
+/* ===== Pixel border 패턴 (재사용용) ===== */
 .pixel-border {
     border-style: solid;
     border-width: 4px;
@@ -14,7 +14,6 @@
     border-image-outset: 2;
 }
 
-/* Keep legacy class for Button component */
 .is-rounded-progress {
     border-style: solid;
     border-width: 4px;
@@ -27,325 +26,346 @@
 }
 
 
-/* ===== Page Base ===== */
+/* ============================================
+   Page — 하늘 → 산 → 풀밭 픽셀 배경
+   ============================================ */
 .cozy-page {
     position: relative;
     width: 100%;
     height: 100vh;
-    overflow: hidden;
-    background: #C8B88A;
+    height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background-image: url('/images/backgrounds/bg_01.png');
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+    background-color: #87C77B;
     image-rendering: pixelated;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
+    /* 스크롤바 숨김 */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+/* 하단 네비바(약 64px) 안 가리도록 명시 spacer */
+.bottom-nav-spacer {
+    height: 100px;
+    width: 100%;
+    flex-shrink: 0;
+}
+
+/* 스크롤바 숨김 — WebKit (Chrome/Safari) */
+.cozy-page::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
 }
 
 
 /* ============================================
-   Parchment Panel (양피지 배경 카드)
+   Top Status Bar — 다크 바 + 4 pills
    ============================================ */
-.parchment-wrap {
+.char-top-bar {
     position: relative;
-    width: 92%;
-    max-width: 400px;
-    margin-top: calc(48px + 0.5rem);
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-}
-
-.parchment-panel {
-    position: relative;
+    z-index: 5;
     width: 100%;
-    background-image: url('/images/backgrounds/pannel_parchment_01.png');
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    image-rendering: pixelated;
-    /* padding은 찢어진 가장자리의 안전 영역 */
-    padding: 7% 8% 8% 10%;
-}
-
-.parchment-content {
-    position: relative;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-/* 레벨 배지 줄 - 말린 귀퉁이 피해 우측 정렬 */
-.parchment-level-row {
-    display: flex;
-    justify-content: flex-end;
-    padding-left: 18%;
-}
-
-/* 능력치 타이틀(좌) + 의지력/EXP(우) */
-.parchment-header-row {
+    background: linear-gradient(180deg, #2A3F4F 0%, #1F2F3C 100%);
+    padding: 10px 14px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
     flex-wrap: wrap;
-    margin-top: 2px;
+    border-bottom: 4px solid #C8A04E;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.25);
 }
 
-.parchment-badge-row {
+.top-bar-group {
     display: flex;
-    gap: 6px;
+    align-items: center;
+    gap: 8px;
     flex-wrap: wrap;
-    justify-content: flex-end;
 }
 
-/* 능력치 = 텍스트 + 언더바, 배지 아님 */
-.parchment-title {
-    font-size: 15px;
-    font-weight: 800;
-    color: #4A3F2F;
-    margin: 0;
-    padding: 0;
-}
-
-.parchment-divider {
-    width: 100%;
-    height: 2px;
-    background: #8A7D55;
-    margin: 2px 0 6px;
-    opacity: 0.6;
-}
-
-/* ===== Character Sprite (풀밭 위) ===== */
-.char-sprite-area {
-    position: relative;
-    width: 200px;
-    height: 200px;
-    margin-top: -8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: visible;
-    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.35));
-}
-
-.char-sprite-area canvas {
-    width: 200px !important;
-    height: 200px !important;
-    image-rendering: pixelated;
-}
-
-/* ===== 장착 칭호 표시 — 우측 하단 고정 ===== */
-.title-loot {
-    position: fixed;
-    right: 56px;
-    bottom: 110px; /* 하단 네비 높이 위 */
-    width: 64px;
-    height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    z-index: 5;
-}
-
-.loot-item {
+.top-pill {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.4));
-    pointer-events: none;
-}
-
-.loot-equipped {
-    filter:
-        drop-shadow(0 0 6px rgba(255, 215, 100, 0.9))
-        drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
-    animation: loot-equipped-pulse 2s ease-in-out infinite;
-}
-
-
-@keyframes loot-equipped-pulse {
-    0%, 100% {
-        filter:
-            drop-shadow(0 0 5px rgba(255, 215, 100, 0.7))
-            drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
-    }
-    50% {
-        filter:
-            drop-shadow(0 0 10px rgba(255, 215, 100, 1))
-            drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
-    }
-}
-
-.loot-overflow {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 28px;
-    height: 22px;
-    padding: 0 6px;
-    margin-left: 4px;
-    background: rgba(58, 42, 24, 0.85);
-    color: #ffd96b;
-    font-size: 11px;
-    font-weight: 800;
-    border: 2px solid #b8862c;
-    border-radius: 2px;
-    z-index: 50;
-}
-
-/* Shared badge base */
-.info-badge {
-    font-size: 12px;
-    font-weight: 700;
-    color: #4A3F2F;
-    background: rgba(250, 244, 230, 0.9);
+    gap: 5px;
+    background: rgba(255,255,255,0.1);
+    color: #FFE5B0;
     padding: 4px 10px;
-    border-style: solid;
-    border-width: 3px;
-    border-image-slice: 3;
-    border-image-width: 3;
-    border-image-source: url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(168,152,104)" /></svg>');
-    border-image-repeat: stretch;
-    border-image-outset: 1;
-}
-
-.level-badge {
-    background: #5B8C5A;
-    color: #fff;
-    font-weight: 800;
-    font-size: 13px;
-    padding: 6px 14px;
-    border-image-source: url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(61,92,60)" /></svg>');
-    box-shadow: 0 2px 0 #3D5C3C;
-}
-
-.wp-badge {
-    background: #F5D76E;
-    color: #6B4E1C;
-    border-image-source: url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(168,128,44)" /></svg>');
-    box-shadow: 0 2px 0 #B8923E;
-}
-
-.exp-badge {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.exp-badge-label {
+    border-radius: 999px;
     font-size: 11px;
+    font-weight: 800;
+    border: 1px solid rgba(200, 160, 78, 0.4);
 }
 
-.exp-bar-mini-track {
-    width: 100%;
-    height: 6px;
-    background: #E8DFC8;
-    border: 2px solid #4A3F2F;
-    overflow: hidden;
+.top-pill .icon {
+    font-size: 14px;
+    line-height: 1;
 }
 
-.exp-bar-mini-fill {
-    height: 100%;
-    background: #5B8C5A;
-    transition: width 0.5s steps(15);
+.top-pill .gold-color {
+    color: #FFD580;
+}
+
+.top-pill .gem-color {
+    color: #80D8E0;
 }
 
 
 /* ============================================
-   Cozy Card (pixel border version)
+   Logout button area
    ============================================ */
-.cozy-card {
-    width: 88%;
-    max-width: 380px;
-    background: #FAF4E6;
-    padding: 16px 18px;
-    margin-bottom: 12px;
+.char-logout-area {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    justify-content: flex-end;
+    padding: 12px 14px 0;
+}
+
+
+/* ============================================
+   Pixel Panel — 캐릭터 + 스탯 (CSS-only 양피지)
+   ============================================ */
+.parchment-panel {
+    position: relative;
+    z-index: 2;
+    width: 92%;
+    max-width: 460px;
+    margin: 12px auto 14px;
+    background: linear-gradient(180deg, #FAF4E6 0%, #F2E9D0 100%);
+    padding: 22px 20px 22px;
+    min-height: 280px;
+    image-rendering: pixelated;
     border-style: solid;
     border-width: 4px;
     border-image-slice: 3;
     border-image-width: 3;
-    border-image-source: url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(168,152,104)" /></svg>');
+    border-image-source: url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(74,63,47)" /></svg>');
     border-image-repeat: stretch;
     border-image-outset: 2;
-    box-shadow: 0 4px 0 #B49A68;
+    box-shadow: 0 4px 0 #B49A68, 0 8px 12px rgba(0,0,0,0.18);
 }
 
-
-/* ============================================
-   Progress Card (오늘의 모험)
-   ============================================ */
-.progress-card {
-    padding: calc(16px - 0.5rem) calc(18px - 0.5rem);
-    margin-top: 24px;
-}
-
-.progress-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 8px;
-}
-
-.progress-card-title {
-    font-size: 15px;
-    font-weight: 800;
-    color: #4A3F2F;
-}
-
-.progress-card-pct {
-    font-size: 18px;
-    font-weight: 900;
-    color: #5B8C5A;
-}
-
-.progress-card-track {
-    width: 100%;
-    height: 21px;
-    background: #E8DFC8;
-    overflow: hidden;
-    border: 4px solid #4A3F2F;
-}
-
-.progress-card-fill {
-    height: 100%;
-    background: #5B8C5A;
-    transition: width 0.6s steps(20);
-    position: relative;
-}
-
-.progress-card-fill::before {
+/* 패널 내부 황금 테두리 — 양피지 느낌 강화 */
+.parchment-panel::before {
     content: "";
     position: absolute;
-    top: 1px;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: rgba(255, 255, 255, 0.35);
+    inset: 4px;
+    border: 2px dashed #C8A04E;
+    pointer-events: none;
+    opacity: 0.5;
 }
 
-.progress-card-msg {
+.parchment-content {
+    display: flex;
+    gap: 14px;
+    align-items: stretch;
+}
+
+/* ===== Character Portrait (좌측) ===== */
+.char-portrait-frame {
+    position: relative;
+    flex-shrink: 0;
+    width: 130px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.char-portrait-bg {
+    width: 130px;
+    height: 150px;
+    background:
+        linear-gradient(180deg, #BFE0EF 0%, #DCEDC8 65%, #98C56B 100%);
+    border: 3px solid #4A3F2F;
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.15), 0 3px 0 rgba(0,0,0,0.18);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.char-portrait-bg canvas {
+    width: 130px !important;
+    height: 130px !important;
+    image-rendering: pixelated;
+    /* 5px 아래로 — 캐릭터가 풀밭 위에 잘 서있도록 */
+    transform: scale(1.5) translateY(5px);
+    transform-origin: center 70%;
+}
+
+.char-portrait-arrows {
+    position: absolute;
+    top: 50%;
+    left: -8px;
+    right: -8px;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+    z-index: 3;
+}
+
+.char-portrait-arrow {
+    width: 24px;
+    height: 24px;
+    background: #FAF4E6;
+    border: 2px solid #4A3F2F;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4A3F2F;
     font-size: 12px;
-    color: #8A7D6B;
-    font-weight: 600;
+    font-weight: 900;
+    pointer-events: auto;
+    cursor: pointer;
+    box-shadow: 0 2px 0 #B49A68;
+    image-rendering: pixelated;
+}
+
+.char-name-banner {
     margin-top: 6px;
+    width: 100%;
+    background: linear-gradient(180deg, #5D4A33 0%, #4A3F2F 100%);
+    color: #FFE5B0;
+    font-size: 13px;
+    font-weight: 800;
     text-align: center;
+    padding: 5px 8px;
+    border: 2px solid #2D1F0F;
+    box-shadow: 0 2px 0 #2D1F0F;
+}
+
+.char-description-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 6px;
+    font-size: 10px;
+    color: #6B5C42;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.3;
+}
+
+.char-description-row .desc-icon {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    background: #FFD580;
+    border: 1px solid #4A3F2F;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
 }
 
 
-/* ============================================
-   Status Card (능력치)
-   ============================================ */
-.status-card-title {
-    font-size: 16px;
+/* ===== Stats Side (우측) ===== */
+.stats-side {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.lv-exp-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.lv-chip {
+    flex-shrink: 0;
+    background: linear-gradient(180deg, #6BA86A 0%, #4A8048 100%);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 900;
+    padding: 5px 10px;
+    border: 2px solid #2D4A2C;
+    box-shadow: 0 2px 0 #2D4A2C;
+    border-radius: 6px;
+}
+
+.exp-line {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.exp-line-text {
+    font-size: 10px;
+    color: #4A3F2F;
+    font-weight: 700;
+}
+
+.exp-line-track {
+    width: 100%;
+    height: 7px;
+    background: #E8DFC8;
+    border: 1px solid #4A3F2F;
+    overflow: hidden;
+    border-radius: 999px;
+}
+
+.exp-line-fill {
+    height: 100%;
+    background: linear-gradient(180deg, #E89BB5 0%, #C97B95 100%);
+    transition: width 0.5s ease-out;
+    border-radius: 999px;
+}
+
+.dual-chip-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.info-chip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: #FAF4E6;
+    border: 2px solid #C4A547;
+    border-radius: 6px;
+    box-shadow: 0 2px 0 #8E7320;
+    font-size: 10px;
     font-weight: 800;
     color: #4A3F2F;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 3px solid #D9CDB5;
 }
 
+.info-chip-icon {
+    font-size: 12px;
+    line-height: 1;
+}
+
+.info-chip-icon.gold {
+    color: #C8A04E;
+}
+
+.info-chip-icon.book {
+    color: #6B4C8E;
+}
+
+
+/* ===== Stat Bars (6 colors) ===== */
 .stat-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    width: 100%;
+    gap: 4px;
+    margin-top: 4px;
 }
 
 .stat-row {
@@ -354,126 +374,319 @@
     gap: 6px;
 }
 
-/* Pixel square icon */
-.stat-icon-circle {
+.stat-icon-box {
     flex-shrink: 0;
-    width: 26px;
-    height: 26px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid rgba(74, 63, 47, 0.3);
-    border-radius: 0;
-    box-shadow:
-        -1px 0 0 0 rgba(0,0,0,0.1),
-         1px 0 0 0 rgba(0,0,0,0.1),
-         0 -1px 0 0 rgba(0,0,0,0.1),
-         0  1px 0 0 rgba(0,0,0,0.1);
+    background: transparent !important;
+    font-size: 11px;
 }
 
 .stat-label {
     width: 44px;
     flex-shrink: 0;
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 11px;
+    font-weight: 800;
     color: #4A3F2F;
 }
 
-/* Pixel bar */
 .stat-bar-track {
     flex: 1;
-    height: 19px;
-    background: #E8DFC8;
-    overflow: hidden;
-    border: 3px solid #4A3F2F;
-    min-width: 0;
+    height: 16px;
+    background: linear-gradient(180deg, #D5CAB0 0%, #E8DFC8 50%, #F2E9D2 100%);
+    border: 2px solid #4A3F2F;
     border-radius: 6px;
+    overflow: hidden;
+    min-width: 0;
+    position: relative;
+    box-shadow:
+        inset 1px 1px 0 rgba(0, 0, 0, 0.18),
+        inset -1px -1px 0 rgba(255, 255, 255, 0.45),
+        0 1px 0 #B49A68;
 }
 
 .stat-bar-fill {
     height: 100%;
-    transition: width 0.5s steps(20);
+    transition: width 0.5s ease-out;
     position: relative;
+    border-radius: 4px 0 0 4px;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.55),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.18);
 }
 
-/* Pixel highlight stripe */
+/* 끝까지 찼을 때 오른쪽도 둥글게 */
+.stat-bar-fill[style*="width: 100%"] {
+    border-radius: 4px;
+}
+
+/* 상단 하이라이트 — 도트픽셀 광택 */
 .stat-bar-fill::before {
     content: "";
     position: absolute;
-    top: 1px;
-    left: 0;
-    right: 0;
+    top: 2px; left: 3px; right: 3px;
     height: 3px;
-    background: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.55);
+    border-radius: 2px;
 }
 
-/* Pixel shadow stripe */
-.stat-bar-fill::after {
+/* 4 segment 구획 — 25/50/75% 라인 (도트픽셀 RPG 느낌) */
+.stat-bar-track::after {
     content: "";
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: rgba(0, 0, 0, 0.15);
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(90deg, transparent 24.5%, rgba(74, 63, 47, 0.18) 24.5% 25.5%, transparent 25.5%),
+        linear-gradient(90deg, transparent 49.5%, rgba(74, 63, 47, 0.22) 49.5% 50.5%, transparent 50.5%),
+        linear-gradient(90deg, transparent 74.5%, rgba(74, 63, 47, 0.18) 74.5% 75.5%, transparent 75.5%);
 }
 
-.stat-value {
+.stat-bar-value-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 9px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.6);
+    letter-spacing: 0.5px;
+    pointer-events: none;
+}
+
+.stat-value-right {
     flex-shrink: 0;
-    width: 28px;
+    width: 42px;
     text-align: right;
-    font-size: 14px;
+    font-size: 10px;
     font-weight: 800;
+    color: #4A3F2F;
+}
+
+
+/* ============================================
+   Mini Cards Row — 컨디션 / 날씨 / 성격
+   ============================================ */
+.mini-card-row {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    width: 92%;
+    max-width: 460px;
+    margin: 0 auto 14px;
+}
+
+.mini-card {
+    position: relative;
+    background: linear-gradient(180deg, #FAF4E6 0%, #F2E9D0 100%);
+    padding: 14px 10px 12px;
+    text-align: center;
+    image-rendering: pixelated;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    border-style: solid;
+    border-width: 4px;
+    border-image-slice: 3;
+    border-image-width: 3;
+    border-image-source: url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(74,63,47)" /></svg>');
+    border-image-repeat: stretch;
+    border-image-outset: 2;
+    box-shadow: 0 4px 0 #B49A68, 0 6px 8px rgba(0,0,0,0.15);
+}
+
+.mini-card-title {
+    font-size: 11px;
+    font-weight: 900;
+    color: #4A3F2F;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+}
+
+.mini-card-icon {
+    font-size: 22px;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.mini-card-value {
+    font-size: 13px;
+    font-weight: 900;
+    color: #4A3F2F;
+    margin-bottom: 4px;
+}
+
+.mini-card-bar {
+    width: 80%;
+    height: 10px;
+    background: linear-gradient(180deg, #D5CAB0 0%, #E8DFC8 100%);
+    border: 2px solid #4A3F2F;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 4px;
+    box-shadow:
+        inset 1px 1px 0 rgba(0, 0, 0, 0.15),
+        0 1px 0 #B49A68;
+}
+
+.mini-card-bar-fill {
+    height: 100%;
+    background: linear-gradient(180deg, #8FD08C 0%, #7BC07A 50%, #5B8C5A 100%);
+    transition: width 0.5s ease-out;
+    border-radius: 3px 0 0 3px;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.18);
+}
+
+.mini-card-sub {
+    font-size: 9px;
+    color: #6B5C42;
+    font-weight: 600;
+    line-height: 1.3;
+    margin-top: 2px;
+}
+
+.trait-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    margin-top: 2px;
+}
+
+.trait-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(74, 63, 47, 0.06);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.trait-icon {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    border: 1px solid #4A3F2F;
+}
+
+.trait-text {
+    font-size: 10px;
+    color: #4A3F2F;
+    font-weight: 700;
+}
+
+.trait-text.muted {
+    color: #B0A082;
+}
+
+
+/* ============================================
+   Growth Record Card (성장 기록) — 양피지 스크롤
+   ============================================ */
+.growth-record-card {
+    position: relative;
+    z-index: 2;
+    width: 92%;
+    max-width: 460px;
+    margin: 0 auto 12px;
+    background: linear-gradient(180deg, #FAF4E6 0%, #F2E9D0 100%);
+    image-rendering: pixelated;
+    padding: 18px 20px 18px;
+    border-style: solid;
+    border-width: 4px;
+    border-image-slice: 3;
+    border-image-width: 3;
+    border-image-source: url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(74,63,47)" /></svg>');
+    border-image-repeat: stretch;
+    border-image-outset: 2;
+    box-shadow: 0 4px 0 #B49A68, 0 8px 12px rgba(0,0,0,0.18);
+}
+
+.growth-card-title {
+    font-size: 13px;
+    font-weight: 900;
+    color: #4A3F2F;
+    text-align: center;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+.growth-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.growth-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px dashed #C8B88A;
+}
+
+.growth-item:last-child {
+    border-bottom: none;
+}
+
+.growth-date {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 800;
+    color: #6B5C42;
+    width: 38px;
+}
+
+.growth-msg {
+    flex: 1;
+    font-size: 11px;
+    color: #4A3F2F;
+    font-weight: 600;
+    min-width: 0;
+}
+
+.growth-gain {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 800;
+    color: #5B8C5A;
+}
+
+.growth-gain.negative {
+    color: #C84B3A;
 }
 
 
 /* ============================================
    Responsive
    ============================================ */
-@media (max-width: 360px) {
-    .char-sprite-area {
-        width: 130px;
+@media (max-width: 380px) {
+    .char-portrait-frame { width: 110px; }
+    .char-portrait-bg {
+        width: 110px;
         height: 130px;
     }
-
-    .char-sprite-area canvas {
-        width: 120px !important;
-        height: 120px !important;
+    .char-portrait-bg canvas {
+        width: 110px !important;
+        height: 110px !important;
     }
-
-    .info-badge {
-        font-size: 11px;
-        padding: 3px 8px;
-    }
-
-    .cozy-card {
-        padding: 14px 14px;
-    }
-
-    .parchment-content {
-        padding: 13% 10% 10% 10%;
-    }
-
-    .parchment-title {
-        font-size: 14px;
-    }
-
-    .stat-label {
-        width: 38px;
-        font-size: 11px;
-    }
-
-    .stat-icon-circle {
-        width: 22px;
-        height: 22px;
-    }
-
-    .stat-bar-track {
-        height: 17px;
-    }
-
-    .stat-value {
-        font-size: 12px;
-        width: 24px;
-    }
+    .stat-label { width: 38px; font-size: 10px; }
+    .stat-value-right { width: 38px; font-size: 9px; }
+    .top-pill { font-size: 10px; padding: 3px 8px; }
 }
