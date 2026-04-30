@@ -45,7 +45,6 @@ export default function CharacterPage() {
     const currentLevel = level ?? 1;
     const currentExp = exp ?? 0;
     const expToNext = EXP_TO_LEVEL_UP(currentLevel);
-    const expPercent = Math.min((currentExp / expToNext) * 100, 100);
     const progressValue = progress ?? 0;
 
     return (

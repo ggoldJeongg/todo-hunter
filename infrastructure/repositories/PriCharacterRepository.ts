@@ -63,4 +63,21 @@ export class PriCharacterRepository implements ICharacterRepository {
     });
   }
 
+  async updateEndingMeta(
+    id: number,
+    data: { endingState?: number; endingCode?: string | null }
+  ): Promise<Character> {
+    return await this.prisma.character.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async findAllIds(): Promise<number[]> {
+    const rows = await this.prisma.character.findMany({
+      select: { id: true },
+    });
+    return rows.map((r) => r.id);
+  }
+
 }
