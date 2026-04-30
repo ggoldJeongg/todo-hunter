@@ -17,6 +17,7 @@ export interface IEndingHistoryRepository {
     endingCode: string;
     completedCount: number;
     statsSnapshot: Prisma.InputJsonValue;
+    awardedTitleId: number | null;
   }): Promise<EndingHistory>;
 
   /** 캐릭터의 모든 히스토리 (최신순) — 도감/통계용 */

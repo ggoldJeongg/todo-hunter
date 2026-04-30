@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { EndingUsecase } from "@/application/usecases/ending/EndingUsecase";
 import { ResolveWeeklyEndingUsecase } from "@/application/usecases/ending/ResolveWeeklyEndingUsecase";
 import {
   PriTitleRepository,
@@ -13,8 +12,20 @@ import {
 import { prisma } from "@/lib/prisma";
 import { getUserFromCookie } from "@/utils/auth";
 import { getNow, getISOWeek, isSunday } from "@/utils/clock";
+import {
+  ENDING_MAP,
+  DEFAULT_ENDING_IMAGE,
+  DEFAULT_ENDING_PROMPT,
+} from "@/constants";
 
-// 엔딩 페이지 랜딩 — 그 주 EndingHistory 조회 (없으면 lazy fallback 으로 생성)
+const DEFAULT_TITLE = {
+  titleName: "방랑자",
+  description: "아직 자신만의 길을 찾지 못한 여행자",
+};
+
+// 엔딩 페이지 랜딩 — read-only
+// 칭호 부여 / EndingHistory row 생성은 모두 ResolveWeeklyEndingUsecase 가 담당.
+// GET 자체는 lazy fallback (일요일에 row 없으면 한 번만 생성) 외엔 부수효과 없음.
 export async function GET(request: NextRequest) {
   try {
     const { user } = await getUserFromCookie(request);
@@ -37,28 +48,32 @@ export async function GET(request: NextRequest) {
     const now = getNow();
     const weekKey = getISOWeek(now);
 
-    // ===== Lazy fallback =====
-    // 일요일에 cron이 안 돌았거나 신규 유저의 첫 일요일인 경우,
-    // 페이지 진입 시 즉시 EndingHistory 생성 + endingState 활성화
     const endingHistoryRepository = new PriEndingHistoryRepository(prisma);
-    const existing = await endingHistoryRepository.findByCharacterAndWeek(
+    let history = await endingHistoryRepository.findByCharacterAndWeek(
       character.id,
       weekKey
     );
 
-    if (!existing && isSunday(now)) {
-      // 일요일인데 row 가 없음 → 지금 결정해서 저장
-      const resolveUsecase = new ResolveWeeklyEndingUsecase(
+    // ===== Lazy fallback (일요일에만) =====
+    // cron 실패 또는 신규 유저 첫 일요일 대응
+    if (!history && isSunday(now)) {
+      const usecase = new ResolveWeeklyEndingUsecase(
         characterRepository,
         new PriStatusRepository(prisma),
         new PriQuestRepository(prisma),
         new PriSuccessDayRepository(prisma),
-        endingHistoryRepository
+        endingHistoryRepository,
+        new PriTitleRepository(prisma),
+        new PriUserTitleRepository(prisma)
       );
-      await resolveUsecase.executeForCharacter(character.id, now);
+      await usecase.executeForCharacter(character.id, now);
+      history = await endingHistoryRepository.findByCharacterAndWeek(
+        character.id,
+        weekKey
+      );
     }
 
-    // 다시 조회 — lazy fallback이 만들었거나 기존 row
+    // 갱신된 character (lazy fallback이 endingState 바꿨을 수 있음)
     const ch = await characterRepository.findById(character.id);
     if (!ch) {
       return NextResponse.json(
@@ -67,7 +82,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // endingState=2(ENABLED) 또는 3(CHECKED)일 때만 엔딩 조회 가능
     if (ch.endingState !== 2 && ch.endingState !== 3) {
       return NextResponse.json(
         {
@@ -78,29 +92,65 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 칭호 처리 + 컷신 데이터는 기존 EndingUsecase 가 character.endingCode 기반으로 처리
-    // (ResolveWeeklyEndingUsecase 가 endingCode 를 character 에도 sync 했음)
-    const endingUsecase = new EndingUsecase(
-      new PriTitleRepository(prisma),
-      new PriUserTitleRepository(prisma),
-      characterRepository,
-      new PriStatusRepository(prisma)
-    );
+    if (!history) {
+      // 평일이고 history도 없는데 endingState만 2/3 인 비정상 케이스
+      return NextResponse.json(
+        { error: "이번 주 엔딩 기록을 찾을 수 없습니다." },
+        { status: 404 }
+      );
+    }
 
-    const result = await endingUsecase.execute(userId);
+    // EndingHistory 에서 결정된 endingCode 로 컷신 데이터 조회
+    const endingInfo = ENDING_MAP[history.endingCode];
 
-    // 추가 정보: 그 주 히스토리 메타 (completedCount, statsSnapshot)
-    const history = await endingHistoryRepository.findByCharacterAndWeek(
-      ch.id,
-      weekKey
-    );
+    // 부여된 칭호 조회 (없으면 default 방랑자)
+    let achievableTitle = DEFAULT_TITLE;
+    if (history.awardedTitleId) {
+      const titleRepository = new PriTitleRepository(prisma);
+      const title = await titleRepository.findById(history.awardedTitleId);
+      if (title) {
+        achievableTitle = {
+          titleName: title.titleName,
+          description: title.description,
+        };
+      }
+    }
 
+    // 토스트 게이팅 — 사용자가 아직 "확인" 안 누른 상태면 첫 view 로 간주
+    const isFirstView = !history.checkedAt;
+
+    if (endingInfo) {
+      return NextResponse.json({
+        endingState: ch.endingState,
+        endingCode: history.endingCode,
+        endingName: endingInfo.name,
+        endingStory: endingInfo.story,
+        endingDialogue: endingInfo.dialogue,
+        endingImage: endingInfo.image,
+        achievableTitle,
+        weekKey,
+        completedCount: history.completedCount,
+        statsSnapshot: history.statsSnapshot,
+        checkedAt: history.checkedAt,
+        isFirstView,
+      });
+    }
+
+    // ENDING_MAP 매칭 안 됨 → fallback (이론상 도달 불가)
+    const fallback = ENDING_MAP["ORDINARY_DAY"];
     return NextResponse.json({
-      ...result,
+      endingState: ch.endingState,
+      endingCode: "ORDINARY_DAY",
+      endingName: "평범한 하루",
+      endingStory: fallback?.story ?? [DEFAULT_ENDING_PROMPT],
+      endingDialogue: fallback?.dialogue ?? [],
+      endingImage: DEFAULT_ENDING_IMAGE,
+      achievableTitle,
       weekKey,
-      completedCount: history?.completedCount ?? 0,
-      statsSnapshot: history?.statsSnapshot ?? null,
-      checkedAt: history?.checkedAt ?? null,
+      completedCount: history.completedCount,
+      statsSnapshot: history.statsSnapshot,
+      checkedAt: history.checkedAt,
+      isFirstView,
     });
   } catch (error) {
     console.error("Ending API Error:", error);
@@ -128,7 +178,6 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // 이미 CHECKED(3)이면 중복 처리 방지
     if (character.endingState === 3) {
       return NextResponse.json({
         success: true,
@@ -136,7 +185,6 @@ export async function PATCH(request: NextRequest) {
       });
     }
 
-    // endingState=2 (ENABLED)일 때만 CHECKED로 전환
     if (character.endingState !== 2) {
       return NextResponse.json(
         { error: "엔딩을 확인할 수 없는 상태입니다." },
@@ -147,7 +195,6 @@ export async function PATCH(request: NextRequest) {
     const now = getNow();
     const weekKey = getISOWeek(now);
 
-    // 트랜잭션으로 endingState/endingCount + EndingHistory.checkedAt 동기화
     await prisma.$transaction(async (tx) => {
       await tx.character.update({
         where: { id: character.id },
@@ -157,7 +204,6 @@ export async function PATCH(request: NextRequest) {
         },
       });
 
-      // 그 주 history row 가 있으면 checkedAt 마킹
       const history = await tx.endingHistory.findUnique({
         where: {
           characterId_weekKey: { characterId: character.id, weekKey },

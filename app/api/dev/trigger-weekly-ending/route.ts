@@ -16,6 +16,8 @@ import {
   PriQuestRepository,
   PriSuccessDayRepository,
   PriEndingHistoryRepository,
+  PriTitleRepository,
+  PriUserTitleRepository,
 } from "@/infrastructure/repositories";
 import { ResolveWeeklyEndingUsecase } from "@/application/usecases/ending/ResolveWeeklyEndingUsecase";
 import { getNow } from "@/utils/clock";
@@ -26,7 +28,9 @@ function buildUsecase(): ResolveWeeklyEndingUsecase {
     new PriStatusRepository(prisma),
     new PriQuestRepository(prisma),
     new PriSuccessDayRepository(prisma),
-    new PriEndingHistoryRepository(prisma)
+    new PriEndingHistoryRepository(prisma),
+    new PriTitleRepository(prisma),
+    new PriUserTitleRepository(prisma)
   );
 }
 

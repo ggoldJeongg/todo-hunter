@@ -19,6 +19,7 @@ export class PriEndingHistoryRepository implements IEndingHistoryRepository {
     endingCode: string;
     completedCount: number;
     statsSnapshot: Prisma.InputJsonValue;
+    awardedTitleId: number | null;
   }): Promise<EndingHistory> {
     // 확정 저장: 같은 (characterId, weekKey) 가 이미 있으면 update {} (덮어쓰지 않음)
     return this.prisma.endingHistory.upsert({
@@ -34,6 +35,7 @@ export class PriEndingHistoryRepository implements IEndingHistoryRepository {
         endingCode: input.endingCode,
         completedCount: input.completedCount,
         statsSnapshot: input.statsSnapshot,
+        awardedTitleId: input.awardedTitleId,
       },
       update: {}, // 이미 있으면 절대 덮어쓰지 않음 (확정 저장)
     });
