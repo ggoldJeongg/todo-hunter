@@ -106,7 +106,7 @@ export async function GET(req: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       path: "/",
-      sameSite: "strict",
+      sameSite: "lax",
       maxAge: parseInt((process.env.ACCESS_TOKEN_EXPIRES || "3600").replace("s", ""), 10),
     });
 
@@ -114,7 +114,7 @@ export async function GET(req: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       path: "/",
-      sameSite: "strict",
+      sameSite: "lax",
       maxAge: parseInt((process.env.REFRESH_TOKEN_EXPIRES || "3600").replace("s", ""), 10),
     });
 

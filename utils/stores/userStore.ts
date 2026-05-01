@@ -17,12 +17,22 @@ interface UserStore {
   exp?: number;
   willpower?: number;
   maxWillpower?: number;
+  // 외형 (constants/appearance.ts 의 ID)
+  outfitId?: string;
+  hairId?: string;
+  hatId?: string | null;
   setId: (id: number) => void;
   setLoginId: (loginId: string) => void;
   clearUser: () => void;
   fetchUser: () => Promise<void>;
   fetchCharacter: () => Promise<void>;
   fetchEndingState: () => Promise<void>;
+  fetchAppearance: () => Promise<void>;
+  updateAppearance: (input: {
+    outfitId?: string;
+    hairId?: string;
+    hatId?: string | null;
+  }) => Promise<void>;
 }
 
 // Zustand + persist 적용
@@ -44,6 +54,9 @@ export const useUserStore = create<UserStore>()(
       exp: undefined,
       willpower: undefined,
       maxWillpower: undefined,
+      outfitId: undefined,
+      hairId: undefined,
+      hatId: undefined,
       setId: (id: number) => set({ id }),
       setLoginId: (loginId: string) => set({ loginId }),
       clearUser: () => {
@@ -63,6 +76,9 @@ export const useUserStore = create<UserStore>()(
           exp: undefined,
           willpower: undefined,
           maxWillpower: undefined,
+          outfitId: undefined,
+          hairId: undefined,
+          hatId: undefined,
         });
         sessionStorage.removeItem("user-session-data"); // 세션 초기화
       },
@@ -79,6 +95,7 @@ export const useUserStore = create<UserStore>()(
           if (data.user?.id) {
             await get().fetchCharacter();
             await get().fetchEndingState();
+            await get().fetchAppearance();
           }
         } catch (error) {
           console.error("사용자 정보를 가져오는 중 오류 발생:", error);
@@ -118,6 +135,63 @@ export const useUserStore = create<UserStore>()(
           set({ endingState: data.endingState });
         } catch (error) {
           console.error("엔딩 정보를 가져오는 중 오류 발생:", error);
+        }
+      },
+      fetchAppearance: async () => {
+        if (!get().id) return;
+
+        try {
+          const res = await fetch("/api/character/appearance", {
+            credentials: "include",
+          });
+          if (!res.ok) throw new Error("외형 정보 요청 실패");
+          const data = await res.json();
+          set({
+            outfitId: data.outfitId,
+            hairId: data.hairId,
+            hatId: data.hatId,
+          });
+        } catch (error) {
+          console.error("외형 정보를 가져오는 중 오류 발생:", error);
+        }
+      },
+      updateAppearance: async (input) => {
+        if (!get().id) throw new Error("로그인이 필요합니다.");
+
+        // 낙관적 업데이트 (즉시 반영) — 실패 시 이전 값으로 롤백
+        const prev = {
+          outfitId: get().outfitId,
+          hairId: get().hairId,
+          hatId: get().hatId,
+        };
+        set({
+          ...(input.outfitId !== undefined && { outfitId: input.outfitId }),
+          ...(input.hairId !== undefined && { hairId: input.hairId }),
+          ...(input.hatId !== undefined && { hatId: input.hatId }),
+        });
+
+        try {
+          const res = await fetch("/api/character/appearance", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify(input),
+          });
+          if (!res.ok) {
+            const errBody = await res.json().catch(() => ({}));
+            throw new Error(errBody.error ?? "외형 변경 실패");
+          }
+          const data = await res.json();
+          // 서버 응답 기준으로 최종 동기화
+          set({
+            outfitId: data.outfitId,
+            hairId: data.hairId,
+            hatId: data.hatId,
+          });
+        } catch (error) {
+          // 롤백
+          set(prev);
+          throw error;
         }
       },
     }),

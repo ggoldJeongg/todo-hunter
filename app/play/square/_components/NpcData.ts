@@ -6,6 +6,14 @@ export interface SquareUser {
   isRunning: boolean;
   sharedQuest: { name: string; tagged: string } | null;
   isNpc: boolean;
+  // 옷 레이어 경로 (미지정 시 기본 옷 사용)
+  outfitSrc?: string;
+  // 머리 레이어 경로 (미지정 시 기본 머리 사용)
+  hairSrc?: string;
+  // 모자 레이어 경로 (미지정 시 모자 없음)
+  hatSrc?: string;
+  // 클릭형 NPC — 타이머/공유퀘스트 UI 숨김 + 클릭 핸들러 활성화
+  interactive?: boolean;
 }
 
 // NPC mock 데이터 (나중에 실제 유저 API 응답으로 교체)
@@ -21,12 +29,16 @@ export const NPC_USERS: SquareUser[] = [
   },
   {
     id: "npc-2",
-    nickname: "마법사 수진",
+    nickname: "의문의 마법사",
     level: 8,
-    focusSeconds: 7200,
+    focusSeconds: 0,
     isRunning: false,
-    sharedQuest: { name: "독서 30분", tagged: "EMO" },
+    sharedQuest: null,
     isNpc: true,
+    outfitSrc:
+      "/images/asprites/char_a_p1/1out/char_a_p1_1out_pfpn_v03.png",
+    hairSrc: "/images/asprites/char_a_p1/4har/char_a_p1_4har_dap1_v13.png",
+    interactive: true,
   },
   {
     id: "npc-3",
@@ -36,6 +48,8 @@ export const NPC_USERS: SquareUser[] = [
     isRunning: true,
     sharedQuest: { name: "운동 30분", tagged: "STR" },
     isNpc: true,
+    outfitSrc:
+      "/images/asprites/char_a_p1/1out/char_a_p1_1out_fstr_v05.png",
   },
   {
     id: "npc-4",
@@ -45,5 +59,7 @@ export const NPC_USERS: SquareUser[] = [
     isRunning: false,
     sharedQuest: null,
     isNpc: true,
+    outfitSrc:
+      "/images/asprites/char_a_p1/1out/char_a_p1_1out_pfpn_v02.png",
   },
 ];

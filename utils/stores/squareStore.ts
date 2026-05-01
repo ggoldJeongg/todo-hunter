@@ -12,6 +12,8 @@ interface Position {
   y: number; // % (0~100)
 }
 
+export type Direction = "up" | "down" | "left" | "right";
+
 interface SquareStore {
   // 집중시간 스톱워치
   isRunning: boolean;
@@ -31,7 +33,9 @@ interface SquareStore {
   position: Position;
   targetPosition: Position | null;
   isWalking: boolean;
+  facing: Direction;
   moveTo: (x: number, y: number) => void;
+  setFacing: (dir: Direction) => void;
   arriveAtTarget: () => void;
 }
 
@@ -76,10 +80,23 @@ export const useSquareStore = create<SquareStore>()(
       position: { x: 50, y: 70 },
       targetPosition: null,
       isWalking: false,
+      facing: "down",
 
       moveTo: (x: number, y: number) => {
-        set({ targetPosition: { x, y }, isWalking: true });
+        const cur = get().position;
+        const dx = x - cur.x;
+        const dy = y - cur.y;
+        // 더 큰 축으로 방향 결정
+        let dir: Direction;
+        if (Math.abs(dx) > Math.abs(dy)) {
+          dir = dx > 0 ? "right" : "left";
+        } else {
+          dir = dy > 0 ? "down" : "up";
+        }
+        set({ targetPosition: { x, y }, isWalking: true, facing: dir });
       },
+
+      setFacing: (dir) => set({ facing: dir }),
 
       arriveAtTarget: () => {
         const { targetPosition } = get();
@@ -90,16 +107,21 @@ export const useSquareStore = create<SquareStore>()(
     }),
     {
       name: "square-session-data",
+      // localStorage 사용 — 앱 종료/재실행 후에도 타이머 유지
+      // (Date.now() - startedAt 기반이라 백그라운드/앱종료 시간도 자동 반영)
       storage: {
         getItem: async (name) => {
-          const item = sessionStorage.getItem(name);
+          if (typeof window === "undefined") return null;
+          const item = window.localStorage.getItem(name);
           return item ? JSON.parse(item) : null;
         },
         setItem: async (name, value) => {
-          sessionStorage.setItem(name, JSON.stringify(value));
+          if (typeof window === "undefined") return;
+          window.localStorage.setItem(name, JSON.stringify(value));
         },
         removeItem: async (name) => {
-          sessionStorage.removeItem(name);
+          if (typeof window === "undefined") return;
+          window.localStorage.removeItem(name);
         },
       },
     }

@@ -3,7 +3,6 @@
 import { LoginError } from "@/application/usecases/auth/errors/LoginError";
 import { Button, Input } from "@/components/common";
 import { useUserStore } from "@/utils/stores/userStore";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useRef, useState } from "react";
 
@@ -410,7 +409,14 @@ const SignUp = () => {
 
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#2a2a2a]">
+    <div
+      className="flex flex-col min-h-screen overflow-hidden"
+      style={{
+        backgroundImage: "url('/images/backgrounds/bg_01.png')",
+        backgroundSize: "100% 100%",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
       {/* 상단 헤더 */}
       <div className="flex items-center px-4 pt-6 pb-4">
         <button onClick={() => router.back()} className="text-white text-2xl cursor-pointer">←</button>
@@ -541,17 +547,6 @@ const SignUp = () => {
       </div>
       </div>
 
-      {/* 성 이미지 - 바닥 배경 */}
-      <div className="fixed bottom-0 left-0 right-0 flex justify-center pointer-events-none">
-        <Image
-          src="/images/backgrounds/landing-page-castle2.png"
-          width={320}
-          height={320}
-          alt=""
-          className="w-full max-w-[320px] h-auto opacity-60"
-          unoptimized
-        />
-      </div>
     </div>
   );
 };

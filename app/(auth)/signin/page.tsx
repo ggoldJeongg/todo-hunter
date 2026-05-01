@@ -2,7 +2,6 @@
 
 import { Button, Input } from "@/components/common";
 import { useUserStore } from "@/utils/stores/userStore";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -110,7 +109,7 @@ const SignIn = () => {
     <div
       className="flex flex-col min-h-screen overflow-hidden"
       style={{
-        backgroundImage: "url('/images/backgrounds/landing-page-background1.png')",
+        backgroundImage: "url('/images/backgrounds/bg_01.png')",
         backgroundSize: "100% 100%",
         backgroundRepeat: "no-repeat",
       }}
@@ -210,15 +209,21 @@ const SignIn = () => {
         </div>
 
         {/* 카카오 로그인 */}
-        <a href="/api/auth/kakao">
-          <Image
-            src="/icons/kakao_login_medium_narrow.png"
-            alt="카카오 로그인"
-            width={183}
-            height={45}
-            priority
-            unoptimized
-          />
+        <a
+          href="/api/auth/kakao"
+          aria-label="카카오 로그인"
+          className="w-full max-w-[320px] h-12 flex items-center justify-center gap-2 bg-[#FEE500] text-[#191919] font-bold text-base rounded-md hover:bg-[#FDD800] active:bg-[#F5D000] transition-colors shadow-[0_2px_0_rgba(0,0,0,0.15)]"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 18 18"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M9 0.5C4.029 0.5 0 3.717 0 7.685c0 2.583 1.708 4.851 4.273 6.123-.187.703-.679 2.55-.778 2.946-.121.491.18.484.38.353.156-.103 2.482-1.687 3.484-2.367a11.6 11.6 0 0 0 1.641.116c4.971 0 9-3.217 9-7.171S13.971 0.5 9 0.5z" />
+          </svg>
+          카카오 로그인
         </a>
       </div>
     </div>

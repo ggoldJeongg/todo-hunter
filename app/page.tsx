@@ -93,17 +93,16 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen overflow-hidden"
       style={{
-        backgroundImage: "url('/images/backgrounds/landing-page-background1.png')",
+        backgroundImage: "url('/images/backgrounds/bg_01.png')",
         backgroundSize: "100% 100%",
         backgroundRepeat: "no-repeat",
       }}
     >
-      {/* 상단 다크 영역 - 로고+텍스트를 체커보드 바로 위에 배치 */}
-      <div className="flex flex-col items-center justify-end pb-10" style={{ height: "60vh" }}>
+       <div className="flex flex-col items-center justify-end pb-10" style={{ height: "60vh" }}>
         {/* 로고 */}
         <Image
           src="/images/logo.png"
-          width={120}
+          width={320}
           height={120}
           alt="TODO HUNTER"
           className="mb-6"
@@ -111,23 +110,6 @@ export default function Home() {
           priority
           onLoad={handleImageLoad}
         />
-
-        {/* 타이틀 텍스트 */}
-        <h1
-          className="text-center mb-2 font-galmuri11-bold"
-          style={{ textShadow: "-4px -4px 0 #555, 4px -4px 0 #555, -4px 4px 0 #555, 4px 4px 0 #555, 0 -4px 0 #555, 0 4px 0 #555, -4px 0 0 #555, 4px 0 0 #555" }}
-        >
-          <span className="text-4xl sm:text-5xl tracking-wider">
-            <span className="text-red-500">TODO</span>
-            <span className="text-white">HUNTER</span>
-          </span>
-        </h1>
-        <p
-          className="text-gray-400 text-base sm:text-lg tracking-widest font-galmuri11-bold"
-          style={{ textShadow: "-4px -4px 0 #333, 4px -4px 0 #333, -4px 4px 0 #333, 4px 4px 0 #333, 0 -4px 0 #333, 0 4px 0 #333, -4px 0 0 #333, 4px 0 0 #333" }}
-        >
-          ~RETURN OF SCROLL~
-        </p>
       </div>
 
       {/* 하단 밝은 영역 */}
@@ -138,20 +120,10 @@ export default function Home() {
           className="pt-8 pb-2 text-center w-full cursor-pointer hover:opacity-70 transition-opacity"
         >
           <span className="text-xl sm:text-2xl font-bold tracking-wider text-gray-800 font-galmuri11-bold">
-            ▽ PRESS TO START ▽
+            ▶ 게임같은 하루 시작하기 ◀
           </span>
         </button>
 
-        {/* 성 이미지 - 바닥에 붙이기 */}
-        <Image
-          src="/images/backgrounds/landing-page-castle.png"
-          width={600}
-          height={300}
-          alt="Castle"
-          className="w-full max-w-[600px] h-auto mt-auto"
-          unoptimized
-          priority
-        />
       </div>
     </div>
   );

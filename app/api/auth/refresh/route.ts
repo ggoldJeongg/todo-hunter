@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
         response.cookies.set("accessToken", newAccessToken, {
             httpOnly: true, // XSS 방지
             secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
+            sameSite: "lax",
             path: "/", // 모든 경로에서 사용 가능
             maxAge: parseInt(process.env.ACCESS_TOKEN_EXPIRES || "3600", 10), // 유효기간 (초 단위)
         });

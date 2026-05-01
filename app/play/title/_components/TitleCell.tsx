@@ -20,6 +20,7 @@ export default function TitleCell({ title, onClick }: Props) {
       onClick={onClick}
       className="relative flex flex-col cursor-pointer text-left"
       style={{
+        minWidth: 0,
         padding: 5,
         background: equipped
           ? "linear-gradient(180deg, #fff7d6 0%, #f3e3a5 100%)"
@@ -111,10 +112,16 @@ export default function TitleCell({ title, onClick }: Props) {
       </div>
 
       <p
-        className="font-galmuri11-bold text-center w-full truncate"
+        className="font-galmuri11-bold text-center w-full"
         style={{
           fontSize: 9, lineHeight: 1.2, margin: "3px 0 0",
           color: locked ? "#7a6850" : "#3a2a18",
+          display: "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden",
+          wordBreak: "keep-all",
+          minHeight: "calc(9px * 1.2 * 2)",
         }}
       >
         {locked ? "???" : title.name}

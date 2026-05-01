@@ -41,9 +41,34 @@ model Character {
   // 판정된 엔딩 코드 (예: "STEEL_WARRIOR", "MAGIC_SWORDSMAN")
   endingCode   String? @map("ending_code")
 
-  status     Status?
-  quests     Quest[]
-  userTitles UserTitle[]
+  // 외형 — constants/appearance.ts 의 ID 와 매칭
+  outfitId   String  @default("fstr_v01") @map("outfit_id")
+  hairId     String  @default("bob1_v01") @map("hair_id")
+  hatId      String? @map("hat_id")
+
+  status         Status?
+  quests         Quest[]
+  userTitles     UserTitle[]
+  endingHistories EndingHistory[]
+}
+
+// 주간 엔딩 히스토리 — 매주 1 row 확정 저장
+// (characterId, weekKey) 유니크 → 중복 생성 방지
+// cron 또는 lazy fallback이 upsert 로 채움. 한 번 결정되면 스탯/엔딩/칭호 모두 확정.
+model EndingHistory {
+  id              Int      @id @default(autoincrement())
+  character       Character @relation(fields: [characterId], references: [id])
+  characterId     Int      @map("character_id")
+  weekKey         String   @map("week_key")          // ISO 주차: "2026-W18"
+  endingCode      String   @map("ending_code")       // ENDING_MAP 의 키
+  completedCount  Int      @map("completed_count")   // 그 주 완료한 퀘스트 수
+  statsSnapshot   Json     @map("stats_snapshot")    // 그 주 스탯 스냅샷 {str,int,emo,fin,liv}
+  awardedTitleId  Int?     @map("awarded_title_id")  // 그 주 부여된 칭호 ID (없으면 null = 기본 "방랑자")
+  resolvedAt      DateTime @default(now()) @map("resolved_at") // 엔딩 결정 시각
+  checkedAt       DateTime? @map("checked_at")       // 사용자가 "확인" 버튼 누른 시각
+
+  @@unique([characterId, weekKey])
+  @@index([characterId, resolvedAt])
 }
 
 model Status {
@@ -73,6 +98,23 @@ model Quest {
   days        String[]  @default([])
 
   successDays SuccessDay[]
+  subTasks    SubTask[]
+}
+
+// 할일 쪼개기 — 큰 할일을 작은 단위로 나눠서 점진적으로 처리.
+// 서브태스크 1개 완료 = 몬스터에게 1회 공격 (기본 데미지 10).
+// 모든 서브태스크가 완료되어야 Quest가 실제 완료 처리(EXP/스탯/의지력) 됨.
+// 서브태스크가 0개인 Quest는 기존대로 한 번에 완료 처리(하위호환).
+model SubTask {
+  id          Int       @id @default(autoincrement())
+  quest       Quest     @relation(fields: [questId], references: [id], onDelete: Cascade)
+  questId     Int       @map("quest_id")
+  name        String
+  order       Int       @default(0)
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([questId])
 }
 
 model Title {

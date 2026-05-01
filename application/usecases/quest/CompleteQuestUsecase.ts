@@ -1,18 +1,29 @@
 import { CompleteQuestError } from "@/application/usecases/quest/errors/CompleteQuestError";
-import { ICharacterRepository, IQuestRepository, IStatusRepository, ISuccessDayRepository } from "@/domain/repositories";
-import { EXP_PER_QUEST, WILLPOWER_COST, EXP_TO_LEVEL_UP, MAX_WILLPOWER, DIFFICULTY_MULTIPLIER } from "@/constants/game";
+import {
+  ICharacterRepository,
+  IQuestRepository,
+  IStatusRepository,
+  ISubTaskRepository,
+  ISuccessDayRepository,
+} from "@/domain/repositories";
+import { EXP_PER_QUEST, WILLPOWER_COST, EXP_TO_LEVEL_UP, MAX_WILLPOWER, DIFFICULTY_MULTIPLIER, getStatGain } from "@/constants/game";
 import { getTodayStart, getThisWeekStart, getNextDayStart } from "@/utils/date";
 
 export class CompleteQuestUsecase {
   constructor(
-  private PriQuestRepository: IQuestRepository,
-  private PriSuccessDayRepository: ISuccessDayRepository,
-  private PriCharacterRepository: ICharacterRepository,
-  private PriStatusRepository: IStatusRepository,
-) {}
+    private PriQuestRepository: IQuestRepository,
+    private PriSuccessDayRepository: ISuccessDayRepository,
+    private PriCharacterRepository: ICharacterRepository,
+    private PriStatusRepository: IStatusRepository,
+    private PriSubTaskRepository?: ISubTaskRepository
+  ) {}
 
 
-  // 퀘스트 완료 처리 메서드
+  // 퀘스트 완료 처리 메서드.
+  // - 서브태스크가 0개인 경우: 기존대로 한 번에 완료.
+  // - 서브태스크가 N개인 경우: 모든 서브태스크가 완료된 상태에서만 호출되어야 함.
+  //   (CompleteSubTaskUsecase 가 마지막 서브태스크 완료 시 자동 위임)
+  //   직접 호출돼서 서브태스크가 미완료면 SUBTASKS_PENDING 에러.
   async completeQuest(characterId: number, questId: number): Promise<void> {
     // 1. 해당 퀘스트를 찾아서 `characterId` 검증
     const quest = await this.PriQuestRepository.findById(questId);
@@ -21,6 +32,20 @@ export class CompleteQuestUsecase {
     }
     if (quest.characterId !== characterId) {
         throw new CompleteQuestError("QUEST_NOT_FOUND", "퀘스트를 찾을 수 없습니다.");
+    }
+
+    // 1-1. 서브태스크 가드: 서브태스크가 1개 이상인 경우, 모두 완료돼야 진짜 완료 처리.
+    if (this.PriSubTaskRepository) {
+      const total = await this.PriSubTaskRepository.countByQuestId(questId);
+      if (total > 0) {
+        const done = await this.PriSubTaskRepository.countCompletedByQuestId(questId);
+        if (done < total) {
+          throw new CompleteQuestError(
+            "SUBTASKS_PENDING",
+            `서브태스크 ${done}/${total} 완료. 남은 서브태스크를 모두 완료해야 합니다.`
+          );
+        }
+      }
     }
 
     // 2. 캐릭터 의지력 확인
@@ -55,24 +80,25 @@ export class CompleteQuestUsecase {
         throw new CompleteQuestError("STATUS_NOT_FOUND", "캐릭터 상태 정보를 찾을 수 없습니다.");
     }
 
-    // 5. 퀘스트의 태그 값을 기반으로 상태 업데이트
+    // 5. 퀘스트의 태그 값을 기반으로 상태 업데이트 (난이도별 증가량)
     const { tagged } = quest;
+    const statGain = getStatGain(quest.difficulty);
 
     switch (tagged) {
         case "STR":
-            characterStatus.str += 1;
+            characterStatus.str += statGain;
             break;
         case "INT":
-            characterStatus.int += 1;
+            characterStatus.int += statGain;
             break;
         case "EMO":
-            characterStatus.emo += 1;
+            characterStatus.emo += statGain;
             break;
         case "FIN":
-            characterStatus.fin += 1;
+            characterStatus.fin += statGain;
             break;
         case "LIV":
-            characterStatus.liv += 1;
+            characterStatus.liv += statGain;
             break;
         default:
             throw new CompleteQuestError("INVALID_TAG", "유효하지 않은 태그입니다.");
@@ -101,5 +127,5 @@ export class CompleteQuestUsecase {
         willpower: newWillpower,
         maxWillpower: newMaxWillpower,
     });
-}
+  }
 }

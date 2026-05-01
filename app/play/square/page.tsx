@@ -11,6 +11,19 @@ import SquareAvatar from "./_components/SquareAvatar";
 import FocusTimer from "./_components/FocusTimer";
 import SharedQuestSelector from "./_components/SharedQuestSelector";
 import ChatArea from "./_components/ChatArea";
+import RestActivityModal from "./_components/RestActivityModal";
+import {
+  loadCollisionMask,
+  findReachablePoint,
+  findNearestWalkable,
+} from "@/utils/sprite/CollisionMask";
+import {
+  getOutfitSrc,
+  getHairSrc,
+  getHatSrc,
+} from "@/constants/appearance";
+
+const COLLISION_MASK_SRC = "/images/backgrounds/square_mask.png";
 
 // 맵 크기 (뷰포트 대비 배율)
 const MAP_SCALE = 2.5; // 맵이 뷰포트의 2.5배 너비
@@ -41,7 +54,7 @@ export default function SquarePage() {
 }
 
 function SquarePageContent() {
-  const { nickname, level, fetchUser } = useUserStore();
+  const { nickname, level, outfitId, hairId, hatId, fetchUser } = useUserStore();
   const { fetchQuests } = useQuestStore();
   const {
     isRunning,
@@ -50,11 +63,12 @@ function SquarePageContent() {
     position,
     targetPosition,
     isWalking,
+    facing,
     moveTo,
     arriveAtTarget,
   } = useSquareStore();
   const [selectorOpen, setSelectorOpen] = useState(false);
-  const [facingLeft, setFacingLeft] = useState(false);
+  const [restModalOpen, setRestModalOpen] = useState(false);
 
   // 뷰포트 크기
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -69,9 +83,22 @@ function SquarePageContent() {
   // 카메라 오프셋
   const [camera, setCamera] = useState({ x: 0, y: 0 });
 
+  // NPC 위치를 마스크 안쪽으로 스냅 — 마스크 로드 후 한 번만 계산
+  const [npcPositions, setNpcPositions] = useState(NPC_POSITIONS);
+
   useEffect(() => {
     fetchUser();
     fetchQuests();
+    // 충돌 마스크 로드 후 NPC 위치를 가장 가까운 걸어갈 수 있는 점으로 보정
+    loadCollisionMask(COLLISION_MASK_SRC)
+      .then(() => {
+        setNpcPositions(
+          NPC_POSITIONS.map((p) => findNearestWalkable(p.x, p.y))
+        );
+      })
+      .catch((err) =>
+        console.error("[Square] 충돌 마스크 로드 실패:", err)
+      );
   }, [fetchUser, fetchQuests]);
 
   // 뷰포트 크기 감지
@@ -89,8 +116,12 @@ function SquarePageContent() {
     return () => window.removeEventListener("resize", updateSize);
   }, []);
 
-  // 맵 크기 계산
-  const mapWidth = vpSize.w * MAP_SCALE;
+  // 맵 크기 계산 — 뷰포트가 세로형이어도 맵이 항상 화면을 덮도록
+  // (mapWidth/MAP_ASPECT가 vpSize.h보다 작으면 세로 부족분 발생 → 맵 폭 확대)
+  const mapWidth = Math.max(
+    vpSize.w * MAP_SCALE,
+    vpSize.h * MAP_ASPECT
+  );
   const mapHeight = mapWidth / MAP_ASPECT;
 
   // 카메라 팔로우 계산
@@ -154,10 +185,9 @@ function SquarePageContent() {
     [arriveAtTarget, updateCamera]
   );
 
-  // 타겟 변경 시 애니메이션 시작
+  // 타겟 변경 시 애니메이션 시작 (방향은 store에서 moveTo가 이미 설정함)
   useEffect(() => {
     if (targetPosition && isWalking) {
-      setFacingLeft(targetPosition.x < animPosRef.current.x);
       lastTimeRef.current = 0;
       moveAnimRef.current = requestAnimationFrame(animateMove);
     }
@@ -185,11 +215,23 @@ function SquarePageContent() {
     const mapX = (clickX / mapWidth) * 100;
     const mapY = (clickY / mapHeight) * 100;
 
-    // 이동 가능 영역 제한
-    const clampedX = Math.max(5, Math.min(95, mapX));
-    const clampedY = Math.max(35, Math.min(85, mapY));
+    // 맵 경계 안으로만 클램프 (안전 가드)
+    const clampedX = Math.max(0, Math.min(100, mapX));
+    const clampedY = Math.max(0, Math.min(100, mapY));
 
-    moveTo(clampedX, clampedY);
+    // 충돌 마스크 검사 — 막힌 곳을 클릭했으면 가는 길까지만 이동 (벽에서 멈춤)
+    const cur = animPosRef.current;
+    const reachable = findReachablePoint(cur.x, cur.y, clampedX, clampedY);
+
+    // 현재 위치와 거의 같으면 이동 무시 (벽 바로 옆에서 벽 클릭)
+    if (
+      Math.abs(reachable.x - cur.x) < 0.3 &&
+      Math.abs(reachable.y - cur.y) < 0.3
+    ) {
+      return;
+    }
+
+    moveTo(reachable.x, reachable.y);
   };
 
   // 내 캐릭터
@@ -203,6 +245,10 @@ function SquarePageContent() {
       ? { name: sharedQuest.name, tagged: sharedQuest.tagged }
       : null,
     isNpc: false,
+    // 사용자 외형 — store ID 를 src 경로로 변환
+    outfitSrc: getOutfitSrc(outfitId) ?? undefined,
+    hairSrc: getHairSrc(hairId) ?? undefined,
+    hatSrc: getHatSrc(hatId) ?? undefined,
   };
 
   // focusSeconds 실시간 갱신
@@ -216,10 +262,10 @@ function SquarePageContent() {
   return (
     <div
       ref={viewportRef}
-      className="relative w-full h-screen overflow-hidden"
+      className="relative w-full h-screen overflow-hidden bg-[#3A2814]"
     >
-      {/* 고정 UI: 집중시간 (뷰포트 기준) */}
-      <div className="absolute top-4 left-0 right-0 z-30 flex justify-center px-4" data-no-move>
+      {/* 타이머 — 상단 가운데 */}
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30" data-no-move>
         <FocusTimer />
       </div>
 
@@ -247,18 +293,28 @@ function SquarePageContent() {
           draggable={false}
         />
 
-        {/* NPC 캐릭터들 */}
+        {/* NPC 캐릭터들 — 위치는 마스크 안쪽으로 스냅된 좌표 사용 */}
         {NPC_USERS.map((npc, idx) => (
           <div
             key={npc.id}
             className="absolute -translate-x-1/2 -translate-y-1/2"
             style={{
-              left: `${NPC_POSITIONS[idx].x}%`,
-              top: `${NPC_POSITIONS[idx].y}%`,
+              left: `${npcPositions[idx].x}%`,
+              top: `${npcPositions[idx].y}%`,
             }}
             data-no-move
           >
-            <SquareAvatar user={npc} />
+            <SquareAvatar
+              user={npc}
+              onClick={
+                npc.interactive
+                  ? (e) => {
+                      e.stopPropagation();
+                      setRestModalOpen(true);
+                    }
+                  : undefined
+              }
+            />
           </div>
         ))}
 
@@ -274,7 +330,7 @@ function SquarePageContent() {
           <SquareAvatar
             user={myUser}
             isWalking={isWalking}
-            facingLeft={facingLeft}
+            direction={facing}
             onClick={(e) => {
               e.stopPropagation();
               setSelectorOpen(true);
@@ -287,6 +343,12 @@ function SquarePageContent() {
       <SharedQuestSelector
         open={selectorOpen}
         onClose={() => setSelectorOpen(false)}
+      />
+
+      {/* 의문의 마법사 휴식 처방 모달 */}
+      <RestActivityModal
+        open={restModalOpen}
+        onClose={() => setRestModalOpen(false)}
       />
     </div>
   );

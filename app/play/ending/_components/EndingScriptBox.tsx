@@ -2,21 +2,57 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { DialogueLine } from "@/constants";
+import { useUserStore } from "@/utils/stores/userStore";
+import EndingPortrait from "./EndingPortrait";
 
 interface EndingScriptBoxProps {
   name: string;
   dialogue: DialogueLine[];
+  /** NPC 외형 (엔딩별 다르게 지정 가능, 미지정 시 기본 NPC) */
+  npcAppearance?: {
+    outfitId?: string | null;
+    hairId?: string | null;
+    hatId?: string | null;
+  };
 }
 
 const TYPING_SPEED = 40; // ms per character
+const PORTRAIT_SIZE = 84;
 
+// 화자별 UI 설정
 const SPEAKER_CONFIG = {
-  narrator: { label: "", align: "center" as const, bg: "bg-black/60", text: "text-white/80 italic" },
-  player: { label: "나", align: "right" as const, bg: "bg-blue-900/60", text: "text-blue-100" },
-  npc: { label: "???", align: "left" as const, bg: "bg-amber-900/60", text: "text-amber-100" },
+  narrator: {
+    label: "",
+    align: "center" as const,
+    bg: "bg-black/60",
+    text: "text-white/80 italic",
+  },
+  player: {
+    label: "나",
+    align: "right" as const,
+    bg: "bg-blue-900/60",
+    text: "text-blue-100",
+  },
+  npc: {
+    label: "???",
+    align: "left" as const,
+    bg: "bg-amber-900/60",
+    text: "text-amber-100",
+  },
 };
 
-const EndingScriptBox = ({ name, dialogue }: EndingScriptBoxProps) => {
+// 기본 NPC 외형 — 엔딩에서 npcAppearance 전달 안 했을 때 사용
+const DEFAULT_NPC_APPEARANCE = {
+  outfitId: "fstr_v05",
+  hairId: "bob1_v04",
+  hatId: null,
+};
+
+const EndingScriptBox = ({
+  name,
+  dialogue,
+  npcAppearance,
+}: EndingScriptBoxProps) => {
   const [nameVisible, setNameVisible] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
@@ -24,8 +60,16 @@ const EndingScriptBox = ({ name, dialogue }: EndingScriptBoxProps) => {
   const [isTypingDone, setIsTypingDone] = useState(false);
   const [isAllDone, setIsAllDone] = useState(false);
 
+  // 사용자 외형 — useUserStore 에서 직접
+  const playerOutfitId = useUserStore((s) => s.outfitId);
+  const playerHairId = useUserStore((s) => s.hairId);
+  const playerHatId = useUserStore((s) => s.hatId);
+  const playerNickname = useUserStore((s) => s.nickname);
+
   const currentLine = dialogue[currentIndex];
   const isLastLine = currentIndex >= dialogue.length - 1;
+
+  const npc = npcAppearance ?? DEFAULT_NPC_APPEARANCE;
 
   // 엔딩명 슬라이드인
   useEffect(() => {
@@ -51,7 +95,6 @@ const EndingScriptBox = ({ name, dialogue }: EndingScriptBoxProps) => {
   // 다음 대사로 넘기기
   const handleNext = useCallback(() => {
     if (!isTypingDone) {
-      // 타이핑 중이면 즉시 완성
       setDisplayedText(currentLine.text);
       setCharIndex(currentLine.text.length);
       setIsTypingDone(true);
@@ -63,7 +106,6 @@ const EndingScriptBox = ({ name, dialogue }: EndingScriptBoxProps) => {
       return;
     }
 
-    // 다음 대사
     setCurrentIndex((prev) => prev + 1);
     setDisplayedText("");
     setCharIndex(0);
@@ -73,6 +115,13 @@ const EndingScriptBox = ({ name, dialogue }: EndingScriptBoxProps) => {
   if (!currentLine && !isAllDone) return null;
 
   const config = currentLine ? SPEAKER_CONFIG[currentLine.speaker] : null;
+  const speaker = currentLine?.speaker;
+
+  // speaker 별 화자 이름 (label 우선, 동적인 경우 nickname)
+  const speakerLabel =
+    speaker === "player"
+      ? playerNickname ?? "나"
+      : config?.label ?? "";
 
   return (
     <div className="w-full p-4 space-y-4" onClick={handleNext}>
@@ -87,38 +136,85 @@ const EndingScriptBox = ({ name, dialogue }: EndingScriptBoxProps) => {
 
       {/* 대화 박스 */}
       {!isAllDone && config && (
-        <div
-          className={`relative ${config.bg} rounded-lg p-4 min-h-[80px] flex flex-col justify-center cursor-pointer`}
-        >
-          {/* 화자 이름 */}
-          {config.label && (
-            <span
-              className={`absolute -top-3 ${
-                config.align === "right" ? "right-3" : "left-3"
-              } text-[11px] font-bold px-2 py-0.5 rounded bg-black/70 text-white`}
+        <div className="relative">
+          {/* 캐릭터 portrait — speaker 에 따라 좌/우 배치 */}
+          {speaker === "player" && (
+            <div className="absolute -top-2 left-2 z-10">
+              <div className="bg-blue-950/90 border-2 border-blue-400/60 rounded-md p-1 shadow-lg">
+                <EndingPortrait
+                  outfitId={playerOutfitId}
+                  hairId={playerHairId}
+                  hatId={playerHatId}
+                  size={PORTRAIT_SIZE}
+                  flipX={false}
+                />
+              </div>
+            </div>
+          )}
+          {speaker === "npc" && (
+            <div className="absolute -top-2 right-2 z-10">
+              <div className="bg-amber-950/90 border-2 border-amber-400/60 rounded-md p-1 shadow-lg">
+                <EndingPortrait
+                  outfitId={npc.outfitId}
+                  hairId={npc.hairId}
+                  hatId={npc.hatId}
+                  size={PORTRAIT_SIZE}
+                  flipX={true}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* 대사 박스 */}
+          <div
+            className={`relative ${config.bg} rounded-lg p-4 cursor-pointer ${
+              speaker === "player"
+                ? "pl-[112px] min-h-[110px]"
+                : speaker === "npc"
+                ? "pr-[112px] min-h-[110px]"
+                : "min-h-[80px]"
+            } flex flex-col justify-center`}
+          >
+            {/* 화자 이름 */}
+            {speakerLabel && (
+              <span
+                className={`absolute -top-3 ${
+                  speaker === "player"
+                    ? "left-[112px]"
+                    : speaker === "npc"
+                    ? "right-[112px]"
+                    : config.align === "right"
+                    ? "right-3"
+                    : "left-3"
+                } text-[11px] font-bold px-2 py-0.5 rounded bg-black/70 text-white`}
+              >
+                {speakerLabel}
+              </span>
+            )}
+
+            {/* 대사 */}
+            <p
+              className={`text-base ${config.text} ${
+                speaker === "narrator" ? "text-center" : ""
+              }`}
             >
-              {config.label}
-            </span>
-          )}
+              {displayedText}
+              {!isTypingDone && <span className="animate-pulse">|</span>}
+            </p>
 
-          {/* 대사 */}
-          <p className={`text-base ${config.text} ${config.align === "center" ? "text-center" : ""}`}>
-            {displayedText}
-            {!isTypingDone && <span className="animate-pulse">|</span>}
-          </p>
+            {/* 다음 표시 */}
+            {isTypingDone && !isLastLine && (
+              <span className="absolute bottom-2 right-3 text-[10px] text-white/50 animate-bounce">
+                ▼ 탭하여 계속
+              </span>
+            )}
 
-          {/* 다음 표시 */}
-          {isTypingDone && !isLastLine && (
-            <span className="absolute bottom-2 right-3 text-[10px] text-white/50 animate-bounce">
-              ▼ 탭하여 계속
-            </span>
-          )}
-
-          {isTypingDone && isLastLine && (
-            <span className="absolute bottom-2 right-3 text-[10px] text-amber-400/70 animate-pulse">
-              ▼ 탭하여 종료
-            </span>
-          )}
+            {isTypingDone && isLastLine && (
+              <span className="absolute bottom-2 right-3 text-[10px] text-amber-400/70 animate-pulse">
+                ▼ 탭하여 종료
+              </span>
+            )}
+          </div>
         </div>
       )}
 

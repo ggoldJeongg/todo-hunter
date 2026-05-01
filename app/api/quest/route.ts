@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CreateQuestUseCase } from '@/application/usecases/quest/CreateQuestUsecase';
-import { PriQuestRepository, PriStatusRepository } from '@/infrastructure/repositories';
+import { PriQuestRepository, PriStatusRepository, PriSubTaskRepository } from '@/infrastructure/repositories';
 import { prisma } from '@/lib/prisma';
 import { CreateQuestDTO } from '@/application/usecases/quest/dtos';
 import { getUserFromCookie } from '@/utils/auth';
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     // 🔹 요청 바디 파싱
     const body = await req.json();
 
-    const { name, tagged, isWeekly, difficulty, expiredAt, days } = body;
+    const { name, tagged, isWeekly, difficulty, expiredAt, days, subTasks } = body;
 
     // 🔹 필수 값 검증
     if (!name || !tagged) {
@@ -41,12 +41,16 @@ export async function POST(req: NextRequest) {
       difficulty: difficulty || "normal",
       expiredAt: expiredAt ? new Date(expiredAt) : undefined,
       days: Array.isArray(days) ? days : undefined,
+      subTasks: Array.isArray(subTasks)
+        ? (subTasks as unknown[]).filter((s): s is string => typeof s === "string")
+        : undefined,
     };
 
     // 🔹 퀘스트 생성
     const questRepository = new PriQuestRepository(prisma);
     const statusRepository = new PriStatusRepository(prisma);
-    const createQuestUseCase = new CreateQuestUseCase(questRepository, statusRepository);
+    const subTaskRepository = new PriSubTaskRepository(prisma);
+    const createQuestUseCase = new CreateQuestUseCase(questRepository, statusRepository, subTaskRepository);
     const newQuest = await createQuestUseCase.createQuest(dto);
 
     return NextResponse.json({ success: true, quest: newQuest }, { status: 201 });
@@ -90,7 +94,10 @@ export async function GET(req: NextRequest) {
           { expiredAt: { gt: now } },
         ],
       },
-      include: { successDays: true },
+      include: {
+        successDays: true,
+        subTasks: { orderBy: [{ order: "asc" }, { id: "asc" }] },
+      },
       orderBy: { updatedAt: "desc" },
     });
 
@@ -106,9 +113,19 @@ export async function GET(req: NextRequest) {
               now
             )
           : 0;
-      const { successDays: _omit, ...rest } = quest;
+      const { successDays: _omit, subTasks, ...rest } = quest;
       void _omit;
-      return { ...rest, completed, streak };
+      return {
+        ...rest,
+        completed,
+        streak,
+        subTasks: subTasks.map((s) => ({
+          id: s.id,
+          name: s.name,
+          order: s.order,
+          completedAt: s.completedAt,
+        })),
+      };
     });
 
     return NextResponse.json({ success: true, quests: formattedQuests }, { status: 200 });
@@ -117,5 +134,3 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: false, error: "퀘스트 조회 중 오류 발생" }, { status: 500 });
   }
 }
-
-

@@ -1,0 +1,167 @@
+/* ============================================
+   Character Modal — 양피지 스타일
+   ============================================ */
+
+.cm-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    animation: cm-fade-in 0.2s ease-out;
+}
+
+@keyframes cm-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.cm-modal {
+    position: relative;
+    width: 100%;
+    max-width: 380px;
+    max-height: 80vh;
+    overflow-y: auto;
+    animation: cm-slide-up 0.25s ease-out;
+}
+
+@keyframes cm-slide-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.cm-paper-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.cm-content {
+    position: relative;
+    z-index: 1;
+    padding: 24px 20px;
+}
+
+
+/* ===== 닫기 버튼 ===== */
+.cm-close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    color: #8A7D6B;
+    background: rgba(255, 255, 255, 0.4);
+    border: 2px solid #C4AA78;
+    cursor: pointer;
+    transition: all 0.1s;
+}
+
+.cm-close:active {
+    transform: scale(0.9);
+}
+
+
+/* ===== 헤더: 캐릭터 + 정보 ===== */
+.cm-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.cm-sprite {
+    flex-shrink: 0;
+    width: 110px;
+    height: 110px;
+    overflow: hidden;
+}
+
+.cm-sprite canvas {
+    width: 110px !important;
+    height: 110px !important;
+    image-rendering: pixelated;
+}
+
+.cm-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cm-name {
+    font-size: 20px;
+    font-weight: 900;
+    color: #4A3F2F;
+}
+
+.cm-level {
+    font-size: 14px;
+    font-weight: 800;
+    color: #5B8C5A;
+    background: rgba(91, 140, 90, 0.12);
+    padding: 2px 10px;
+    display: inline-block;
+    width: fit-content;
+    border: 1.5px solid #5B8C5A;
+}
+
+.cm-wp {
+    font-size: 13px;
+    font-weight: 700;
+    color: #8A7D6B;
+}
+
+
+/* ===== 구분선 ===== */
+.cm-divider {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #C4AA78, transparent);
+    margin: 16px 0;
+}
+
+
+/* ===== 능력치 ===== */
+.cm-stats {
+    /* stat-list, stat-row 등은 character.css에서 가져옴 */
+}
+
+.cm-section-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #4A3F2F;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 2px dashed #D9CDB5;
+}
+
+
+/* ===== 반응형 ===== */
+@media (max-width: 360px) {
+    .cm-sprite {
+        width: 90px;
+        height: 90px;
+    }
+
+    .cm-sprite canvas {
+        width: 90px !important;
+        height: 90px !important;
+    }
+
+    .cm-name {
+        font-size: 17px;
+    }
+
+    .cm-content {
+        padding: 20px 16px;
+    }
+}

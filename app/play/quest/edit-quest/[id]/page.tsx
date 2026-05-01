@@ -34,9 +34,19 @@ const EditQuestPage = () => {
     } else {
       fillForm(quest);
     }
+    // fillForm / fetchQuests / setter 들은 store action 으로 stable reference.
+    // deps 에 추가하면 zustand setter 변경 등 엣지케이스에서 재실행되지만, 의도는 1회 초기화이므로 제외.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, quests, loaded]);
 
-  const fillForm = (quest: { name: string; tagged: string; isWeekly: boolean; difficulty?: string; expiredAt?: string | null; days?: string[] }) => {
+  const fillForm = (quest: {
+    name: string;
+    tagged: string;
+    isWeekly: boolean;
+    difficulty?: string;
+    expiredAt?: string | null;
+    days?: string[];
+  }) => {
     setQuestName(quest.name);
     setTagged(quest.tagged as "STR" | "INT" | "EMO" | "FIN" | "LIV");
     setIsWeekly(quest.isWeekly);

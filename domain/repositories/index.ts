@@ -5,3 +5,5 @@ export * from "@/domain/repositories/IUserTitleRepository";
 export * from "@/domain/repositories/ISuccessDayRepository";
 export * from "@/domain/repositories/IStatusRepository";
 export * from "@/domain/repositories/ITitleRepository";
+export * from "@/domain/repositories/IEndingHistoryRepository";
+export * from "@/domain/repositories/ISubTaskRepository";

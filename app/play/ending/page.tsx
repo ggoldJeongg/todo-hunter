@@ -41,24 +41,27 @@ const EndingPage = () => {
           });
         }, FADE_STEP_DURATION);
 
-        // 토스트는 페이드인이 완료된 후 표시
-        setTimeout(() => {
-          toast("새로운 칭호를 획득했습니다!", {
-            duration: 3000,
-          });
+        // 토스트는 첫 view (아직 "확인" 클릭 안 한 상태) 일 때만 표시
+        // 새로고침해도 checkedAt 없으면 다시 뜨긴 하지만, addCount 부수효과는 없음
+        if (data.isFirstView) {
           setTimeout(() => {
-            toast(
-              <div className="flex flex-col gap-2">
-                <p className="text-lg font-bold">
-                  {data.achievableTitle.titleName}
-                </p>
-                <p className="text-sm text-gray-500">
-                  {data.achievableTitle.description}
-                </p>
-              </div>
-            );
-          }, 1000);
-        }, TOTAL_FADE_DURATION + TOAST_DELAY);
+            toast("새로운 칭호를 획득했습니다!", {
+              duration: 3000,
+            });
+            setTimeout(() => {
+              toast(
+                <div className="flex flex-col gap-2">
+                  <p className="text-lg font-bold">
+                    {data.achievableTitle.titleName}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {data.achievableTitle.description}
+                  </p>
+                </div>
+              );
+            }, 1000);
+          }, TOTAL_FADE_DURATION + TOAST_DELAY);
+        }
 
         return () => clearInterval(fadeInterval);
       } catch (error) {

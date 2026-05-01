@@ -8,26 +8,54 @@ import {
   type BattleTheme,
 } from "./BattleThemes";
 import { getMonsterByKillCount } from "./MonsterRegistry";
+import {
+  getOutfitSrc,
+  getHairSrc,
+  getHatSrc,
+  getOutfitBattleSrc,
+  getHairBattleSrc,
+  getHatBattleSrc,
+} from "@/constants/appearance";
 
 // 스프라이트 경로
 const IDLE_PATH = "/images/asprites/char_a_p1";
 const ATTACK_PATH = "/images/asprites/char_a_pONE1";
 
-const PLAYER_IDLE_LAYERS = [
-  `${IDLE_PATH}/char_a_p1_0bas_humn_v00.png`,
-  `${IDLE_PATH}/1out/char_a_p1_1out_fstr_v01.png`,
-  `${IDLE_PATH}/4har/char_a_p1_4har_bob1_v01.png`,
-  // idle 시트(char_a_p1)에는 무기 폴더가 없어서 attack 시트의 sword 레이어를 빌려옴.
-  // 두 시트가 같은 8행 매핑이라 frame 48(오른쪽 idle) 위치에 칼이 정상 합성됨.
-  `${ATTACK_PATH}/6tla/char_a_pONE1_6tla_sw01_v01.png`,
-];
+const IDLE_BODY = `${IDLE_PATH}/char_a_p1_0bas_humn_v00.png`;
+const ATTACK_BODY = `${ATTACK_PATH}/char_a_pONE1_0bas_humn_v00.png`;
+// 무기 — idle 시트엔 무기 폴더가 없어 attack 시트 sword 레이어 빌려 씀
+const SWORD_LAYER = `${ATTACK_PATH}/6tla/char_a_pONE1_6tla_sw01_v01.png`;
 
-const PLAYER_ATTACK_LAYERS = [
-  `${ATTACK_PATH}/char_a_pONE1_0bas_humn_v00.png`,
-  `${ATTACK_PATH}/1out/char_a_pONE1_1out_fstr_v01.png`,
-  `${ATTACK_PATH}/4har/char_a_pONE1_4har_bob1_v01.png`,
-  `${ATTACK_PATH}/6tla/char_a_pONE1_6tla_sw01_v01.png`,
-];
+export interface BattleAppearance {
+  outfitId?: string | null;
+  hairId?: string | null;
+  hatId?: string | null;
+}
+
+function buildIdleLayers(appearance: BattleAppearance | undefined): string[] {
+  const layers: string[] = [
+    IDLE_BODY,
+    getOutfitSrc(appearance?.outfitId) ?? `${IDLE_PATH}/1out/char_a_p1_1out_fstr_v01.png`,
+    getHairSrc(appearance?.hairId) ?? `${IDLE_PATH}/4har/char_a_p1_4har_bob1_v01.png`,
+  ];
+  const hatSrc = getHatSrc(appearance?.hatId);
+  if (hatSrc) layers.push(hatSrc);
+  // 무기는 항상 마지막 레이어
+  layers.push(SWORD_LAYER);
+  return layers;
+}
+
+function buildAttackLayers(appearance: BattleAppearance | undefined): string[] {
+  const layers: string[] = [
+    ATTACK_BODY,
+    getOutfitBattleSrc(appearance?.outfitId),
+    getHairBattleSrc(appearance?.hairId),
+  ];
+  const hatSrc = getHatBattleSrc(appearance?.hatId);
+  if (hatSrc) layers.push(hatSrc);
+  layers.push(SWORD_LAYER);
+  return layers;
+}
 
 // 화면 셰이크 설정
 const SCREEN_SHAKE_INTENSITY = 4;
@@ -54,6 +82,9 @@ export class PixiBattleScene {
   private theme: BattleTheme = BATTLE_THEMES.night;
   private bgContainer: Container | null = null;
 
+  // 캐릭터 외형 (init 시 전달받음)
+  private appearance: BattleAppearance | undefined;
+
   // 화면 셰이크
   private screenShakeActive = false;
   private screenShakeElapsed = 0;
@@ -66,11 +97,13 @@ export class PixiBattleScene {
     canvas: HTMLCanvasElement,
     width: number,
     height: number,
-    themeId: BattleThemeId = "night"
+    themeId: BattleThemeId = "night",
+    appearance?: BattleAppearance
   ) {
     this.width = width;
     this.height = height;
     this.theme = BATTLE_THEMES[themeId];
+    this.appearance = appearance;
 
     this.app = new Application();
     await this.app.init({
@@ -150,8 +183,8 @@ export class PixiBattleScene {
     const initialMonster = getMonsterByKillCount(useQuestStore.getState().killCount);
 
     const [idleLayers, attackLayers, monsterTextures] = await Promise.all([
-      loadSpriteLayers(PLAYER_IDLE_LAYERS),
-      loadSpriteLayers(PLAYER_ATTACK_LAYERS),
+      loadSpriteLayers(buildIdleLayers(this.appearance)),
+      loadSpriteLayers(buildAttackLayers(this.appearance)),
       Promise.all(initialMonster.frames.map(loadTexture)),
     ]);
 

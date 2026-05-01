@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useQuestStore } from "@/utils/stores/questStore";
 import { Tag } from "@/components/common/Tag";
 import { Button } from "@/components/common/Button";
 import { useRouter } from "next/navigation";
+import SubTaskSplitModal from "@/components/quest/SubTaskSplitModal";
 
 // 한국어 요일 (월~일 순서)
 const DAYS_OF_WEEK = ["월", "화", "수", "목", "금", "토", "일"] as const;
@@ -17,8 +18,10 @@ const DAY_ORDER: Record<string, number> = {
 const DOT_FONT = "Galmuri11Bold, monospace";
 
 const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hideAddButton?: boolean }) => {
-  const { quests, fetchQuests, completeQuest, deleteQuest, loading, error } = useQuestStore();
+  const { quests, fetchQuests, completeQuest, completeSubTask, deleteQuest, loading, error } = useQuestStore();
   const router = useRouter();
+  const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
+  const [splitTarget, setSplitTarget] = useState<number | null>(null);
 
   useEffect(() => {
     fetchQuests();
@@ -26,6 +29,15 @@ const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hide
 
   const onAddQuestHandler = () => {
     router.push("quest/add-quest");
+  };
+
+  const toggleExpand = (id: number) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   };
 
   const formatDate = (dateString: string | number | Date) => {
@@ -70,7 +82,14 @@ const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hide
         <p className="text-center text-red-500">{error}</p>
       ) : (
         <div className="space-y-3">
-          {sortedWeeklyQuests.map(({ id, name, tagged, completed, expiredAt, days, streak }) => (
+          {sortedWeeklyQuests.map((quest) => {
+            const { id, name, tagged, completed, expiredAt, days, streak, subTasks } = quest;
+            const hasSubTasks = !!subTasks && subTasks.length > 0;
+            const completedSubCount = subTasks?.filter((s) => s.completedAt).length ?? 0;
+            const totalSubCount = subTasks?.length ?? 0;
+            const expanded = expandedIds.has(id);
+
+            return (
               <div
                 key={id}
                 className={`relative flex flex-wrap items-center gap-3 is-rounded p-2.5 ${completed ? "opacity-60 bg-gray-100" : "bg-white"}`}
@@ -99,10 +118,12 @@ const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hide
                     DEFEATED
                   </div>
                 )}
+
                 <button
-                  className="shrink-0 cursor-pointer"
-                  disabled={completed}
-                  onClick={() => { if (!completed) completeQuest(id); }}
+                  className="shrink-0 cursor-pointer disabled:cursor-not-allowed"
+                  disabled={completed || hasSubTasks}
+                  onClick={() => { if (!completed && !hasSubTasks) completeQuest(id); }}
+                  title={hasSubTasks ? "서브태스크를 모두 완료해야 합니다" : ""}
                 >
                   <Image
                     src={completed ? "/icons/check_on.svg" : "/icons/check_off.svg"}
@@ -111,30 +132,92 @@ const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hide
                     alt={completed ? "완료" : "미완료"}
                   />
                 </button>
+
                 <div className="flex-1 min-w-0">
                   <span className="text-sm truncate block">{name}</span>
-                  {streak !== undefined && streak > 0 && (
-                    <p className="text-xs text-orange-500 font-bold">
-                      🔥 {streak}주 연속
-                    </p>
-                  )}
+                  <p className="text-xs text-gray-500 flex flex-wrap items-center gap-x-1.5">
+                    {streak !== undefined && streak > 0 && (
+                      <span className="text-orange-500 font-bold">🔥 {streak}주 연속</span>
+                    )}
+                    {hasSubTasks && (
+                      <span>서브 {completedSubCount}/{totalSubCount}</span>
+                    )}
+                  </p>
                   {expiredAt && (
                     <p className="text-xs text-gray-400">{formatDate(expiredAt)}</p>
                   )}
                 </div>
+
                 <Tag variant={tagged}>{tagged}</Tag>
+
+                {hasSubTasks && (
+                  <button
+                    className="shrink-0 cursor-pointer text-xs text-gray-500 px-1"
+                    onClick={() => toggleExpand(id)}
+                    aria-label={expanded ? "접기" : "펼치기"}
+                  >
+                    {expanded ? "▲" : "▼"}
+                  </button>
+                )}
+                {!completed && (
+                  <button
+                    type="button"
+                    className="shrink-0 cursor-pointer"
+                    onClick={() => setSplitTarget(id)}
+                    title="할일 쪼개기"
+                  >
+                    <Image
+                      src="/icons/Numbered-List.svg"
+                      width={20}
+                      height={20}
+                      alt="할일 쪼개기"
+                    />
+                  </button>
+                )}
                 {!completed && (
                   <button
                     className="shrink-0 cursor-pointer"
                     onClick={() => router.push(`/play/quest/edit-quest/${id}`)}
                   >
-                    <Image src="/icons/pencil.png" width={20} height={20} alt="수정" />
+                    <Image src="/icons/Pencil.png" width={20} height={20} alt="수정" />
                   </button>
                 )}
                 {!completed && (
                   <button className="shrink-0 cursor-pointer" onClick={() => deleteQuest(id)}>
                     <Image src="/icons/circle-x.svg" width={20} height={20} alt="삭제" />
                   </button>
+                )}
+
+                {/* 서브태스크 펼침 영역 — w-full basis-full 로 다음 줄 배치 */}
+                {hasSubTasks && expanded && (
+                  <div className="w-full basis-full border-t border-gray-200 mt-2 pt-2 space-y-1.5">
+                    {subTasks!.map((s) => {
+                      const isDone = !!s.completedAt;
+                      return (
+                        <div key={s.id} className="flex items-center gap-2">
+                          <button
+                            className="shrink-0 cursor-pointer disabled:cursor-not-allowed"
+                            disabled={isDone || completed}
+                            onClick={() => { if (!isDone && !completed) completeSubTask(id, s.id); }}
+                          >
+                            <Image
+                              src={isDone ? "/icons/check_on.svg" : "/icons/check_off.svg"}
+                              width={16}
+                              height={16}
+                              alt={isDone ? "완료" : "미완료"}
+                            />
+                          </button>
+                          <span
+                            className={`text-xs flex-1 truncate ${
+                              isDone ? "line-through text-gray-400" : "text-gray-700"
+                            }`}
+                          >
+                            {s.name}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
 
                 {/* 카드 하단 7요일 grid: 이 quest 의 반복 요일 강조 */}
@@ -169,7 +252,8 @@ const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hide
                   })}
                 </div>
               </div>
-            ))}
+            );
+          })}
         </div>
       )}
       {!hideAddButton && (
@@ -179,6 +263,22 @@ const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hide
           </Button>
         </div>
       )}
+
+      {/* 할일 쪼개기 모달 */}
+      {splitTarget !== null && (() => {
+        const target = quests.find((q) => q.id === splitTarget);
+        if (!target) return null;
+        return (
+          <SubTaskSplitModal
+            questId={target.id}
+            questName={target.name}
+            questTagged={target.tagged}
+            questDifficulty={target.difficulty}
+            existingSubTasks={target.subTasks ?? []}
+            onClose={() => setSplitTarget(null)}
+          />
+        );
+      })()}
     </div>
   );
 };
