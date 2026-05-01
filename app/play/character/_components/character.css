@@ -128,7 +128,9 @@
 
 
 /* ============================================
-   Pixel Panel — 캐릭터 + 스탯 (CSS-only 양피지)
+   Pixel Panel — 캐릭터 + 스탯 (양피지 PNG 배경)
+   PNG 자체에 가장자리/그림자가 있어 외곽 픽셀 border, 점선, box-shadow 모두 제거.
+   background-size: 100% 100% 로 패널 크기에 맞춰 늘어남.
    ============================================ */
 .parchment-panel {
     position: relative;
@@ -136,28 +138,11 @@
     width: 92%;
     max-width: 460px;
     margin: 12px auto 14px;
-    background: linear-gradient(180deg, #FAF4E6 0%, #F2E9D0 100%);
-    padding: 22px 20px 22px;
+    background: url('/images/backgrounds/titlebook-background_02.png') center / 100% 100% no-repeat;
+    /* 양피지 PNG 안쪽 책 페이지 영역에 콘텐츠가 들어가도록 좌우/상하 여백 추가 */
+    padding: 36px 32px 32px;
     min-height: 280px;
     image-rendering: pixelated;
-    border-style: solid;
-    border-width: 4px;
-    border-image-slice: 3;
-    border-image-width: 3;
-    border-image-source: url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(74,63,47)" /></svg>');
-    border-image-repeat: stretch;
-    border-image-outset: 2;
-    box-shadow: 0 4px 0 #B49A68, 0 8px 12px rgba(0,0,0,0.18);
-}
-
-/* 패널 내부 황금 테두리 — 양피지 느낌 강화 */
-.parchment-panel::before {
-    content: "";
-    position: absolute;
-    inset: 4px;
-    border: 2px dashed #C8A04E;
-    pointer-events: none;
-    opacity: 0.5;
 }
 
 .parchment-content {
@@ -485,23 +470,16 @@
 
 .mini-card {
     position: relative;
-    background: linear-gradient(180deg, #FAF4E6 0%, #F2E9D0 100%);
-    padding: 14px 10px 12px;
+    background: url('/images/backgrounds/titlebook-background_02.png') center / 100% 100% no-repeat;
+    /* PNG 가장자리 영역만큼 안쪽 패딩 — 좁은 정사각형 패널이라 padding 더 넉넉히 */
+    padding: 22px 14px 18px;
     text-align: center;
     image-rendering: pixelated;
-    min-height: 120px;
+    min-height: 140px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    border-style: solid;
-    border-width: 4px;
-    border-image-slice: 3;
-    border-image-width: 3;
-    border-image-source: url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(74,63,47)" /></svg>');
-    border-image-repeat: stretch;
-    border-image-outset: 2;
-    box-shadow: 0 4px 0 #B49A68, 0 6px 8px rgba(0,0,0,0.15);
 }
 
 .mini-card-title {
@@ -605,17 +583,10 @@
     width: 92%;
     max-width: 460px;
     margin: 0 auto 12px;
-    background: linear-gradient(180deg, #FAF4E6 0%, #F2E9D0 100%);
+    background: url('/images/backgrounds/titlebook-background_02.png') center / 100% 100% no-repeat;
     image-rendering: pixelated;
-    padding: 18px 20px 18px;
-    border-style: solid;
-    border-width: 4px;
-    border-image-slice: 3;
-    border-image-width: 3;
-    border-image-source: url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(74,63,47)" /></svg>');
-    border-image-repeat: stretch;
-    border-image-outset: 2;
-    box-shadow: 0 4px 0 #B49A68, 0 8px 12px rgba(0,0,0,0.18);
+    /* PNG 안쪽 책 페이지 영역에 맞춰 좌우 패딩 더 넉넉히 */
+    padding: 32px 32px 32px;
 }
 
 .growth-card-title {
