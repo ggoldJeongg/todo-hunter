@@ -58,73 +58,99 @@ const DailyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hideA
               return (
                 <div
                   key={id}
-                  className={`is-rounded ${completed ? "opacity-50 bg-gray-100" : "bg-white"}`}
+                  className={`relative flex flex-wrap items-center gap-3 is-rounded p-2.5 ${completed ? "opacity-60 bg-gray-100" : "bg-white"}`}
                 >
-                  <div className="flex items-center gap-3 p-2.5">
-                    <button
-                      className="shrink-0 cursor-pointer disabled:cursor-not-allowed"
-                      disabled={completed || hasSubTasks}
-                      onClick={() => { if (!completed && !hasSubTasks) completeQuest(id); }}
-                      title={hasSubTasks ? "서브태스크를 모두 완료해야 합니다" : ""}
+                  {/* 완료 시 DEFEATED 띠 (카드 가운데 가로로, 살짝 회전) */}
+                  {completed && (
+                    <div
+                      className="absolute pointer-events-none select-none z-10 text-center"
+                      style={{
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%) rotate(-4deg)",
+                        width: "55%",
+                        background: "#86a48b",
+                        color: "#ffffff",
+                        fontFamily: "Galmuri11Bold, monospace",
+                        fontSize: "13px",
+                        letterSpacing: "5px",
+                        padding: "2px 0",
+                        borderTop: "2px solid rgba(255,255,255,0.5)",
+                        borderBottom: "2px solid rgba(255,255,255,0.5)",
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+                        textShadow: "1px 1px 0 rgba(0,0,0,0.3)",
+                      }}
                     >
-                      <Image
-                        src={completed ? "/icons/check_on.svg" : "/icons/check_off.svg"}
-                        width={20}
-                        height={20}
-                        alt={completed ? "완료" : "미완료"}
-                      />
-                    </button>
-                    <div className="flex-1 min-w-0">
-                      <span className="text-sm truncate block">{name}</span>
-                      {hasSubTasks && (
-                        <span className="text-[11px] text-gray-500">
-                          서브태스크 {completedSubCount}/{totalSubCount}
-                        </span>
-                      )}
+                      DEFEATED
                     </div>
-                    <Tag variant={tagged}>{tagged}</Tag>
+                  )}
+
+                  <button
+                    className="shrink-0 cursor-pointer disabled:cursor-not-allowed"
+                    disabled={completed || hasSubTasks}
+                    onClick={() => { if (!completed && !hasSubTasks) completeQuest(id); }}
+                    title={hasSubTasks ? "서브태스크를 모두 완료해야 합니다" : ""}
+                  >
+                    <Image
+                      src={completed ? "/icons/check_on.svg" : "/icons/check_off.svg"}
+                      width={20}
+                      height={20}
+                      alt={completed ? "완료" : "미완료"}
+                    />
+                  </button>
+
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm truncate block">{name}</span>
                     {hasSubTasks && (
-                      <button
-                        className="shrink-0 cursor-pointer text-xs text-gray-500 px-1"
-                        onClick={() => toggleExpand(id)}
-                        aria-label={expanded ? "접기" : "펼치기"}
-                      >
-                        {expanded ? "▲" : "▼"}
-                      </button>
-                    )}
-                    {!completed && (
-                      <button
-                        type="button"
-                        className="shrink-0 cursor-pointer"
-                        onClick={() => setSplitTarget(id)}
-                        title="할일 쪼개기"
-                      >
-                        <Image
-                          src="/icons/Numbered-List.svg"
-                          width={20}
-                          height={20}
-                          alt="할일 쪼개기"
-                        />
-                      </button>
-                    )}
-                    {!completed && (
-                      <button
-                        className="shrink-0 cursor-pointer"
-                        onClick={() => router.push(`/play/quest/edit-quest/${id}`)}
-                      >
-                        <Image src="/icons/Pencil.png" width={20} height={20} alt="수정" />
-                      </button>
-                    )}
-                    {!completed && (
-                      <button className="shrink-0 cursor-pointer" onClick={() => deleteQuest(id)}>
-                        <Image src="/icons/circle-x.svg" width={20} height={20} alt="삭제" />
-                      </button>
+                      <span className="text-[11px] text-gray-500">
+                        서브태스크 {completedSubCount}/{totalSubCount}
+                      </span>
                     )}
                   </div>
 
-                  {/* 서브태스크 펼침 영역 */}
+                  <Tag variant={tagged}>{tagged}</Tag>
+
+                  {hasSubTasks && (
+                    <button
+                      className="shrink-0 cursor-pointer text-xs text-gray-500 px-1"
+                      onClick={() => toggleExpand(id)}
+                      aria-label={expanded ? "접기" : "펼치기"}
+                    >
+                      {expanded ? "▲" : "▼"}
+                    </button>
+                  )}
+                  {!completed && (
+                    <button
+                      type="button"
+                      className="shrink-0 cursor-pointer"
+                      onClick={() => setSplitTarget(id)}
+                      title="할일 쪼개기"
+                    >
+                      <Image
+                        src="/icons/Numbered-List.svg"
+                        width={20}
+                        height={20}
+                        alt="할일 쪼개기"
+                      />
+                    </button>
+                  )}
+                  {!completed && (
+                    <button
+                      className="shrink-0 cursor-pointer"
+                      onClick={() => router.push(`/play/quest/edit-quest/${id}`)}
+                    >
+                      <Image src="/icons/Pencil.png" width={20} height={20} alt="수정" />
+                    </button>
+                  )}
+                  {!completed && (
+                    <button className="shrink-0 cursor-pointer" onClick={() => deleteQuest(id)}>
+                      <Image src="/icons/circle-x.svg" width={20} height={20} alt="삭제" />
+                    </button>
+                  )}
+
+                  {/* 서브태스크 펼침 영역 — w-full basis-full 로 다음 줄에 배치 */}
                   {hasSubTasks && expanded && (
-                    <div className="border-t border-gray-200 px-3 py-2 space-y-1.5">
+                    <div className="w-full basis-full border-t border-gray-200 mt-2 pt-2 space-y-1.5">
                       {subTasks!.map((s) => {
                         const isDone = !!s.completedAt;
                         return (
