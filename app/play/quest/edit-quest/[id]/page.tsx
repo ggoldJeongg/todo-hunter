@@ -36,7 +36,14 @@ const EditQuestPage = () => {
     }
   }, [id, quests, loaded]);
 
-  const fillForm = (quest: { name: string; tagged: string; isWeekly: boolean; difficulty?: string; expiredAt?: string | null; days?: string[] }) => {
+  const fillForm = (quest: {
+    name: string;
+    tagged: string;
+    isWeekly: boolean;
+    difficulty?: string;
+    expiredAt?: string | null;
+    days?: string[];
+  }) => {
     setQuestName(quest.name);
     setTagged(quest.tagged as "STR" | "INT" | "EMO" | "FIN" | "LIV");
     setIsWeekly(quest.isWeekly);

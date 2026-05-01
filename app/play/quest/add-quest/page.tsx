@@ -8,8 +8,12 @@ import QuestForm from "@/components/quest/QuestForm";
 const AddQuestPage = () => {
   const router = useRouter();
   const { addQuest } = useQuestStore();
-  const { questName, tagged, selectedDate, isWeekly, difficulty, selectedDays, resetForm } = useQuestFormStore();
+  const {
+    questName, tagged, selectedDate, isWeekly,
+    difficulty, selectedDays, resetForm,
+  } = useQuestFormStore();
 
+  // 서브태스크는 등록 후 목록 화면에서 "쪼개기" 모달로 추가하는 흐름.
   const handleCreate = async () => {
     await addQuest({
       name: questName,

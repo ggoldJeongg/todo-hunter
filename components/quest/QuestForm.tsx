@@ -202,6 +202,9 @@ const QuestForm = ({ title, submitLabel, onSubmit }: QuestFormProps) => {
           <p className="text-right text-[11px] text-gray-500 mt-1.5">
             획득 EXP: +{EXP_PER_QUEST * DIFFICULTY_CONFIG[difficulty].expMult}
           </p>
+          <p className="text-[11px] text-gray-500 mt-1.5">
+            ※ 등록 후 할일 목록에서 <span className="text-orange-400 font-bold">⚔️ 쪼개기</span> 버튼으로 서브태스크를 추가할 수 있어요.
+          </p>
         </section>
 
         {/* 6. 시작일 (주간 퀘스트일 때만 노출 — 일간은 오늘 처리되는 일회성이라 의미 없음) */}
