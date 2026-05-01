@@ -9,7 +9,6 @@ import { Button } from "@/components/common";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, Suspense, useState, useMemo, useCallback } from "react";
 import { EXP_TO_LEVEL_UP } from "@/constants/game";
-import { STATUS } from "@/constants";
 import { deriveCondition, deriveTraits } from "@/constants/characterDerive";
 import { getTitleIcon } from "@/constants/titleIcons";
 
