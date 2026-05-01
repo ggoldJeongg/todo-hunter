@@ -1,11 +1,12 @@
-import { IQuestRepository, IStatusRepository } from "@/domain/repositories";
+import { IQuestRepository, IStatusRepository, ISubTaskRepository } from "@/domain/repositories";
 import { CreateQuestDTO, GetQuestDTO } from "@/application/usecases/quest/dtos";
 import { STATUS } from "@/constants";
 
 export class CreateQuestUseCase {
   constructor(
     private readonly PriQuestRepository: IQuestRepository,
-    private readonly PriStatusRepository: IStatusRepository
+    private readonly PriStatusRepository: IStatusRepository,
+    private readonly PriSubTaskRepository?: ISubTaskRepository
   ) {}
 
   async createQuest(dto: CreateQuestDTO): Promise<GetQuestDTO> {
@@ -33,6 +34,22 @@ export class CreateQuestUseCase {
       updatedAt: new Date(),
     });
 
+    // 서브태스크가 함께 들어온 경우 같이 생성. 빈 문자열은 필터링.
+    const cleanSubTaskNames = (dto.subTasks ?? [])
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+
+    let createdSubTasks: GetQuestDTO["subTasks"] = [];
+    if (cleanSubTaskNames.length > 0 && this.PriSubTaskRepository) {
+      const rows = await this.PriSubTaskRepository.createMany(quest.id, cleanSubTaskNames);
+      createdSubTasks = rows.map((s) => ({
+        id: s.id,
+        name: s.name,
+        order: s.order,
+        completedAt: s.completedAt,
+      }));
+    }
+
     // 캐릭터의 상태(Status) 조회 (없으면 생성)
     let status = await this.PriStatusRepository.findByCharacterId(dto.characterId);
     if (!status) {
@@ -50,6 +67,7 @@ export class CreateQuestUseCase {
       createdAt: quest.createdAt,
       completedDates: [], // 생성 시 완료된 날짜 없음
       days: quest.days,
+      subTasks: createdSubTasks,
     };
   }
 }
