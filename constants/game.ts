@@ -27,3 +27,6 @@ export const STAT_GAIN_BY_DIFFICULTY: Record<string, number> = {
 export function getStatGain(difficulty: string | null | undefined): number {
   return STAT_GAIN_BY_DIFFICULTY[difficulty ?? "normal"] ?? 1;
 }
+
+/** 한 퀘스트당 가질 수 있는 서브태스크 최대 개수 */
+export const MAX_SUBTASKS_PER_QUEST = 3;

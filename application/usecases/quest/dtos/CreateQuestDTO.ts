@@ -8,4 +8,5 @@ export interface CreateQuestDTO {
     difficulty?: string; // 난이도 (easy, normal, hard)
     expiredAt?: Date;    // 만료일
     days?: string[];     // 주간 퀘스트의 반복 요일 (예: ["월", "수", "금"])
+    subTasks?: string[]; // 서브태스크 이름 목록(생성 시 함께 등록). 없거나 빈 배열이면 단일 할일로 처리.
   }

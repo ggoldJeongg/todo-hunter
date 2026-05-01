@@ -6,3 +6,4 @@ export * from "@/infrastructure/repositories/PriSuccessdayRepository";
 export * from "@/infrastructure/repositories/PriStatusRepository";
 export * from "@/infrastructure/repositories/PriTitleRepository";
 export * from "@/infrastructure/repositories/PriEndingHistoryRepository";
+export * from "@/infrastructure/repositories/PriSubTaskRepository";

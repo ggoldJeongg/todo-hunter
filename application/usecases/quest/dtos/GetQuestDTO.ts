@@ -1,4 +1,12 @@
 import { STATUS } from "@/constants";
+
+export interface SubTaskDTO {
+  id: number;
+  name: string;
+  order: number;
+  completedAt: Date | null;
+}
+
 //할일 조회, 응답 DTO
 export interface GetQuestDTO {
     id?: number;           // 퀘스트 ID
@@ -11,4 +19,5 @@ export interface GetQuestDTO {
     createdAt: Date;
     completedDates?: Date[];
     days?: string[];
+    subTasks?: SubTaskDTO[]; // 서브태스크 목록 (없으면 단일 할일)
   }
