@@ -16,22 +16,35 @@ export default function Home() {
   const [hasRefreshToken, setHasRefreshToken] = useState(false);
 
   // 서버에서 헤더를 가져오기 위해 초기 요청
+  // 실패/타임아웃 시 비로그인 상태로 간주하고 시작 화면을 띄운다 (무한 로딩 방지).
   useEffect(() => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
     const checkTokens = async () => {
-      const response = await fetch("/", { credentials: "include" });
-
-      const accessTokenHeader = response.headers.get("X-Has-AccessToken");
-      const refreshTokenHeader = response.headers.get("X-Has-RefreshToken");
-
-      const hasAccessToken = accessTokenHeader === "true";
-      const hasRefreshToken = refreshTokenHeader === "true";
-
-      setHasAccessToken(hasAccessToken);
-      setHasRefreshToken(hasRefreshToken);
-
-      setIsLoading(false);
+      try {
+        const response = await fetch("/", {
+          credentials: "include",
+          signal: controller.signal,
+        });
+        setHasAccessToken(response.headers.get("X-Has-AccessToken") === "true");
+        setHasRefreshToken(response.headers.get("X-Has-RefreshToken") === "true");
+      } catch (err) {
+        // AbortError는 정상 cleanup(언마운트/Strict Mode 이중 실행)이라 무시
+        if ((err as Error).name !== "AbortError") {
+          console.error("[Home] token check failed:", err);
+        }
+      } finally {
+        clearTimeout(timeoutId);
+        setIsLoading(false);
+      }
     };
     checkTokens();
+
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
   }, []);
 
   const handleStartClick = async (e: React.MouseEvent) => {

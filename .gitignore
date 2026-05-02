@@ -18,6 +18,12 @@ PRD.md
 /.next/
 /out/
 
+# next-pwa (auto-generated service worker artifacts)
+/public/sw.js
+/public/sw.js.map
+/public/workbox-*.js
+/public/workbox-*.js.map
+
 # production
 /build
 

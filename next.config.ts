@@ -1,57 +1,37 @@
 import { withSentryConfig } from "@sentry/nextjs";
-import withPWA from "next-pwa";
-import { NextConfig } from "next";
+import withPWAInit from "@ducanh2912/next-pwa";
+import type { NextConfig } from "next";
+
+const withPWA = withPWAInit({
+  dest: "public",
+  register: true,
+  disable: process.env.NODE_ENV === "development",
+  workboxOptions: {
+    skipWaiting: true,
+    clientsClaim: true,
+    // 베타 단계: PWA 설치 + manifest 작동만 필요. 오프라인 캐시는 Phase 2.
+    // catch-all NetworkOnly로 fetch handler 등록(Chrome 인스톨 조건) + 응답 캐시 X
+    runtimeCaching: [
+      {
+        urlPattern: /.*/,
+        handler: "NetworkOnly",
+      },
+    ],
+  },
+});
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  pwa: {
-    dest: "public",   // 서비스 워커 파일을 public 폴더에 배치
-    disable: false,    // 개발 환경에서 PWA 활성화
-    register: true,    // 서비스 워커 등록
-    sw: "service-worker.js", // 서비스 워커 파일 이름
-  },
-};
-
-/** @type {import("next").NextConfig} */
-module.exports = {
-  output: "standalone",
   serverExternalPackages: ["@prisma/instrumentation"],
 };
 
 export default withSentryConfig(withPWA(nextConfig), {
-  // For all available options, see:
-  // https://www.npmjs.com/package/@sentry/webpack-plugin#options
-
   org: "todo-hunter",
-
   project: "todo-hunter",
-
-  // Only print logs for uploading source maps in CI
   silent: !process.env.CI,
-
-  // For all available options, see:
-  // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
-
-  // Upload a larger set of source maps for prettier stack traces (increases build time)
   widenClientFileUpload: true,
-
-  // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
-  // This can increase your server load as well as your hosting bill.
-  // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
-  // side errors will fail.
   tunnelRoute: "/monitoring",
-
   webpack: {
-    // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
-    // See the following for more information:
-    // https://docs.sentry.io/product/crons/
-    // https://vercel.com/docs/cron-jobs
     automaticVercelMonitors: true,
-
-    // Tree-shaking options for reducing bundle size
-    treeshake: {
-      // Automatically tree-shake Sentry logger statements to reduce bundle size
-      removeDebugLogging: true,
-    },
   },
 });
