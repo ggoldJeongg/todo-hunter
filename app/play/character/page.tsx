@@ -4,6 +4,7 @@ import Status from "@/app/play/character/_components/status";
 import "@/app/play/character/_components/character.css";
 import Character from "./_components/character";
 import CustomizeModal from "./_components/CustomizeModal";
+import FeedbackButton from "./_components/FeedbackButton";
 import { useUserStore } from "@/utils/stores/userStore";
 import { Button } from "@/components/common";
 import { useRouter, usePathname } from "next/navigation";
@@ -197,8 +198,9 @@ export default function CharacterPage() {
 
     return (
         <div className="cozy-page">
-            {/* 로그아웃 (상단 우측) */}
+            {/* 상단 — 좌: 피드백 / 우: 로그아웃 */}
             <div className="char-logout-area">
+                <FeedbackButton />
                 <Button size={"S"} state={"error"} onClick={handleLogout}>
                     로그아웃
                 </Button>
