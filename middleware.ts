@@ -7,6 +7,7 @@ const AUTH_REDIRECT_PATHS = new Set<string>([
   "/signin",
   "/signup",
   "/findid",
+  "/findpw",
 ]);
 
 // 누구나 접근 가능한 정적 정보 페이지 (로그인 여부와 무관)

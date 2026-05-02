@@ -198,8 +198,10 @@ const SignIn = () => {
           <Button value={"signup"} onClick={(e) => handleMove(e.currentTarget.value)} className="w-full" state="outline" size="L">이메일 회원가입</Button>
         </div>
 
-        <div className="text-center mt-4 w-full">
-          <Link href="/findid" className="text-sm text-gray-500 hover:text-gray-700">아이디 찾기 &gt;</Link>
+        <div className="text-center mt-4 w-full flex items-center justify-center gap-3">
+          <Link href="/findid" className="text-sm text-gray-500 hover:text-gray-700">아이디 찾기</Link>
+          <span className="text-gray-300">|</span>
+          <Link href="/findpw" className="text-sm text-gray-500 hover:text-gray-700">비밀번호 찾기</Link>
         </div>
 
         {/* 구분선 */}
