@@ -10,6 +10,27 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* 모든 요소: 텍스트 선택, iOS 콜아웃, 드래그 전역 차단 */
+* {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* 폼 입력 요소는 붙여넣기/복사/텍스트 선택을 위해 정상 동작 유지 */
+input,
+textarea,
+[contenteditable="true"] {
+  -webkit-touch-callout: default;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
 
 @layer base {
   :root {

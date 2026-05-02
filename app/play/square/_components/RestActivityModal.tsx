@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from "@/components/common/Dialog";
 import {
   REST_ACTIVITIES,
@@ -85,12 +86,12 @@ export default function RestActivityModal({
             >
               🔮
             </div>
-            <h2
+            <DialogTitle
               className="text-base font-extrabold tracking-wide mt-2"
               style={{ color: "#4A3F2F" }}
             >
               의문의 마법사의 처방
-            </h2>
+            </DialogTitle>
             <div
               className="text-[11px] font-semibold px-2 py-0.5"
               style={{

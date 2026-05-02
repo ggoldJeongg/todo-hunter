@@ -3,6 +3,7 @@ import "./globals.css";
 import "@hackernoon/pixel-icon-library/fonts/iconfont.css";
 import InstallPrompt from "@/components/installPrompt/InstallPrompt";
 import NavigationWrapper from "@/components/common/NavigationWrapper"; // 클라이언트 전용 네비게이션
+import ContextMenuGuard from "@/components/common/ContextMenuGuard";
 import Header from "./header";
 import { Toaster } from "@/components/common";
 import { GoogleAnalytics } from '@next/third-parties/google';
@@ -33,6 +34,7 @@ export default function RootLayout({
     <html lang="en">
       <Header />
       <body className={"antialiased"}>
+        <ContextMenuGuard />
         <div className="max-w-[430px] mx-auto min-h-screen bg-white flex flex-col relative shadow-xl">
           <main className="flex-1 flex flex-col">
             <InstallPrompt />

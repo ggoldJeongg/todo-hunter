@@ -438,7 +438,8 @@ const SignUp = () => {
     <div
       className="flex flex-col min-h-screen overflow-hidden"
       style={{
-        backgroundImage: "url('/images/backgrounds/bg_01.png')",
+        backgroundImage:
+          "linear-gradient(rgba(255,255,255,0.3), rgba(255,255,255,0.3)), url('/images/backgrounds/bg_01.png')",
         backgroundSize: "100% 100%",
         backgroundRepeat: "no-repeat",
       }}
@@ -464,7 +465,7 @@ const SignUp = () => {
               onClick={handleCheckExistLoginId}>중복확인</Button>
           </div>
           {(loginIdEmpty || loginIdInvalid || loginIdExists !== null || showLoginIdCheckMessage) && (
-            <span className={`block mt-1 text-sm ${loginIdEmpty || loginIdInvalid || loginIdExists || showLoginIdCheckMessage ? "text-[#A72F35]" : "text-[#2FA770]"}`}>
+            <span className={`block mt-1 text-sm ${loginIdEmpty || loginIdInvalid || loginIdExists || showLoginIdCheckMessage ? "text-[#A72F35]" : "text-[#0F6F4A]"}`}>
               {loginIdEmpty ? "아이디를 입력해주세요."
                 : showLoginIdCheckMessage ? "아이디 중복확인이 필요합니다."
                 : loginIdInvalid ? "올바르지 않은 아이디 형식입니다."
@@ -494,7 +495,7 @@ const SignUp = () => {
             <Button style={{ padding: "4px 16px", marginRight: 0 }} state="primary" onClick={handleCheckExistEmail}>중복확인</Button>
           </div>
           {(emailEmpty || showEmailCheckMessage || emailInvalid || emailExists !== null || showVerificationMessage) && (
-            <span className={`block mt-1 text-sm ${emailEmpty || showEmailCheckMessage || emailInvalid || emailExists || showVerificationMessage ? "text-[#A72F35]" : "text-[#2FA770]"}`}>
+            <span className={`block mt-1 text-sm ${emailEmpty || showEmailCheckMessage || emailInvalid || emailExists || showVerificationMessage ? "text-[#A72F35]" : "text-[#0F6F4A]"}`}>
               {emailEmpty ? "이메일을 입력하세요."
                 : showVerificationMessage && !isCodeSent ? "인증번호 발송이 필요합니다."
                 : showVerificationMessage ? "인증코드 인증이 필요합니다."
@@ -525,7 +526,7 @@ const SignUp = () => {
             <Input placeholder="비밀번호 재입력" className="is-rounded-form w-full shadow-none" type="password"
               ref={confirmPasswordRef} value={confirmPassword} onChange={handleConfirmPasswordChange} />
             {(confirmPasswordEmpty || passwordsMatch !== null) && (
-              <span className={`block mt-1 text-sm ${confirmPasswordEmpty || !passwordsMatch ? "text-[#A72F35]" : "text-[#2FA770]"}`}>
+              <span className={`block mt-1 text-sm ${confirmPasswordEmpty || !passwordsMatch ? "text-[#A72F35]" : "text-[#0F6F4A]"}`}>
                 {confirmPasswordEmpty ? "비밀번호를 상기 기재란에도 입력해주세요."
                   : passwordsMatch ? "비밀번호가 일치합니다." : "비밀번호가 일치하지 않습니다."}
               </span>
@@ -553,7 +554,7 @@ const SignUp = () => {
               )}
             </div>
             {isCodeSent && (
-              <span className={`block mt-1 text-sm ${verificationCodeEmpty || showVerificationMessage || isVerified === false ? "text-[#A72F35]" : "text-[#2FA770]"}`}>
+              <span className={`block mt-1 text-sm ${verificationCodeEmpty || showVerificationMessage || isVerified === false ? "text-[#A72F35]" : "text-[#0F6F4A]"}`}>
                 {verificationCodeEmpty ? "인증코드를 입력해주세요."
                   : showVerificationMessage ? "인증코드 인증이 필요합니다."
                   : isVerified === null ? "이메일을 발송하였습니다."
