@@ -34,7 +34,8 @@ const FindId = () => {
         <div
             className="flex flex-col min-h-screen overflow-hidden"
             style={{
-                backgroundImage: "url('/images/backgrounds/bg_01.png')",
+                backgroundImage:
+                    "linear-gradient(rgba(255,255,255,0.3), rgba(255,255,255,0.3)), url('/images/backgrounds/bg_01.png')",
                 backgroundSize: "100% 100%",
                 backgroundRepeat: "no-repeat",
             }}
