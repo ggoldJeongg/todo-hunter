@@ -14,6 +14,7 @@ const AUTH_REDIRECT_PATHS = new Set<string>([
 const OPEN_PATHS = new Set<string>([
   "/terms",
   "/privacy",
+  "/splash", // PWA 진입용 splash — 인증 상태와 무관하게 통과 (자체적으로 다음 경로 결정)
 ]);
 
 // 차단 경로 (사용 중단된 페이지)

@@ -1,31 +1,27 @@
-// This file configures the initialization of Sentry on the client.
-// The added config here will be used whenever a users loads a page in their browser.
-// https://docs.sentry.io/platforms/javascript/guides/nextjs/
-
+// 클라이언트 사이드 Sentry 초기화.
+// (sentry.client.config.ts 는 Turbopack 환경에서 작동하지 않아 이 파일로 통합됨)
 import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({
-  dsn: "https://0ae9ed9bfa7384009642006ba3d995c0@o4511090749997056.ingest.us.sentry.io/4511090752159744",
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
-  // Add optional integrations for additional features
-  integrations: [Sentry.replayIntegration()],
+  // 성능 모니터링 (10% 샘플링 — 무료 플랜 이벤트 절약)
+  tracesSampleRate: 0.1,
 
-  // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
-  tracesSampleRate: 1,
-  // Enable logs to be sent to Sentry
-  enableLogs: true,
+  // 개발 환경에서는 비활성화
+  enabled: process.env.NODE_ENV === "production",
 
-  // Define how likely Replay events are sampled.
-  // This sets the sample rate to be 10%. You may want this to be 100% while
-  // in development and sample at a lower rate in production
-  replaysSessionSampleRate: 0.1,
-
-  // Define how likely Replay events are sampled when an error occurs.
+  // 세션 리플레이 (에러 발생 시에만 녹화)
   replaysOnErrorSampleRate: 1.0,
+  replaysSessionSampleRate: 0,
 
-  // Enable sending user PII (Personally Identifiable Information)
-  // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#sendDefaultPii
-  sendDefaultPii: true,
+  integrations: [
+    Sentry.replayIntegration({
+      maskAllText: true,
+      blockAllMedia: true,
+    }),
+  ],
 });
 
+// App Router 라우터 트랜지션 추적 (Next.js 15 권장)
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
