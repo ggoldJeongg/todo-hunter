@@ -20,7 +20,7 @@ const FindIdView = ({ loginId, error, onBack }: { loginId?: string | null, error
                 </>
             )}
         </div>
-        <div className="text-white text-center mt-8 font-galmuri11-bold">
+        <div className="text-[#4A3F2F] text-center mt-8 font-galmuri11-bold">
             <p className="text-lg">지금부터</p>
             <p className="text-lg">할일 사냥을 떠나볼까요?</p>
         </div>
