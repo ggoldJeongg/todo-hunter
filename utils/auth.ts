@@ -41,8 +41,8 @@ export async function getUserFromCookie(
 
     // 새로운 Access Token 생성
     const newAccessToken = await generateAccessTokenUsecase.execute({
-      id: refreshPayload.id as number, // id는 refreshPayload에서 추출
-      loginId: refreshPayload.id as string, // loginId는 refreshPayload에서 추출
+      id: refreshPayload.id as number,
+      loginId: refreshPayload.loginId as string,
     });
 
     // 새 Access Token을 쿠키에 설정한 응답 생성
