@@ -270,6 +270,19 @@ const SignUp = () => {
   /* submit 시 닉네임 및 이메일 공란일 경우 설정 끝 */
 
 
+  /* 약관 동의 시작 */
+  const [agreeTerms, setAgreeTerms] = useState<boolean>(false);
+  const [agreePrivacy, setAgreePrivacy] = useState<boolean>(false);
+  const [showAgreementMessage, setShowAgreementMessage] = useState<boolean>(false);
+
+  const handleAgreeAllChange = (checked: boolean) => {
+    setAgreeTerms(checked);
+    setAgreePrivacy(checked);
+    if (checked) setShowAgreementMessage(false);
+  };
+  /* 약관 동의 끝 */
+
+
   // Input 값 비울 경우 하단 표시 메시지 초기화 (통합 관리)
   const handleLoginIdChange = () => {
     setLoginIdExists(null);
@@ -335,6 +348,13 @@ const SignUp = () => {
       setShowVerificationMessage(false); // 인증 완료 시 메시지 숨김
     }
   
+    // 약관 동의 체크
+    if (!agreeTerms || !agreePrivacy) {
+      setShowAgreementMessage(true);
+      return;
+    }
+    setShowAgreementMessage(false);
+
     // 모든 입력값과 조건을 한 번에 체크
     if (
       !loginId || !email || !nickname || !password || !confirmPasswordValue ||
@@ -382,6 +402,12 @@ const SignUp = () => {
 
     setNicknameEmpty(!nickname);
     if (!nickname) return;
+
+    if (!agreeTerms || !agreePrivacy) {
+      setShowAgreementMessage(true);
+      return;
+    }
+    setShowAgreementMessage(false);
 
     try {
       const response = await fetch('/api/auth/kakao/signup', {
@@ -537,6 +563,66 @@ const SignUp = () => {
           </div>
         </>
       )}
+
+      {/* 약관 동의 */}
+      <div className="mt-2 border-2 border-[#4A3F2F] bg-[#fffdf2] p-3 text-[13px] text-[#4A3F2F]">
+        <label className="flex items-center gap-2 cursor-pointer mb-2 pb-2 border-b border-[#c9b178] font-bold">
+          <input
+            type="checkbox"
+            checked={agreeTerms && agreePrivacy}
+            onChange={(e) => handleAgreeAllChange(e.target.checked)}
+            className="w-4 h-4 cursor-pointer"
+          />
+          <span>전체 동의</span>
+        </label>
+        <label className="flex items-center gap-2 cursor-pointer mb-1.5">
+          <input
+            type="checkbox"
+            checked={agreeTerms}
+            onChange={(e) => {
+              setAgreeTerms(e.target.checked);
+              if (e.target.checked && agreePrivacy) setShowAgreementMessage(false);
+            }}
+            className="w-4 h-4 cursor-pointer"
+          />
+          <span className="flex-1">[필수] 이용약관 동의</span>
+          <a
+            href="/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[12px] underline text-[#6e5a37]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            보기
+          </a>
+        </label>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={agreePrivacy}
+            onChange={(e) => {
+              setAgreePrivacy(e.target.checked);
+              if (e.target.checked && agreeTerms) setShowAgreementMessage(false);
+            }}
+            className="w-4 h-4 cursor-pointer"
+          />
+          <span className="flex-1">[필수] 개인정보 처리방침 동의</span>
+          <a
+            href="/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[12px] underline text-[#6e5a37]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            보기
+          </a>
+        </label>
+        {showAgreementMessage && (
+          <span className="block mt-2 text-sm text-[#A72F35]">
+            필수 약관에 동의해 주세요.
+          </span>
+        )}
+      </div>
 
       {/* 버튼 */}
       <div className="mt-6">
