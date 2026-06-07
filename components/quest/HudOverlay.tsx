@@ -85,24 +85,18 @@ const HudOverlay = ({ mapName, monsterName }: HudOverlayProps) => {
         <div
           className="flex items-center justify-center"
           style={{
-            // map_title.png는 가운데 가로 띠(가로 11.4~88.3%·세로 34.2~59.1%)에만 두루마리가
-            // 있고 위아래는 투명 여백 → 그 배너 영역만 잘라(crop) 라벨에 꽉 채운다.
-            // size/position 값은 sprite crop 공식: size=100/region, pos=start/(1-region).
-            // 컨테이너 비율(150:32≈4.69)을 배너 영역 비율(≈4.63)에 맞춰 왜곡 없이 표시.
             backgroundImage: "url('/images/backgrounds/map_title.png')",
-            backgroundSize: "130.2% 402%",
-            backgroundPosition: "49.1% 45.5%",
+            backgroundSize: "100% 100%",
             backgroundRepeat: "no-repeat",
-            width: "150px",
-            height: "32px",
+            backgroundPosition: "center",
+            width: "120px",
+            height: "30px",
+            paddingTop: "4px",
           }}
         >
           <span
             className="text-[10px] font-bold tracking-widest text-black uppercase"
-            style={{
-              fontFamily: "Galmuri11Bold, monospace",
-              transform: "translateY(5px)", // 양피지 중앙에 맞춰 살짝 아래로
-            }}
+            style={{ fontFamily: "Galmuri11Bold, monospace" }}
           >
             {mapName}
           </span>

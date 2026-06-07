@@ -13,10 +13,10 @@ const TITLES = [
   { titleName: "지식의 탐구자", description: "지력 스탯이 5 이상일 때 획득", reqStat: "int", reqValue: 5 },
   { titleName: "현명한 현자", description: "지력 스탯이 10 이상일 때 획득", reqStat: "int", reqValue: 10 },
 
-  // EMO (매력)
-  { titleName: "매력의 씨앗", description: "매력 스탯이 1 이상일 때 획득", reqStat: "emo", reqValue: 1 },
-  { titleName: "공감하는 마음", description: "매력 스탯이 5 이상일 때 획득", reqStat: "emo", reqValue: 5 },
-  { titleName: "영혼의 시인", description: "매력 스탯이 10 이상일 때 획득", reqStat: "emo", reqValue: 10 },
+  // EMO (감성)
+  { titleName: "감성의 씨앗", description: "감성 스탯이 1 이상일 때 획득", reqStat: "emo", reqValue: 1 },
+  { titleName: "공감하는 마음", description: "감성 스탯이 5 이상일 때 획득", reqStat: "emo", reqValue: 5 },
+  { titleName: "영혼의 시인", description: "감성 스탯이 10 이상일 때 획득", reqStat: "emo", reqValue: 10 },
 
   // FIN (경제력)
   { titleName: "절약하는 견습생", description: "경제력 스탯이 1 이상일 때 획득", reqStat: "fin", reqValue: 1 },

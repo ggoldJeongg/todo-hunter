@@ -2,7 +2,6 @@
 
 import * as Sentry from "@sentry/nextjs";
 import { useEffect, useRef } from "react";
-import styles from "./character.module.css";
 
 // 캐릭터 페이지 좌측 상단 피드백 진입 버튼 (도트 픽셀 톤).
 // instrumentation-client.ts 의 feedbackIntegration({ autoInject: false }) 설정과 짝.
@@ -27,7 +26,7 @@ export default function FeedbackButton() {
       type="button"
       aria-label="피드백 보내기"
       title="피드백 보내기"
-      className={styles["char-feedback-btn"]}
+      className="char-feedback-btn"
     >
       {/* 픽셀 말풍선 (도트 단위 사각형으로만 그려 안티앨리어싱 X) */}
       <svg

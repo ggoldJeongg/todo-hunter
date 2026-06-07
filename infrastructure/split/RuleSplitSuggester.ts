@@ -129,7 +129,7 @@ const KEYWORD_PATTERNS: KeywordPattern[] = [
     ],
   },
 
-  // EMO — 매력/관계/자기계발
+  // EMO — 감성/관계/자기계발
   {
     keywords: ["명상", "마음챙김", "마인드풀"],
     tagged: "EMO",

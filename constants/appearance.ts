@@ -113,6 +113,43 @@ export function isValidHatId(id: string): boolean {
   return HATS.some((h) => h.id === id);
 }
 
-// 참고: 전투 화면도 idle과 동일한 char_a_p1 시트를 사용하므로(공격은 3행 돌진으로 연출),
-// 더 이상 pONE1 변환/호환 분기가 필요 없다. AppearanceOption.battleCompatible 플래그는
-// 현재 코드에서 사용하지 않는 잔여 메타데이터다(에셋 추가 이력 참고용으로만 유지).
+// ==================== Battle 시트(pONE1) 경로 변환 ====================
+// 전투 화면은 char_a_pONE1 시트(공격 모션 포함)를 사용.
+// - battleCompatible !== false: pONE1 경로로 변환 → 정확한 공격 포즈 그래픽
+// - battleCompatible === false: p1 경로 그대로 사용 → 포즈는 약간 어긋날 수 있으나
+//   "공격 시 옷이 바뀌는" 위화감 없이 동일 외형 유지
+// - 옵션 자체가 없는 경우(undefined): pONE1 default
+
+const DEFAULT_BATTLE_OUTFIT_SRC = `${BASE}/1out/char_a_pONE1_1out_fstr_v01.png`
+  .replace("/char_a_p1/", "/char_a_pONE1/");
+const DEFAULT_BATTLE_HAIR_SRC = `${BASE}/4har/char_a_pONE1_4har_bob1_v01.png`
+  .replace("/char_a_p1/", "/char_a_pONE1/");
+
+function toBattlePath(src: string): string {
+  return src
+    .replace("/char_a_p1/", "/char_a_pONE1/")
+    .replace("char_a_p1_", "char_a_pONE1_");
+}
+
+export function getOutfitBattleSrc(id: string | null | undefined): string {
+  const opt = getOutfitById(id);
+  if (!opt) return DEFAULT_BATTLE_OUTFIT_SRC;
+  // 비호환 옷은 p1 경로 그대로 (외형 일관성 우선)
+  if (opt.battleCompatible === false) return opt.src;
+  return toBattlePath(opt.src);
+}
+
+export function getHairBattleSrc(id: string | null | undefined): string {
+  const opt = getHairById(id);
+  if (!opt) return DEFAULT_BATTLE_HAIR_SRC;
+  if (opt.battleCompatible === false) return opt.src;
+  return toBattlePath(opt.src);
+}
+
+export function getHatBattleSrc(id: string | null | undefined): string | null {
+  const opt = getHatById(id);
+  if (!opt) return null;
+  // 비호환 모자도 p1 경로 그대로 (외형 일관성 우선)
+  if (opt.battleCompatible === false) return opt.src;
+  return toBattlePath(opt.src);
+}

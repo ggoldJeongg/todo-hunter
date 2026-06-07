@@ -17,6 +17,11 @@ import {
   findReachablePoint,
   findNearestWalkable,
 } from "@/utils/sprite/CollisionMask";
+import {
+  getOutfitSrc,
+  getHairSrc,
+  getHatSrc,
+} from "@/constants/appearance";
 
 const COLLISION_MASK_SRC = "/images/backgrounds/square_mask.png";
 
@@ -49,7 +54,7 @@ export default function SquarePage() {
 }
 
 function SquarePageContent() {
-  const { nickname, level, fetchUser } = useUserStore();
+  const { nickname, level, outfitId, hairId, hatId, fetchUser } = useUserStore();
   const { fetchQuests } = useQuestStore();
   const {
     isRunning,
@@ -240,6 +245,10 @@ function SquarePageContent() {
       ? { name: sharedQuest.name, tagged: sharedQuest.tagged }
       : null,
     isNpc: false,
+    // 사용자 외형 — store ID 를 src 경로로 변환
+    outfitSrc: getOutfitSrc(outfitId) ?? undefined,
+    hairSrc: getHairSrc(hairId) ?? undefined,
+    hatSrc: getHatSrc(hatId) ?? undefined,
   };
 
   // focusSeconds 실시간 갱신

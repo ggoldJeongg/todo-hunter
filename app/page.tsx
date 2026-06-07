@@ -115,7 +115,7 @@ export default function Home() {
         {/* 로고 */}
         <Image
           src="/images/logo.png"
-          width={350}
+          width={320}
           height={120}
           alt="TODO HUNTER"
           className="mb-6"
@@ -128,33 +128,14 @@ export default function Home() {
       {/* 하단 밝은 영역 */}
       <div className="flex flex-col items-center justify-between flex-1">
         {/* PRESS TO START */}
-        <div className="group relative mt-8">
-          <button
-            onClick={handleStartClick}
-            className="flex items-center justify-center cursor-pointer transition-transform group-hover:scale-105"
-            style={{
-              width: "250px",
-              height: "65px",
-              backgroundImage: "url('/svgs/btn-L.svg')",
-              backgroundSize: "100% 100%",
-              backgroundRepeat: "no-repeat",
-            }}
-          >
-            <span className="text-base sm:text-lg font-bold tracking-wider text-gray-100 font-galmuri11-bold">
-              게임같은 하루 시작
-            </span>
-          </button>
-          {/* hover 시 버튼 밖(오른쪽)에 나타나는 pick 아이콘 */}
-          <Image
-            src="/icons/pick.png"
-            width={32}
-            height={32}
-            alt=""
-            unoptimized
-            className="absolute left-full top-1/2 ml-2 -translate-y-1/2 opacity-0 transition-opacity duration-150 group-hover:opacity-100 pointer-events-none"
-            style={{ imageRendering: "pixelated" }}
-          />
-        </div>
+        <button
+          onClick={handleStartClick}
+          className="pt-8 pb-2 text-center w-full cursor-pointer hover:opacity-70 transition-opacity"
+        >
+          <span className="text-xl sm:text-2xl font-bold tracking-wider text-gray-800 font-galmuri11-bold">
+            ▶ 게임같은 하루 시작하기 ◀
+          </span>
+        </button>
 
       </div>
     </div>

@@ -1,16 +1,26 @@
 "use client";
 
 import Status from "@/app/play/character/_components/status";
-import styles from "./_components/character.module.css";
+import "@/app/play/character/_components/character.css";
 import Character from "./_components/character";
+import CustomizeModal from "./_components/CustomizeModal";
 import FeedbackButton from "./_components/FeedbackButton";
-import StatsTabs from "./_components/StatsTabs";
 import { useUserStore } from "@/utils/stores/userStore";
 import { Button } from "@/components/common";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, Suspense, useState, useMemo, useCallback } from "react";
 import { EXP_TO_LEVEL_UP } from "@/constants/game";
 import { deriveCondition, deriveTraits } from "@/constants/characterDerive";
+import { getTitleIcon } from "@/constants/titleIcons";
+
+// 스탯 태그 → 표시 라벨 매핑 (성장 기록용)
+const TAG_TO_LABEL: Record<string, string> = {
+    STR: "체력",
+    INT: "지력",
+    EMO: "감성",
+    FIN: "경제력",
+    LIV: "생활력",
+};
 
 // 특성 라벨 → (아이콘, 배경색) 매핑
 const TRAIT_DISPLAY: Record<string, { icon: string; bg: string }> = {
@@ -78,6 +88,7 @@ export default function CharacterPage() {
         id, nickname, str, int, emo, fin, liv,
         level, exp, willpower, maxWillpower, fetchUser,
     } = useUserStore();
+    const [customizeOpen, setCustomizeOpen] = useState(false);
     const [selectedTitle, setSelectedTitle] = useState<SelectedTitle | null>(null);
     const [recentCompleted, setRecentCompleted] = useState<RecentCompletedItem[]>([]);
     const [weather, setWeather] = useState<WeatherInfo | null>(null);
@@ -186,52 +197,83 @@ export default function CharacterPage() {
     );
 
     return (
-        <div className={styles["cozy-page"]}>
+        <div className="cozy-page">
             {/* 상단 — 좌: 피드백 / 우: 로그아웃 */}
-            <div className={styles["char-logout-area"]}>
+            <div className="char-logout-area">
                 <FeedbackButton />
                 <Button size={"S"} state={"error"} onClick={handleLogout}>
                     로그아웃
                 </Button>
             </div>
 
-            {/* ===== 메인 양피지 패널 — 좌: 캐릭터 카드 / 우: EXP+스탯 ===== */}
-            <div className={styles["parchment-panel"]}>
-                <div className={styles["parchment-content"]}>
-                    {/* 좌측: 캐릭터 → 닉네임 배너 → Lv·칭호 */}
-                    <div className={styles["char-portrait-frame"]}>
-                        <div className={styles["char-portrait-bg"]} style={{ padding: 0 }}>
+            {/* ===== 메인 양피지 패널 — 캐릭터 + 6 스탯 ===== */}
+            <div className="parchment-panel">
+                <div className="parchment-content">
+                    {/* 좌측: 캐릭터 portrait + 이름 + 설명 */}
+                    <div className="char-portrait-frame">
+                        <button
+                            type="button"
+                            onClick={() => setCustomizeOpen(true)}
+                            className="char-portrait-bg"
+                            aria-label="외형 편집"
+                            title="클릭하여 외형 변경"
+                            style={{ cursor: "pointer", padding: 0 }}
+                        >
                             <Suspense>
                                 <Character direction={facing} isWalking={isWalking} />
                             </Suspense>
+                        </button>
+                        <div className="char-portrait-arrows">
+                            <button
+                                type="button"
+                                className="char-portrait-arrow"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleArrowClick("left");
+                                }}
+                                aria-label="좌측 회전"
+                            >
+                                ◀
+                            </button>
+                            <button
+                                type="button"
+                                className="char-portrait-arrow"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleArrowClick("right");
+                                }}
+                                aria-label="우측 회전"
+                            >
+                                ▶
+                            </button>
                         </div>
-
-                        {/* 닉네임 배너 (3-슬라이스) */}
-                        <div className={styles["char-name-banner"]}>
-                            <span>{nickname ?? "모험가"}</span>
-                        </div>
-
-                        {/* Lv + 칭호 한 줄 */}
-                        <div className={styles["char-cardmeta"]}>
-                            <span className={styles["char-cardmeta-lv"]}>Lv.{currentLevel}</span>
-                            <span>{selectedTitle?.titleName ?? "아직 칭호 없음"}</span>
+                        <div className="char-name-banner">{nickname ?? "모험가"}</div>
+                        <div className="char-description-row">
+                            <span className="desc-icon">
+                                {selectedTitle?.titleName
+                                    ? getTitleIcon(selectedTitle.titleName, selectedTitle.reqStat)
+                                    : "🧭"}
+                            </span>
+                            <span>
+                                {selectedTitle?.titleName ?? "아직 칭호 없음"}
+                            </span>
                         </div>
                     </div>
 
-                    {/* 우측: 라벨 + EXP + 6 스탯 */}
-                    <div className={styles["stats-side"]}>
-                        {/* 캐릭터 정보 라벨 배너 */}
-                        <div className={styles["stats-label-banner"]}>캐릭터 정보</div>
-
-                        <div className={styles["char-exp-row"]}>
-                            <span className={styles["exp-line-text"]}>
-                                EXP {currentExp} / {expToNext}
-                            </span>
-                            <div className={styles["exp-line-track"]}>
-                                <div
-                                    className={styles["exp-line-fill"]}
-                                    style={{ width: `${expPercent}%` }}
-                                />
+                    {/* 우측: Lv + EXP + 놀이치/XP + 6 스탯 */}
+                    <div className="stats-side">
+                        <div className="lv-exp-row">
+                            <span className="lv-chip">Lv.{currentLevel}</span>
+                            <div className="exp-line">
+                                <span className="exp-line-text">
+                                    EXP {currentExp} / {expToNext}
+                                </span>
+                                <div className="exp-line-track">
+                                    <div
+                                        className="exp-line-fill"
+                                        style={{ width: `${expPercent}%` }}
+                                    />
+                                </div>
                             </div>
                         </div>
 
@@ -250,26 +292,26 @@ export default function CharacterPage() {
             </div>
 
             {/* ===== 미니 카드 row: 컨디션 / 날씨 / 성격 ===== */}
-            <div className={styles["mini-card-row"]}>
+            <div className="mini-card-row">
                 {/* 컨디션 — 의지력 60% + 오늘 활동량 40% */}
-                <div className={styles["mini-card"]}>
-                    <div className={styles["mini-card-title"]}>컨디션</div>
-                    <div className={styles["mini-card-icon"]}>🍀</div>
-                    <div className={styles["mini-card-value"]}>{condition.label}</div>
-                    <div className={styles["mini-card-bar"]}>
+                <div className="mini-card">
+                    <div className="mini-card-title">컨디션</div>
+                    <div className="mini-card-icon">🍀</div>
+                    <div className="mini-card-value">{condition.label}</div>
+                    <div className="mini-card-bar">
                         <div
-                            className={styles["mini-card-bar-fill"]}
+                            className="mini-card-bar-fill"
                             style={{ width: `${condition.value}%` }}
                         />
                     </div>
-                    <div className={styles["mini-card-sub"]}>
+                    <div className="mini-card-sub">
                         {condition.sub || `${condition.value}점 / 100점`}
                     </div>
                 </div>
 
                 {/* 오늘의 날씨 — Open-Meteo 실시간 (서울 좌표, 1시간 캐싱) */}
-                <div className={styles["mini-card"]}>
-                    <div className={styles["mini-card-title"]}>
+                <div className="mini-card">
+                    <div className="mini-card-title">
                         오늘의 날씨
                         {weather?.temp !== null && weather?.temp !== undefined && (
                             <span style={{ marginLeft: 4, fontWeight: 600, color: "#6B5C42" }}>
@@ -277,40 +319,40 @@ export default function CharacterPage() {
                             </span>
                         )}
                     </div>
-                    <div className={styles["mini-card-icon"]}>{weather?.emoji ?? "🌥️"}</div>
-                    <div className={styles["mini-card-value"]}>{weather?.label ?? "로딩 중..."}</div>
-                    <div className={styles["mini-card-sub"]} style={{ whiteSpace: "pre-line" }}>
+                    <div className="mini-card-icon">{weather?.emoji ?? "🌥️"}</div>
+                    <div className="mini-card-value">{weather?.label ?? "로딩 중..."}</div>
+                    <div className="mini-card-sub" style={{ whiteSpace: "pre-line" }}>
                         {weather?.buff ?? ""}
                     </div>
                 </div>
 
                 {/* 성격·특성 — derive from stats + 활동량 */}
-                <div className={styles["mini-card"]}>
-                    <div className={styles["mini-card-title"]}>성격·특성</div>
-                    <div className={styles["trait-list"]}>
+                <div className="mini-card">
+                    <div className="mini-card-title">성격·특성</div>
+                    <div className="trait-list">
                         {traits.length === 0 ? (
-                            <div className={styles["trait-item"]}>
-                                <span className={styles["trait-icon"]} style={{ background: "#E8E0CC" }}>🔒</span>
-                                <span className={`${styles["trait-text"]} ${styles.muted}`}>아직 분석 중...</span>
+                            <div className="trait-item">
+                                <span className="trait-icon" style={{ background: "#E8E0CC" }}>🔒</span>
+                                <span className="trait-text muted">아직 분석 중...</span>
                             </div>
                         ) : (
                             <>
                                 {traits.map((t) => {
                                     const d = TRAIT_DISPLAY[t] ?? DEFAULT_TRAIT_DISPLAY;
                                     return (
-                                        <div key={t} className={styles["trait-item"]}>
-                                            <span className={styles["trait-icon"]} style={{ background: d.bg }}>
+                                        <div key={t} className="trait-item">
+                                            <span className="trait-icon" style={{ background: d.bg }}>
                                                 {d.icon}
                                             </span>
-                                            <span className={styles["trait-text"]}>{t}</span>
+                                            <span className="trait-text">{t}</span>
                                         </div>
                                     );
                                 })}
                                 {/* 잠긴 슬롯 — 다음 특성 잠금 표시 */}
                                 {traits.length < 3 && (
-                                    <div className={styles["trait-item"]}>
-                                        <span className={styles["trait-icon"]} style={{ background: "#E8E0CC" }}>🔒</span>
-                                        <span className={`${styles["trait-text"]} ${styles.muted}`}>????????</span>
+                                    <div className="trait-item">
+                                        <span className="trait-icon" style={{ background: "#E8E0CC" }}>🔒</span>
+                                        <span className="trait-text muted">????????</span>
                                     </div>
                                 )}
                             </>
@@ -319,11 +361,43 @@ export default function CharacterPage() {
                 </div>
             </div>
 
-            {/* ===== 모험 통계 — 생활 리듬 / 성장 기록 /성장정원 탭 = */}
-            <StatsTabs recentCompleted={recentCompleted} />
+            {/* ===== 성장 기록 — 최근 5개 완료 퀘스트 ===== */}
+            <div className="growth-record-card">
+                <h3 className="growth-card-title">━━ 성장 기록 ━━</h3>
+                <div className="growth-list">
+                    {recentCompleted.length === 0 ? (
+                        <div className="growth-item" style={{ justifyContent: "center", color: "#8A7D6B" }}>
+                            <span>아직 완료한 퀘스트가 없어요.</span>
+                        </div>
+                    ) : (
+                        recentCompleted.map((item) => {
+                            const date = new Date(item.completedAt);
+                            const dateStr = `${(date.getMonth() + 1)
+                                .toString()
+                                .padStart(2, "0")}.${date.getDate().toString().padStart(2, "0")}`;
+                            const statLabel = TAG_TO_LABEL[item.tagged] ?? item.tagged;
+                            return (
+                                <div key={item.successDayId} className="growth-item">
+                                    <span className="growth-date">{dateStr}</span>
+                                    <span className="growth-msg">{item.questName}</span>
+                                    <span className="growth-gain">
+                                        {statLabel} +{item.statGain}
+                                    </span>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+            </div>
 
             {/* 하단 네비바에 가리지 않도록 spacer */}
-            <div className={styles["bottom-nav-spacer"]} />
+            <div className="bottom-nav-spacer" />
+
+            {/* 외형 커스터마이징 모달 */}
+            <CustomizeModal
+                open={customizeOpen}
+                onClose={() => setCustomizeOpen(false)}
+            />
         </div>
     );
 }

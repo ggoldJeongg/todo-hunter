@@ -225,9 +225,9 @@ export const ENDING_MAP: Record<string, EndingInfo> = {
   },
   BARD: {
     name: "음유시인",
-    story: ["매력과 사업 감각을 동시에 발휘한 한 주.", "모험담을 노래로 만들어 전국을 순회한다.", "감동과 금화를 동시에 거두는 예술가의 삶."],
+    story: ["감성과 사업 감각을 동시에 발휘한 한 주.", "모험담을 노래로 만들어 전국을 순회한다.", "감동과 금화를 동시에 거두는 예술가의 삶."],
     dialogue: [
-      { speaker: "narrator", text: "매력과 사업 감각을 동시에 발휘한 한 주." },
+      { speaker: "narrator", text: "감성과 사업 감각을 동시에 발휘한 한 주." },
       { speaker: "player", text: "♪ 용사의 검이 번쩍이던 그날~ ♪" },
       { speaker: "npc", text: "와아! 앵콜! 앵콜!" },
       { speaker: "player", text: "감사합니다~ 다음 공연은 옆 마을에서!" },
