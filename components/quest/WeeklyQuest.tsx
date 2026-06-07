@@ -134,7 +134,7 @@ const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hide
                 </button>
 
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm truncate block">{name}</span>
+                  <span className="text-sm line-clamp-2 break-all block">{name}</span>
                   <p className="text-xs text-gray-500 flex flex-wrap items-center gap-x-1.5">
                     {streak !== undefined && streak > 0 && (
                       <span className="text-orange-500 font-bold">🔥 {streak}주 연속</span>

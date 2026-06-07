@@ -9,7 +9,7 @@ import { Button, Input, Calendar } from "@/components/common";
 import { Tag } from "@/components/common/Tag";
 import { format } from "date-fns";
 
-const QUEST_NAME_MAX = 40;
+const QUEST_NAME_MAX = 20;
 const DAYS = ["월", "화", "수", "목", "금", "토", "일"] as const;
 const STATUS_KEYS = Object.keys(STATUS) as (keyof typeof STATUS)[];
 

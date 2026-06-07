@@ -100,7 +100,7 @@ const DailyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hideA
                   </button>
 
                   <div className="flex-1 min-w-0">
-                    <span className="text-sm truncate block">{name}</span>
+                    <span className="text-sm line-clamp-2 break-all block">{name}</span>
                     {hasSubTasks && (
                       <span className="text-[11px] text-gray-500">
                         서브태스크 {completedSubCount}/{totalSubCount}
