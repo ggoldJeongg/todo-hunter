@@ -54,23 +54,6 @@ interface WeatherInfo {
     moodEffect: number;
 }
 
-type FacingDirection = "down" | "right" | "up" | "left";
-
-// 좌/우 화살표로 회전 — 시계방향 / 반시계방향
-const ROTATE_CLOCKWISE: Record<FacingDirection, FacingDirection> = {
-    down: "right",
-    right: "up",
-    up: "left",
-    left: "down",
-};
-const ROTATE_COUNTERCW: Record<FacingDirection, FacingDirection> = {
-    down: "left",
-    left: "up",
-    up: "right",
-    right: "down",
-};
-
-
 export default function CharacterPage() {
     const router = useRouter();
     const pathname = usePathname();
@@ -81,19 +64,7 @@ export default function CharacterPage() {
     const [selectedTitle, setSelectedTitle] = useState<SelectedTitle | null>(null);
     const [recentCompleted, setRecentCompleted] = useState<RecentCompletedItem[]>([]);
     const [weather, setWeather] = useState<WeatherInfo | null>(null);
-    const [facing, setFacing] = useState<FacingDirection>("down");
-    const [isWalking, setIsWalking] = useState(false);
-
-    // 화살표 클릭 — 방향 회전 + 잠시 walk 애니메이션
-    const handleArrowClick = (direction: "left" | "right") => {
-        setFacing((prev) =>
-            direction === "right" ? ROTATE_CLOCKWISE[prev] : ROTATE_COUNTERCW[prev]
-        );
-        setIsWalking(true);
-        // 600ms 후 idle 로 복귀
-        setTimeout(() => setIsWalking(false), 600);
-    };
-
+    
     // 장착 칭호 + 최근 완료 퀘스트 + 날씨 fetch
     const fetchExtras = useCallback(async () => {
         try {
@@ -202,7 +173,7 @@ export default function CharacterPage() {
                     <div className={styles["char-portrait-frame"]}>
                         <div className={styles["char-portrait-bg"]} style={{ padding: 0 }}>
                             <Suspense>
-                                <Character direction={facing} isWalking={isWalking} />
+                                <Character direction="down" isWalking={false} />
                             </Suspense>
                         </div>
 
