@@ -115,7 +115,7 @@ export default function Home() {
         {/* 로고 */}
         <Image
           src="/images/logo.png"
-          width={320}
+          width={350}
           height={120}
           alt="TODO HUNTER"
           className="mb-6"
@@ -133,9 +133,9 @@ export default function Home() {
             onClick={handleStartClick}
             className="flex items-center justify-center cursor-pointer transition-transform group-hover:scale-105"
             style={{
-              width: "200px",
-              height: "55px",
-              backgroundImage: "url('/svgs/btn-M.svg')",
+              width: "250px",
+              height: "65px",
+              backgroundImage: "url('/svgs/btn-L.svg')",
               backgroundSize: "100% 100%",
               backgroundRepeat: "no-repeat",
             }}
