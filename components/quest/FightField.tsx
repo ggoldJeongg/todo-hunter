@@ -3,7 +3,6 @@
 import React, { useRef, useEffect } from "react";
 import HudOverlay from "./HudOverlay";
 import { useQuestStore } from "@/utils/stores/questStore";
-import { useUserStore } from "@/utils/stores/userStore";
 import { BATTLE_THEMES, type BattleThemeId } from "@/utils/pixi/BattleThemes";
 import { getMonsterByKillCount } from "@/utils/pixi/MonsterRegistry";
 
@@ -21,25 +20,17 @@ const FightField = ({ theme = "night" }: FightFieldProps) => {
   } | null>(null);
 
   const { killCount, isAttacking } = useQuestStore();
-  const outfitId = useUserStore((s) => s.outfitId);
-  const hairId = useUserStore((s) => s.hairId);
-  const hatId = useUserStore((s) => s.hatId);
 
-  // killCount 변경 시 몬스터 교체
-  useEffect(() => {
-    sceneRef.current?.swapMonster(killCount);
-  }, [killCount]);
+  // 몬스터 교체는 PixiBattleScene이 "부활(다음 젠)" 시점에 직접 처리한다.
+  // killCount는 처치 즉시 증가하므로 여기서 swap하면 die 애니메이션이 다음 몬스터 걸로 나옴.
 
   // 런타임 테마 변경
   useEffect(() => {
     sceneRef.current?.setTheme(theme);
   }, [theme]);
 
-  // PixiJS 씬 초기화 — 외형이 로드된 후, 외형 변경 시 재init
+  // PixiJS 씬 초기화 — 마운트 시 1회 (swordsman 단일 스프라이트라 외형 의존 없음)
   useEffect(() => {
-    // 외형이 아직 fetch 전이면 init 미루기 (기본값 깜빡임 방지)
-    if (outfitId === undefined && hairId === undefined) return;
-
     let destroyed = false;
 
     (async () => {
@@ -56,11 +47,7 @@ const FightField = ({ theme = "night" }: FightFieldProps) => {
       const height = 192;
 
       const scene = new PixiBattleScene();
-      await scene.init(canvas, width, height, theme, {
-        outfitId,
-        hairId,
-        hatId,
-      });
+      await scene.init(canvas, width, height, theme);
       if (destroyed) {
         scene.destroy();
         return;
@@ -87,9 +74,9 @@ const FightField = ({ theme = "night" }: FightFieldProps) => {
       sceneRef.current?.destroy();
       sceneRef.current = null;
     };
-    // theme 은 별도 useEffect의 setTheme 으로 처리하므로 deps 제외
+    // 마운트 시 1회만 init. theme 변경은 별도 useEffect의 setTheme 으로 처리.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [outfitId, hairId, hatId]);
+  }, []);
 
   const currentMonster = getMonsterByKillCount(killCount);
 

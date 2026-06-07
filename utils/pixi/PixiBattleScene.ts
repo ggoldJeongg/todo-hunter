@@ -1,61 +1,14 @@
 import { Application, Container } from "pixi.js";
 import { PixiCharacter } from "./PixiCharacter";
-import { loadSpriteLayers, loadTexture } from "./PixiSpriteCompositor";
+import { loadSpriteStrip, loadSpriteFrames } from "./PixiSpriteCompositor";
 import { useQuestStore } from "@/utils/stores/questStore";
 import {
   BATTLE_THEMES,
   type BattleThemeId,
   type BattleTheme,
 } from "./BattleThemes";
-import { getMonsterByKillCount } from "./MonsterRegistry";
-import {
-  getOutfitSrc,
-  getHairSrc,
-  getHatSrc,
-  getOutfitBattleSrc,
-  getHairBattleSrc,
-  getHatBattleSrc,
-} from "@/constants/appearance";
-
-// 스프라이트 경로
-const IDLE_PATH = "/images/asprites/char_a_p1";
-const ATTACK_PATH = "/images/asprites/char_a_pONE1";
-
-const IDLE_BODY = `${IDLE_PATH}/char_a_p1_0bas_humn_v00.png`;
-const ATTACK_BODY = `${ATTACK_PATH}/char_a_pONE1_0bas_humn_v00.png`;
-// 무기 — idle 시트엔 무기 폴더가 없어 attack 시트 sword 레이어 빌려 씀
-const SWORD_LAYER = `${ATTACK_PATH}/6tla/char_a_pONE1_6tla_sw01_v01.png`;
-
-export interface BattleAppearance {
-  outfitId?: string | null;
-  hairId?: string | null;
-  hatId?: string | null;
-}
-
-function buildIdleLayers(appearance: BattleAppearance | undefined): string[] {
-  const layers: string[] = [
-    IDLE_BODY,
-    getOutfitSrc(appearance?.outfitId) ?? `${IDLE_PATH}/1out/char_a_p1_1out_fstr_v01.png`,
-    getHairSrc(appearance?.hairId) ?? `${IDLE_PATH}/4har/char_a_p1_4har_bob1_v01.png`,
-  ];
-  const hatSrc = getHatSrc(appearance?.hatId);
-  if (hatSrc) layers.push(hatSrc);
-  // 무기는 항상 마지막 레이어
-  layers.push(SWORD_LAYER);
-  return layers;
-}
-
-function buildAttackLayers(appearance: BattleAppearance | undefined): string[] {
-  const layers: string[] = [
-    ATTACK_BODY,
-    getOutfitBattleSrc(appearance?.outfitId),
-    getHairBattleSrc(appearance?.hairId),
-  ];
-  const hatSrc = getHatBattleSrc(appearance?.hatId);
-  if (hatSrc) layers.push(hatSrc);
-  layers.push(SWORD_LAYER);
-  return layers;
-}
+import { getMonsterByKillCount, type MonsterDef } from "./MonsterRegistry";
+import { SWORDSMAN_CLIPS, SWORDSMAN_SHEET } from "@/utils/sprite/swordsman";
 
 // 화면 셰이크 설정
 const SCREEN_SHAKE_INTENSITY = 4;
@@ -82,9 +35,6 @@ export class PixiBattleScene {
   private theme: BattleTheme = BATTLE_THEMES.night;
   private bgContainer: Container | null = null;
 
-  // 캐릭터 외형 (init 시 전달받음)
-  private appearance: BattleAppearance | undefined;
-
   // 화면 셰이크
   private screenShakeActive = false;
   private screenShakeElapsed = 0;
@@ -97,13 +47,11 @@ export class PixiBattleScene {
     canvas: HTMLCanvasElement,
     width: number,
     height: number,
-    themeId: BattleThemeId = "night",
-    appearance?: BattleAppearance
+    themeId: BattleThemeId = "night"
   ) {
     this.width = width;
     this.height = height;
     this.theme = BATTLE_THEMES[themeId];
-    this.appearance = appearance;
 
     this.app = new Application();
     await this.app.init({
@@ -157,23 +105,20 @@ export class PixiBattleScene {
   private async _buildCharacters(width: number, height: number) {
     if (!this.app) return;
 
-    // player yPercent를 monster보다 아래로 둠 — LPC 64x64 frame 안에서 캐릭터가
-    // 위쪽에 그려져 anchor 1.0(frame bottom)이 시각적 발보다 아래쪽 padding을 가짐.
-    // 그래서 같은 yPercent면 player가 위에 떠보임. yPercent를 키워 frame bottom을
-    // 그라운드 라인 아래로 보내면 시각적 발이 그라운드와 일치.
-    // 둘 다 yPercent 90 (화면 밑에서 10% 위)에 발 정렬.
-    // player는 LPC frame 안 캐릭터가 위쪽~중간에 그려져 있으므로 anchorY=0.85
-    // (frame bottom의 15% 위가 시각적 발). monster는 mushroom이 이미지를 꽉 채워 anchorY=1.0.
+    // 플레이어 = swordsman 단일 스프라이트(100x100 스트립). 오른쪽(몬스터) 보는 방향.
+    // anchorY=0.9: 프레임 하단 근처가 시각적 발. monster는 이미지를 꽉 채워 anchorY=1.0.
     this.player = new PixiCharacter(
       30,
       90,
       false,
-      { moveForwardTarget: { xPercent: 65, yPercent: 90 } },
-      0.8
+      { moveForwardTarget: { xPercent: 60, yPercent: 90 } },
+      0.9
     );
     this.player.setSceneSize(width, height);
 
-    this.monster = new PixiCharacter(72, 90, true, {}, 1.2);
+    // 몬스터 스프라이트는 프레임 하단에 캐릭터가 붙어있음(위는 투명 여백) → anchorY=1.0
+    // 새 몬스터 시트는 기본적으로 왼쪽(플레이어)을 바라봄 → flip=false
+    this.monster = new PixiCharacter(72, 90, false, {}, 1.0);
     this.monster.setSceneSize(width, height);
 
     // monster 먼저, player 나중에 addChild → 겹칠 때 player가 위에 그려짐
@@ -182,39 +127,52 @@ export class PixiBattleScene {
 
     const initialMonster = getMonsterByKillCount(useQuestStore.getState().killCount);
 
-    const [idleLayers, attackLayers, monsterTextures] = await Promise.all([
-      loadSpriteLayers(buildIdleLayers(this.appearance)),
-      loadSpriteLayers(buildAttackLayers(this.appearance)),
-      Promise.all(initialMonster.frames.map(loadTexture)),
+    // 모든 동작이 한 시트(SWORDSMAN_SHEET)에 행으로 들어있다 → 행(row)별로 슬라이스.
+    const [idleClip, walkClip, attackClip, monsterClips] = await Promise.all([
+      loadSpriteStrip(SWORDSMAN_SHEET, SWORDSMAN_CLIPS.idle.frames, SWORDSMAN_CLIPS.idle.row),
+      loadSpriteStrip(SWORDSMAN_SHEET, SWORDSMAN_CLIPS.walk.frames, SWORDSMAN_CLIPS.walk.row),
+      loadSpriteStrip(SWORDSMAN_SHEET, SWORDSMAN_CLIPS.attack.frames, SWORDSMAN_CLIPS.attack.row),
+      this._loadMonsterClips(initialMonster),
     ]);
 
-    const renderer = this.app.renderer;
-
-    // 시트 매핑 (8행 × 8열, 행 단위 동작):
-    //   1행 [0~7]   점프
-    //   2행 [8~15]  사다리
-    //   3행 [16~23] 오른쪽 때리기  ← 공격 (캐릭터가 오른쪽 몬스터를 침)
-    //   4행 [24~31] 왼쪽 때리기
-    //   5행 [32~39] 앞으로 전진
-    //   6행 [40~47] 뒤로
-    //   7행 [48~55] 오른쪽 걷기/뛰기 ← walk forward (몬스터 쪽으로) + idle 첫 프레임을 오른쪽 보는 자세로 사용
-    //   8행 [56~63] 왼쪽 걷기/뛰기   ← walk back (홈 복귀)
-    this.player.setIdleLayers(renderer, idleLayers, 48);
-    this.player.setAttackLayers(attackLayers, [16, 17, 18, 19, 20, 21, 22, 23]);
-    this.player.setWalkLayers(
-      idleLayers,
-      [48, 49, 50, 51, 52, 53, 54, 55],
-      [56, 57, 58, 59, 60, 61, 62, 63]
+    // idle 순환 / 이동 중 walk 순환 / 공격 시 attack 재생.
+    this.player.setSpriteClips({
+      idle: idleClip,
+      walk: walkClip,
+      attack: attackClip,
+    });
+    this.monster.setMonsterClips(
+      monsterClips,
+      initialMonster.frameWidth,
+      initialMonster.frameHeight,
+      initialMonster.scale ?? 1.0
     );
-    this.monster.setMonsterFrames(monsterTextures, initialMonster.scale ?? 1.0);
   }
 
-  /** 몬스터를 새 프레임으로 교체 */
+  /** 몬스터 정의의 상태별 시트를 모두 슬라이스해 Texture[] 클립으로 로드 */
+  private async _loadMonsterClips(def: MonsterDef) {
+    const { frameWidth: fw, frameHeight: fh, clips } = def;
+    const [idle, run, attack, hit, die] = await Promise.all([
+      loadSpriteFrames(clips.idle.src, clips.idle.frames, fw, fh),
+      loadSpriteFrames(clips.run.src, clips.run.frames, fw, fh),
+      loadSpriteFrames(clips.attack.src, clips.attack.frames, fw, fh),
+      loadSpriteFrames(clips.hit.src, clips.hit.frames, fw, fh),
+      loadSpriteFrames(clips.die.src, clips.die.frames, fw, fh),
+    ]);
+    return { idle, run, attack, hit, die };
+  }
+
+  /** 몬스터를 새 상태 클립으로 교체 */
   async swapMonster(killCount: number) {
     if (!this.monster) return;
-    const monsterDef = getMonsterByKillCount(killCount);
-    const textures = await Promise.all(monsterDef.frames.map(loadTexture));
-    this.monster.setMonsterFrames(textures, monsterDef.scale ?? 1.0);
+    const def = getMonsterByKillCount(killCount);
+    const clips = await this._loadMonsterClips(def);
+    this.monster.setMonsterClips(
+      clips,
+      def.frameWidth,
+      def.frameHeight,
+      def.scale ?? 1.0
+    );
   }
 
   private _startScreenShake() {
@@ -293,8 +251,10 @@ export class PixiBattleScene {
         this._startScreenShake();
       }
 
-      // 공격 종료 → idle 복원
-      if (!state.isAttacking && prevState.isAttacking) {
+      // 공격 종료 → idle 복원.
+      // 단, 같은 set()에서 후퇴(isMoving)가 동시에 시작되면 setIdle이 startMoveBack을
+      // 덮어써 back 모션이 사라지므로, 이동이 시작되지 않을 때만 idle 복원한다.
+      if (!state.isAttacking && prevState.isAttacking && !state.isMoving) {
         this.player.setIdle();
       }
 
@@ -303,9 +263,11 @@ export class PixiBattleScene {
         this.monster.setDefeated();
       }
 
-      // 부활: defeated가 해제되면 몬스터 페이드인 복귀
+      // 부활: defeated가 해제되면(=다음 몬스터 젠) 새 몬스터로 교체 후 페이드인.
+      // 교체를 이 시점까지 미뤄야 직전 몬스터의 die 애니메이션이 정상 재생된다.
+      // (killCount는 처치 즉시 증가하므로, 교체를 killCount에 묶으면 die가 다음 몬스터 걸로 나옴)
       if (!state.isDefeated && prevState.isDefeated) {
-        this.monster.revive();
+        this.swapMonster(state.killCount).then(() => this.monster?.revive());
       }
     });
   }

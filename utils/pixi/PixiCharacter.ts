@@ -52,6 +52,9 @@ const DEFAULT_CONFIG: AnimationConfig = {
 };
 
 const SPRITE_SIZE = 120;
+// 스프라이트 클립(swordsman) 표시 크기. 프레임 여백이 커서 SPRITE_SIZE보다 크게 잡아야
+// 캐릭터(프레임의 ~1/4)가 적정 크기로 보인다. (값↑ = 캐릭터↑)
+const SPRITE_CLIP_DISPLAY = 300;
 
 export class PixiCharacter {
   readonly container = new Container();
@@ -85,11 +88,30 @@ export class PixiCharacter {
   private renderTexture: RenderTexture | null = null;
   private currentCompositeFrame = -1;
 
-  // 몬스터 프레임 (이미지 기반)
-  private monsterTextures: Texture[] = [];
-  private monsterFrameIdx = 0;
-  private monsterFrameElapsed = 0;
   private isCanvasMode = false;
+
+  // 몬스터 상태 클립 (idle/run/attack/hit/die). 각 상태 = 가로 시트 슬라이스 Texture[].
+  // monsterAnim: 현재 재생 중인 동작. idle은 루프, hit/die는 1회(마지막 프레임 유지).
+  // run/attack은 보유만 하고 현재 트리거 없음.
+  private monsterMode = false;
+  private monsterClips: Record<
+    "idle" | "run" | "attack" | "hit" | "die",
+    Texture[]
+  > | null = null;
+  private monsterAnim: "idle" | "hit" | "die" = "idle";
+  private monsterClipIdx = 0;
+  private monsterClipElapsed = 0;
+  private monsterClipRate = 90; // ms/frame
+
+  // 스프라이트 클립 모드 (swordsman 등 단일 캐릭터 동작 스트립)
+  // idle/walk/attack 클립을 상태에 따라 재생. 합성(canvas)·몬스터 모드와 배타적.
+  private spriteMode = false;
+  private clipIdle: Texture[] = [];
+  private clipWalk: Texture[] = [];
+  private clipAttack: Texture[] = [];
+  private clipFrameIdx = 0;
+  private clipElapsed = 0;
+  private clipFrameRate = 110; // ms/frame
 
   // 애니메이션 진행
   private moveElapsed = 0;
@@ -220,22 +242,106 @@ export class PixiCharacter {
     this.walkBackFrames = backFrames;
   }
 
-  /** 몬스터: 이미지 프레임 설정 */
-  setMonsterFrames(textures: Texture[], scale: number = 1.0) {
+  /**
+   * 몬스터: 상태별 클립 설정 (idle/run/attack/hit/die).
+   * 각 클립은 가로 시트를 슬라이스한 Texture[]. 프레임 비율(frameWidth/Height)을
+   * 유지해 표시 → 비정사각 프레임(예: 90x64)도 찌그러지지 않음.
+   */
+  setMonsterClips(
+    clips: Record<"idle" | "run" | "attack" | "hit" | "die", Texture[]>,
+    frameWidth: number,
+    frameHeight: number,
+    scale: number = 1.0
+  ) {
+    this.monsterMode = true;
     this.isCanvasMode = false;
-    this.monsterTextures = textures;
-    if (textures.length > 0) {
-      this.sprite.texture = textures[0];
-      // 화면 표시 크기를 SPRITE_SIZE * scale 로 명시적 설정.
-      // Pixi v8: sprite.width/height 설정 시 내부적으로 scale이 자동 계산됨.
-      const target = SPRITE_SIZE * scale;
-      this.sprite.width = target;
-      this.sprite.height = target;
-      // flip이면 좌우 반전 (width 설정 후 scale.x의 부호만 반전)
+    this.spriteMode = false;
+    this.monsterClips = clips;
+    this.monsterAnim = "idle";
+    this.monsterClipIdx = 0;
+    this.monsterClipElapsed = 0;
+
+    if (clips.idle.length > 0) {
+      this.sprite.texture = clips.idle[0];
+      // 높이 = SPRITE_SIZE*scale, 너비 = 높이 * (frameW/frameH) 로 프레임 비율 유지.
+      const displayH = SPRITE_SIZE * scale;
+      this.sprite.height = displayH;
+      this.sprite.width = displayH * (frameWidth / frameHeight);
       if (this.flip) {
         this.sprite.scale.x = -Math.abs(this.sprite.scale.x);
       }
     }
+  }
+
+  // 몬스터 클립 한 프레임 진행 + sprite.texture 교체.
+  // loop=false 이면 마지막 프레임에서 멈추고 도달 시 true 반환(1회 재생 종료 신호).
+  private _advanceMonsterClip(
+    clip: Texture[],
+    deltaMS: number,
+    loop: boolean
+  ): boolean {
+    if (!clip || clip.length === 0) return false;
+    let finished = false;
+    this.monsterClipElapsed += deltaMS;
+    if (this.monsterClipElapsed >= this.monsterClipRate) {
+      this.monsterClipElapsed = 0;
+      let next = this.monsterClipIdx + 1;
+      if (next >= clip.length) {
+        if (loop) {
+          next = 0;
+        } else {
+          next = clip.length - 1;
+          finished = true;
+        }
+      }
+      this.monsterClipIdx = next;
+    }
+    this.sprite.texture = clip[Math.min(this.monsterClipIdx, clip.length - 1)];
+    return finished;
+  }
+
+  /**
+   * 플레이어: 단일 캐릭터 스프라이트 클립 설정 (swordsman 등).
+   * idle/walk/attack 각각 가로 스트립을 슬라이스한 Texture[].
+   */
+  setSpriteClips(
+    clips: { idle: Texture[]; walk: Texture[]; attack: Texture[] },
+    frameRate = 110
+  ) {
+    this.spriteMode = true;
+    this.isCanvasMode = false;
+    this.clipIdle = clips.idle;
+    this.clipWalk = clips.walk;
+    this.clipAttack = clips.attack;
+    this.clipFrameRate = frameRate;
+    this.clipFrameIdx = 0;
+    this.clipElapsed = 0;
+
+    if (clips.idle.length > 0) {
+      this.sprite.texture = clips.idle[0];
+      // 프레임(100x100) 안 캐릭터는 작고(~24x22px) 여백이 큼.
+      // anchor를 캐릭터 발(프레임 정규화 0.52, 0.6)에 맞추고, 표시 크기를 키워
+      // 투명 여백이 화면을 벗어나게 해 캐릭터가 크게 보이도록 한다.
+      this.sprite.anchor.set(0.52, 0.6);
+      this.sprite.width = SPRITE_CLIP_DISPLAY;
+      this.sprite.height = SPRITE_CLIP_DISPLAY;
+      if (this.flip) {
+        this.sprite.scale.x = -Math.abs(this.sprite.scale.x);
+      }
+    }
+  }
+
+  // 현재 클립의 다음 프레임으로 진행하고 sprite.texture 교체.
+  private _advanceClip(clip: Texture[], deltaMS: number, loop: boolean) {
+    if (clip.length === 0) return;
+    this.clipElapsed += deltaMS;
+    if (this.clipElapsed >= this.clipFrameRate) {
+      this.clipElapsed = 0;
+      let next = this.clipFrameIdx + 1;
+      if (next >= clip.length) next = loop ? 0 : clip.length - 1;
+      this.clipFrameIdx = next;
+    }
+    this.sprite.texture = clip[Math.min(this.clipFrameIdx, clip.length - 1)];
   }
 
   // --- 상태 전환 메서드 ---
@@ -249,10 +355,14 @@ export class PixiCharacter {
       (this.config.moveForwardTarget.xPercent / 100) * this.sceneWidth;
     this.moveTargetY =
       (this.config.moveForwardTarget.yPercent / 100) * this.sceneHeight;
-    // walk 두 번째 프레임부터 시작 (첫 프레임이 idle과 동일해 정지처럼 보이는 문제 방지)
+    // forward는 idle(7행 48)과 같은 행이라 첫 프레임이 idle과 동일 → 두 번째 프레임부터 시작
+    // (첫 프레임부터 그리면 정지처럼 보임)
     this.walkFrameIdx = 1;
     // 다음 update 시 즉시 첫 합성 트리거
     this.walkElapsed = this.config.walkFrameRate;
+    // 스프라이트 모드: walk 클립 처음부터
+    this.clipFrameIdx = 0;
+    this.clipElapsed = 0;
   }
 
   startMoveBack() {
@@ -262,21 +372,33 @@ export class PixiCharacter {
     this.moveStartY = this.container.y;
     this.moveTargetX = (this.homeXPercent / 100) * this.sceneWidth;
     this.moveTargetY = (this.homeYPercent / 100) * this.sceneHeight;
-    // back은 idle(48 = 7행 첫 프레임)과 자세가 다른 8행이라 idx 0부터 시작해도 즉시 자세 전환됨
+    // back은 idle(8행 56)과 다른 행(7행 좌측 뛰기)이라 idx 0부터 시작해도 즉시 자세 전환됨
     this.walkFrameIdx = 0;
     this.walkElapsed = this.config.walkFrameRate;
+    // 스프라이트 모드: walk 클립 처음부터
+    this.clipFrameIdx = 0;
+    this.clipElapsed = 0;
   }
 
   startAttack() {
     this.state = "attacking";
     this.attackFrameIdx = 0;
     this.attackElapsed = 0;
+    // 스프라이트 모드: attack 클립 처음부터
+    this.clipFrameIdx = 0;
+    this.clipElapsed = 0;
   }
 
   startShake() {
     this.state = "shaking";
     this.shakeStep = 0;
     this.shakeElapsed = 0;
+    // 몬스터: 피격(hit) 클립 1회 재생 시작
+    if (this.monsterMode) {
+      this.monsterAnim = "hit";
+      this.monsterClipIdx = 0;
+      this.monsterClipElapsed = 0;
+    }
   }
 
   setDefeated() {
@@ -285,6 +407,12 @@ export class PixiCharacter {
     this.defeatPhase = "darken";
     this.clearText.alpha = 0;
     this.clearText.scale.set(1);
+    // 몬스터: 사망(die) 클립 1회 재생 시작 (마지막 프레임에서 정지)
+    if (this.monsterMode) {
+      this.monsterAnim = "die";
+      this.monsterClipIdx = 0;
+      this.monsterClipElapsed = 0;
+    }
   }
 
   /** 부활: 페이드인으로 복귀 */
@@ -295,12 +423,29 @@ export class PixiCharacter {
     this.clearText.alpha = 0;
     this.defeatOverlay.alpha = 0;
     this.container.alpha = 0;
+    // 몬스터: idle 클립 첫 프레임으로 복원
+    if (this.monsterMode) {
+      this.monsterAnim = "idle";
+      this.monsterClipIdx = 0;
+      this.monsterClipElapsed = 0;
+      if (this.monsterClips && this.monsterClips.idle.length > 0) {
+        this.sprite.texture = this.monsterClips.idle[0];
+      }
+    }
   }
 
   setIdle() {
     this.state = "idle";
     this.container.x = (this.homeXPercent / 100) * this.sceneWidth;
     this.container.y = (this.homeYPercent / 100) * this.sceneHeight;
+
+    // 스프라이트 모드: idle 클립 첫 프레임으로 복원
+    if (this.spriteMode) {
+      this.clipFrameIdx = 0;
+      this.clipElapsed = 0;
+      if (this.clipIdle.length > 0) this.sprite.texture = this.clipIdle[0];
+      return;
+    }
 
     // idle 프레임 복원
     if (this.isCanvasMode && this.renderTexture && this.idleLayers.length > 0) {
@@ -352,15 +497,14 @@ export class PixiCharacter {
   }
 
   private _updateIdle(deltaMS: number) {
-    // 몬스터: 프레임 순환
-    if (!this.isCanvasMode && this.monsterTextures.length > 1) {
-      this.monsterFrameElapsed += deltaMS;
-      if (this.monsterFrameElapsed >= 150) {
-        this.monsterFrameElapsed = 0;
-        this.monsterFrameIdx =
-          (this.monsterFrameIdx + 1) % this.monsterTextures.length;
-        this.sprite.texture = this.monsterTextures[this.monsterFrameIdx];
-      }
+    // 스프라이트 모드: idle 클립 순환
+    if (this.spriteMode) {
+      this._advanceClip(this.clipIdle, deltaMS, true);
+      return;
+    }
+    // 몬스터: idle 클립 순환
+    if (this.monsterMode && this.monsterClips) {
+      this._advanceMonsterClip(this.monsterClips.idle, deltaMS, true);
     }
   }
 
@@ -374,6 +518,11 @@ export class PixiCharacter {
       this.moveStartX + (this.moveTargetX - this.moveStartX) * eased;
     this.container.y =
       this.moveStartY + (this.moveTargetY - this.moveStartY) * eased;
+
+    // 스프라이트 모드: walk 클립 순환 (전진/후진 동일 클립, facing은 아래에서 flip)
+    if (this.spriteMode) {
+      this._advanceClip(this.clipWalk, deltaMS, true);
+    }
 
     // 걷기 프레임 순환 (시트 7행=오른쪽 걷기, 8행=왼쪽 걷기)
     if (
@@ -407,6 +556,13 @@ export class PixiCharacter {
       this.state = "idle";
       this.walkFrameIdx = 0;
       this.walkElapsed = 0;
+      // 스프라이트 모드: idle 클립 첫 프레임으로 복원
+      if (this.spriteMode) {
+        this.clipFrameIdx = 0;
+        this.clipElapsed = 0;
+        if (this.clipIdle.length > 0) this.sprite.texture = this.clipIdle[0];
+        return;
+      }
       // idle 프레임으로 복원
       if (
         this.isCanvasMode &&
@@ -426,6 +582,12 @@ export class PixiCharacter {
   }
 
   private _updateAttack(renderer: Renderer, deltaMS: number) {
+    // 스프라이트 모드: attack 클립 재생 (attacking 상태 유지 동안 반복).
+    // 상태 종료는 외부(store)에서 isAttacking false → setIdle 호출로 처리.
+    if (this.spriteMode) {
+      this._advanceClip(this.clipAttack, deltaMS, true);
+      return;
+    }
     if (!this.isCanvasMode) return;
 
     this.attackElapsed += deltaMS;
@@ -450,6 +612,11 @@ export class PixiCharacter {
   }
 
   private _updateShake(deltaMS: number) {
+    // 몬스터: hit 클립 진행(위치 흔들림과 병행)
+    if (this.monsterMode && this.monsterClips) {
+      this._advanceMonsterClip(this.monsterClips.hit, deltaMS, false);
+    }
+
     this.shakeElapsed += deltaMS;
     if (this.shakeElapsed >= this.config.shakeStepDuration) {
       this.shakeElapsed = 0;
@@ -458,6 +625,12 @@ export class PixiCharacter {
       if (this.shakeStep >= this.shakeSequence.length) {
         this.container.x = (this.homeXPercent / 100) * this.sceneWidth;
         this.state = "idle";
+        // 몬스터: idle 클립으로 복귀
+        if (this.monsterMode) {
+          this.monsterAnim = "idle";
+          this.monsterClipIdx = 0;
+          this.monsterClipElapsed = 0;
+        }
         return;
       }
     }
@@ -468,6 +641,11 @@ export class PixiCharacter {
   }
 
   private _updateDefeat(deltaMS: number) {
+    // 몬스터: die 클립 재생(1회, 마지막 프레임 유지). 페이드아웃은 아래 단계에서 처리.
+    if (this.monsterMode && this.monsterClips) {
+      this._advanceMonsterClip(this.monsterClips.die, deltaMS, false);
+    }
+
     this.defeatProgress += deltaMS;
 
     switch (this.defeatPhase) {
