@@ -6,6 +6,7 @@
 let maskImage: HTMLImageElement | null = null;
 let maskCanvas: HTMLCanvasElement | null = null;
 let maskCtx: CanvasRenderingContext2D | null = null;
+let maskData: Uint8ClampedArray | null = null;
 let maskLoaded = false;
 let loadingPromise: Promise<void> | null = null;
 
@@ -28,6 +29,7 @@ export function loadCollisionMask(src: string): Promise<void> {
       maskImage = img;
       maskCanvas = canvas;
       maskCtx = ctx;
+      maskData = ctx.getImageData(0, 0, img.width, img.height).data;
       maskLoaded = true;
       resolve();
     };
@@ -45,7 +47,7 @@ export function isCollisionMaskLoaded(): boolean {
 // xPct, yPct: 0~100 (맵 % 좌표)
 export function isWalkable(xPct: number, yPct: number): boolean {
   // 마스크 로딩 전엔 통과 허용 (UX 깨지지 않도록)
-  if (!maskLoaded || !maskCtx || !maskImage) return true;
+  if (!maskLoaded || !maskData || !maskImage) return true;
 
   const px = Math.floor((xPct / 100) * maskImage.width);
   const py = Math.floor((yPct / 100) * maskImage.height);
@@ -54,9 +56,48 @@ export function isWalkable(xPct: number, yPct: number): boolean {
     return false;
   }
 
-  const data = maskCtx.getImageData(px, py, 1, 1).data;
-  // R 채널이 임계값 이상이면 통과 (흰색 ≈ 255, 검정 ≈ 0)
-  return data[0] > 128;
+  const index = (py * maskImage.width + px) * 4;
+  return maskData[index] > 128 && maskData[index + 3] > 128;
+}
+
+export interface CollisionFootprint {
+  halfWidthPct: number;
+  heightPct: number;
+}
+
+export function isFootprintWalkable(
+  xPct: number,
+  yPct: number,
+  footprint: CollisionFootprint
+): boolean {
+  if (!maskLoaded || !maskData || !maskImage) return true;
+
+  const left = Math.floor(
+    ((xPct - footprint.halfWidthPct) / 100) * maskImage.width
+  );
+  const right = Math.ceil(
+    ((xPct + footprint.halfWidthPct) / 100) * maskImage.width
+  );
+  const top = Math.floor(((yPct - footprint.heightPct) / 100) * maskImage.height);
+  const bottom = Math.ceil((yPct / 100) * maskImage.height);
+
+  if (
+    left < 0 ||
+    top < 0 ||
+    right >= maskImage.width ||
+    bottom >= maskImage.height
+  ) {
+    return false;
+  }
+
+  for (let py = top; py <= bottom; py++) {
+    for (let px = left; px <= right; px++) {
+      const index = (py * maskImage.width + px) * 4;
+      if (maskData[index] <= 128 || maskData[index + 3] <= 128) return false;
+    }
+  }
+
+  return true;
 }
 
 // (x, y) 주변에서 가장 가까운 걸어갈 수 있는 점을 나선형으로 탐색
@@ -90,7 +131,8 @@ export function findReachablePoint(
   fromY: number,
   toX: number,
   toY: number,
-  stepPct = 0.5
+  stepPct = 0.5,
+  footprint?: CollisionFootprint
 ): { x: number; y: number } {
   if (!maskLoaded) return { x: toX, y: toY };
 
@@ -107,7 +149,10 @@ export function findReachablePoint(
     const t = i / steps;
     const x = fromX + dx * t;
     const y = fromY + dy * t;
-    if (!isWalkable(x, y)) break;
+    const walkable = footprint
+      ? isFootprintWalkable(x, y, footprint)
+      : isWalkable(x, y);
+    if (!walkable) break;
     lastSafeX = x;
     lastSafeY = y;
   }
