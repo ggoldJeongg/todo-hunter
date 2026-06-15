@@ -21,7 +21,10 @@ export type CharacterState =
   | "attacking"
   | "shaking"
   | "defeated"
-  | "reviving";
+  | "reviving"
+  // 광장 자유 이동(free-roam): 위치는 외부(scene)가 setWorldPosition으로 제어하고
+  // 여기서는 walk/idle 클립 토글만 담당. 전투 이동 상태머신과 배타적.
+  | "roaming";
 
 export interface AnimationConfig {
   moveDuration: number; // 이동 시간 (ms), 기본 500
@@ -112,6 +115,9 @@ export class PixiCharacter {
   private clipFrameIdx = 0;
   private clipElapsed = 0;
   private clipFrameRate = 110; // ms/frame
+
+  // 광장 free-roam: walk(true)/idle(false) 클립 선택 플래그
+  private roamWalking = false;
 
   // 애니메이션 진행
   private moveElapsed = 0;
@@ -306,7 +312,9 @@ export class PixiCharacter {
    */
   setSpriteClips(
     clips: { idle: Texture[]; walk: Texture[]; attack: Texture[] },
-    frameRate = 110
+    frameRate = 110,
+    // 표시 크기(px). 전투는 기본 300, 광장은 더 작게 넘겨 캐릭터 크기를 조절한다.
+    displaySize = SPRITE_CLIP_DISPLAY
   ) {
     this.spriteMode = true;
     this.isCanvasMode = false;
@@ -323,12 +331,41 @@ export class PixiCharacter {
       // anchor를 캐릭터 발(프레임 정규화 0.52, 0.6)에 맞추고, 표시 크기를 키워
       // 투명 여백이 화면을 벗어나게 해 캐릭터가 크게 보이도록 한다.
       this.sprite.anchor.set(0.52, 0.6);
-      this.sprite.width = SPRITE_CLIP_DISPLAY;
-      this.sprite.height = SPRITE_CLIP_DISPLAY;
+      this.sprite.width = displaySize;
+      this.sprite.height = displaySize;
       if (this.flip) {
         this.sprite.scale.x = -Math.abs(this.sprite.scale.x);
       }
     }
+  }
+
+  // ===== 광장 free-roam 전용 API =====
+  // 위치/방향/이동상태를 scene이 매 프레임 직접 제어한다(전투 상태머신 미사용).
+
+  /** 좌우 반전 토글 (방향 전환). 표시 크기는 유지. */
+  setFlip(flip: boolean) {
+    this.flip = flip;
+    const mag = Math.abs(this.sprite.scale.x);
+    this.sprite.scale.x = flip ? -mag : mag;
+  }
+
+  /** 월드 좌표(px)에 캐릭터 컨테이너 배치 */
+  setWorldPosition(x: number, y: number) {
+    this.container.x = x;
+    this.container.y = y;
+  }
+
+  /**
+   * free-roam 상태로 전환하고 walk/idle 애니메이션만 토글.
+   * 위치 이동은 하지 않는다(scene이 setWorldPosition으로 처리).
+   */
+  setRoaming(walking: boolean) {
+    if (this.state !== "roaming") {
+      this.state = "roaming";
+      this.clipFrameIdx = 0;
+      this.clipElapsed = 0;
+    }
+    this.roamWalking = walking;
   }
 
   // 현재 클립의 다음 프레임으로 진행하고 sprite.texture 교체.
@@ -493,7 +530,16 @@ export class PixiCharacter {
       case "reviving":
         this._updateRevive(deltaMS);
         break;
+      case "roaming":
+        this._updateRoaming(deltaMS);
+        break;
     }
+  }
+
+  private _updateRoaming(deltaMS: number) {
+    if (!this.spriteMode) return;
+    // 이동 중이면 walk, 정지면 idle 클립을 순환
+    this._advanceClip(this.roamWalking ? this.clipWalk : this.clipIdle, deltaMS, true);
   }
 
   private _updateIdle(deltaMS: number) {
