@@ -1,5 +1,5 @@
 import { SignUpRequestDTO } from "@/application/usecases/auth/dtos/SignUpRequestDTO";
-import { SignUpUsecase } from "@/application/usecases/auth/SignUpUsecase";
+import { SignUpTokenPersistenceError, SignUpUsecase } from "@/application/usecases/auth/SignUpUsecase";
 import { ICharacterRepository, IStatusRepository, IUserRepository } from "@/domain/repositories";
 import { IRdAuthenticationRepository } from "@/domain/repositories/IRdAuthenticationRepository";
 import { PriCharacterRepository, PriStatusRepository, PriUserRepository } from "@/infrastructure/repositories";
@@ -46,7 +46,20 @@ export async function POST(req: NextRequest) {
     const rdAuthenticationRepository: IRdAuthenticationRepository = new RdAuthenticationRepository();
     
     // 유스케이스 생성
-    const signUpUsecase = new SignUpUsecase(userRepository, characterRepository, statusRepository, rdAuthenticationRepository);
+    const signUpUsecase = new SignUpUsecase(
+        userRepository,
+        characterRepository,
+        statusRepository,
+        rdAuthenticationRepository,
+        (operation) =>
+            prisma.$transaction((tx) =>
+                operation({
+                    userRepository: new PriUserRepository(tx),
+                    characterRepository: new PriCharacterRepository(tx),
+                    statusRepository: new PriStatusRepository(tx),
+                })
+            )
+    );
 
     // // 유스케이스 실행 (가입만 실행 시)
     // await signUpUsecase.execute(userData);
@@ -83,6 +96,12 @@ export async function POST(req: NextRequest) {
         return response;
     } catch (error) {
         console.error("❌ 회원가입 오류", error);
+        if (error instanceof SignUpTokenPersistenceError) {
+            return NextResponse.json(
+                { error: "Account created, but sign-in token setup failed. Please sign in again." },
+                { status: 503 }
+            );
+        }
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
