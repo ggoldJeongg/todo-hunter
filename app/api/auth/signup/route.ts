@@ -6,10 +6,29 @@ import { PriCharacterRepository, PriStatusRepository, PriUserRepository } from "
 import { RdAuthenticationRepository } from "@/infrastructure/repositories/RdAuthenticationRepository";
 import { RdVerificationRepository } from "@/infrastructure/repositories/RdVerificationRepository";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, getClientIp } from "@/infrastructure/rate-limiter";
 
 const SIGNUP_RATE_LIMIT = { maxRequests: 3, windowSeconds: 60 };
+
+function getDuplicateSignupMessage(error: unknown) {
+    if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+    ) {
+        const target = Array.isArray(error.meta?.target) ? error.meta.target : [];
+        if (target.includes("login_id") || target.includes("loginId")) {
+            return "이미 가입된 아이디입니다.";
+        }
+        if (target.includes("email")) {
+            return "이미 가입된 이메일입니다.";
+        }
+        return "이미 가입된 회원 정보입니다.";
+    }
+
+    return null;
+}
 
 export async function POST(req: NextRequest) {
     const clientIp = getClientIp(req.headers);
@@ -96,6 +115,10 @@ export async function POST(req: NextRequest) {
         return response;
     } catch (error) {
         console.error("❌ 회원가입 오류", error);
+        const duplicateMessage = getDuplicateSignupMessage(error);
+        if (duplicateMessage) {
+            return NextResponse.json({ error: duplicateMessage }, { status: 409 });
+        }
         if (error instanceof SignUpTokenPersistenceError) {
             return NextResponse.json(
                 { error: "Account created, but sign-in token setup failed. Please sign in again." },
