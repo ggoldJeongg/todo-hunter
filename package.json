@@ -12,9 +12,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "audit": "npm audit --audit-level=high",
-    "audit:fix": "npm audit fix"
+    "audit:fix": "npm audit fix",
+    "metrics": "node scripts/harness-metrics.mjs"
   },
   "dependencies": {
+    "@ducanh2912/next-pwa": "^10.2.9",
     "@hackernoon/pixel-icon-library": "^1.0.4",
     "@next/third-parties": "^16.2.4",
     "@prisma/client": "^6.4.1",
@@ -33,7 +35,6 @@
     "galmuri": "^2.39.9",
     "jose": "^6.0.8",
     "lucide-react": "^0.475.0",
-    "@ducanh2912/next-pwa": "^10.2.9",
     "next": "15.1.7",
     "next-themes": "^0.4.4",
     "nodemailer": "^6.10.0",

@@ -2,6 +2,8 @@ import  redisClient from '@/infrastructure/databases/redis/server';
 
 import { IVerificationRepository } from '@/domain/repositories/IVerificationRepository';
 
+const SIGNUP_VERIFIED_KEY_PREFIX = 'signup-verified:';
+
 export class RdVerificationRepository implements IVerificationRepository {
 
     async saveVerificationCode(email: string, code: string, expiresIn: number = 300): Promise<void> {
@@ -14,6 +16,19 @@ export class RdVerificationRepository implements IVerificationRepository {
 
     async deleteVerificationCode(email: string): Promise<void> {
         await redisClient.del(`email:${email}`);
+    }
+
+    async saveSignupVerifiedEmail(email: string, expiresIn: number = 600): Promise<void> {
+        await redisClient.set(SIGNUP_VERIFIED_KEY_PREFIX + email, 'true', { ex: expiresIn });
+    }
+
+    async hasSignupVerifiedEmail(email: string): Promise<boolean> {
+        const verified = await redisClient.get<string>(SIGNUP_VERIFIED_KEY_PREFIX + email);
+        return verified === 'true';
+    }
+
+    async deleteSignupVerifiedEmail(email: string): Promise<void> {
+        await redisClient.del(SIGNUP_VERIFIED_KEY_PREFIX + email);
     }
 
     async getVerificationCodeExpiration(email: string): Promise<number | null> {

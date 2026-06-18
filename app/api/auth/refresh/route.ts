@@ -1,47 +1,87 @@
-// 현재 사용 안함, 차후 확장시 사용할 수 있음
 import { NextRequest, NextResponse } from "next/server";
 import { RdAuthenticationRepository } from "@/infrastructure/repositories/RdAuthenticationRepository";
 import { VerifyRefreshTokenUsecase } from "@/application/usecases/auth/VerifyRefreshTokenUsecase";
 import { GenerateAccessTokenUsecase } from "@/application/usecases/auth/GenerateAccessTokenUsecase";
-import { RenewRefreshTokenUsecase } from "@/application/usecases/auth/RenewRefreshTokenUsecase";
+import { GenerateRefreshTokenUsecase } from "@/application/usecases/auth/GenerateRefreshTokenUsecase";
+import { checkRateLimit, getClientIp } from "@/infrastructure/rate-limiter";
+
+const REFRESH_RATE_LIMIT = { maxRequests: 10, windowSeconds: 60 };
 
 export async function POST(req: NextRequest) {
-    try {
-        const { id, loginId, refreshToken } = await req.json();
-        const authenticationRepository = new RdAuthenticationRepository();
-        const verifyRefreshTokenUsecase = new VerifyRefreshTokenUsecase();
-        const generateAccessTokenUsecase = new GenerateAccessTokenUsecase();
-        const renewRefreshTokenUsecase = new RenewRefreshTokenUsecase(authenticationRepository);
+  try {
+    const clientIp = getClientIp(req.headers);
+    const rateLimit = await checkRateLimit(
+      `refresh:${clientIp}`,
+      REFRESH_RATE_LIMIT.maxRequests,
+      REFRESH_RATE_LIMIT.windowSeconds
+    );
 
-        // Refresh Token 검증
-        const decodedRefreshToken = await verifyRefreshTokenUsecase.execute(refreshToken);
-        let newAccessToken: string;
-
-        if (decodedRefreshToken) {
-            // Refresh Token이 유효하면 새 Access Token 발급
-            newAccessToken = await generateAccessTokenUsecase.execute({ id: id, loginId: loginId });
-        } else {
-            // Refresh Token이 만료되었으면 갱신
-            const newRefreshToken = await renewRefreshTokenUsecase.execute({ id: id, loginId: loginId });
-            if (!newRefreshToken) {
-                return NextResponse.json({ error: "Failed to renew refresh token" }, { status: 401 });
-            }
-            newAccessToken = await generateAccessTokenUsecase.execute({ id: id, loginId: loginId });
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "Too many refresh requests" },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimit.retryAfterSeconds),
+          },
         }
-
-        // 쿠키 설정
-        const response = NextResponse.json({ newAccessToken }, { status: 200 });
-        response.cookies.set("accessToken", newAccessToken, {
-            httpOnly: true, // XSS 방지
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            path: "/", // 모든 경로에서 사용 가능
-            maxAge: parseInt(process.env.ACCESS_TOKEN_EXPIRES || "3600", 10), // 유효기간 (초 단위)
-        });
-
-        return response;
-    } catch (error) {
-        console.error("❌ Refresh token error", error);
-        return NextResponse.json({ error: "Failed to refresh token" }, { status: 500 });
+      );
     }
+
+    const refreshToken = req.cookies.get("refreshToken")?.value;
+    if (!refreshToken) {
+      return NextResponse.json(
+        { error: "Refresh token is required" },
+        { status: 401 }
+      );
+    }
+
+    const authenticationRepository = new RdAuthenticationRepository();
+    const verifyRefreshTokenUsecase = new VerifyRefreshTokenUsecase();
+    const generateAccessTokenUsecase = new GenerateAccessTokenUsecase();
+    const generateRefreshTokenUsecase = new GenerateRefreshTokenUsecase(authenticationRepository);
+
+    const decodedRefreshToken = await verifyRefreshTokenUsecase.execute(refreshToken);
+    if (!decodedRefreshToken) {
+      return NextResponse.json({ error: "Invalid refresh token" }, { status: 401 });
+    }
+
+    const id = Number(decodedRefreshToken.id);
+    const loginId = decodedRefreshToken.loginId;
+    if (!Number.isFinite(id) || typeof loginId !== "string") {
+      return NextResponse.json(
+        { error: "Invalid refresh token payload" },
+        { status: 401 }
+      );
+    }
+
+    const storedRefreshToken = await authenticationRepository.getRefreshToken(loginId);
+    if (storedRefreshToken !== refreshToken) {
+      return NextResponse.json({ error: "Invalid refresh token" }, { status: 401 });
+    }
+
+    const newAccessToken = await generateAccessTokenUsecase.execute({ id, loginId });
+    const newRefreshToken = await generateRefreshTokenUsecase.execute({ id, loginId });
+
+    const response = NextResponse.json({ message: "Token refreshed" }, { status: 200 });
+    response.cookies.set("accessToken", newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: parseInt(process.env.ACCESS_TOKEN_EXPIRES || "3600", 10),
+    });
+    response.cookies.set("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: parseInt(process.env.REFRESH_TOKEN_EXPIRES || "3600", 10),
+    });
+
+    return response;
+  } catch (error) {
+    console.error("Refresh token error", error);
+    return NextResponse.json({ error: "Failed to refresh token" }, { status: 500 });
+  }
 }

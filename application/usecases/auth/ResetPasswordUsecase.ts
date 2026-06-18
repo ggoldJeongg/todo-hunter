@@ -1,4 +1,5 @@
 import { IUserRepository } from "@/domain/repositories";
+import { IRdAuthenticationRepository } from "@/domain/repositories/IRdAuthenticationRepository";
 import { IVerificationRepository } from "@/domain/repositories/IVerificationRepository";
 import { VerifyCodeError } from "./errors/VerifyCodeError";
 
@@ -6,6 +7,7 @@ export class ResetPasswordUsecase {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly verificationRepository: IVerificationRepository,
+    private readonly authenticationRepository: IRdAuthenticationRepository,
   ) {}
 
   async execute(
@@ -42,6 +44,7 @@ export class ResetPasswordUsecase {
     }
 
     await this.userRepository.updatePassword(user.id, newPassword);
+    await this.authenticationRepository.deleteRefreshToken(loginId);
     await this.verificationRepository.deleteResetPasswordCode(email);
   }
 }

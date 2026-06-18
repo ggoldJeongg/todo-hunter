@@ -4,6 +4,7 @@ import { ICharacterRepository, IStatusRepository, IUserRepository } from "@/doma
 import { IRdAuthenticationRepository } from "@/domain/repositories/IRdAuthenticationRepository";
 import { PriCharacterRepository, PriStatusRepository, PriUserRepository } from "@/infrastructure/repositories";
 import { RdAuthenticationRepository } from "@/infrastructure/repositories/RdAuthenticationRepository";
+import { RdVerificationRepository } from "@/infrastructure/repositories/RdVerificationRepository";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, getClientIp } from "@/infrastructure/rate-limiter";
@@ -32,6 +33,12 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "모든 필드를 입력해야 합니다." }, { status: 400 });
     }
 
+    const verificationRepository = new RdVerificationRepository();
+    const isEmailVerified = await verificationRepository.hasSignupVerifiedEmail(userData.email);
+    if (!isEmailVerified) {
+        return NextResponse.json({ error: "Email verification is required." }, { status: 403 });
+    }
+
     // 리포지토리 생성
     const userRepository:IUserRepository = new PriUserRepository(prisma);
     const characterRepository:ICharacterRepository = new PriCharacterRepository(prisma);
@@ -51,10 +58,11 @@ export async function POST(req: NextRequest) {
     //     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     // }
 
-    // 유스케이스 실행 (가입 후 토큰 생성 후 로그인)
-    const { accessToken, refreshToken } = await signUpUsecase.execute(userData);
-
     try {
+        // 유스케이스 실행 (가입 후 토큰 생성 후 로그인)
+        const { accessToken, refreshToken } = await signUpUsecase.execute(userData);
+        await verificationRepository.deleteSignupVerifiedEmail(userData.email);
+
         // 쿠키 설정 및 응답
         const response = NextResponse.json({ message: "회원가입 성공" }, { status: 201 });
         response.cookies.set("accessToken", accessToken, {

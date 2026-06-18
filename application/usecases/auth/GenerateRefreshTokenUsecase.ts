@@ -1,4 +1,5 @@
 import { SignJWT } from "jose";
+import { randomUUID } from "crypto";
 import { IRdAuthenticationRepository } from '@/domain/repositories/IRdAuthenticationRepository';
 
 export class GenerateRefreshTokenUsecase {
@@ -12,7 +13,7 @@ export class GenerateRefreshTokenUsecase {
     async generate(user: { id: number, loginId: string }) {
         const secret = new TextEncoder().encode(process.env.REFRESH_TOKEN_SECRET!);
         const iat = Math.floor(Date.now() / 1000);
-        const refreshToken = await new SignJWT({ id: user.id, loginId: user.loginId, iat })
+        const refreshToken = await new SignJWT({ id: user.id, loginId: user.loginId, iat, jti: randomUUID() })
             .setProtectedHeader({ alg: "HS256" })
             .setExpirationTime(process.env.REFRESH_TOKEN_EXPIRES!)
             .sign(secret);
