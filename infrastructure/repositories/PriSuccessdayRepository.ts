@@ -62,13 +62,20 @@ export class PriSuccessDayRepository implements ISuccessDayRepository {
       return completedQuests;
   }
 
-      async create(questId: number): Promise<SuccessDay> {    
-        const successDay = await this.prisma.successDay.create({
-            data: {
-                questId,
-            },
+    async createForCycle(questId: number, cycleKey: string): Promise<SuccessDay | null> {
+      try {
+        return await this.prisma.successDay.create({
+          data: {
+            questId,
+            cycleKey,
+          } as never,
         });
-            return successDay;
+      } catch (error) {
+        if (typeof error === "object" && error !== null && "code" in error && error.code === "P2002") {
+          return null;
+        }
+        throw error;
+      }
     }
 
   async update(id: number, data: Partial<SuccessDay>): Promise<SuccessDay | null> {
