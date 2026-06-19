@@ -80,6 +80,21 @@ function runAttackAnimation(set: SetState, get: () => QuestStore, damage: number
   }, 600);
 }
 
+type ErrorResponseBody = {
+  error?: string;
+  message?: string;
+};
+
+async function getErrorMessage(response: Response, fallback: string) {
+  const body = await response.json().catch((): ErrorResponseBody => ({}));
+  const serverMessage = typeof body.error === "string" ? body.error : body.message;
+
+  if (response.status === 401) return serverMessage || "로그인이 만료되었습니다. 다시 로그인해 주세요.";
+  if (response.status === 404) return serverMessage || "퀘스트를 찾을 수 없습니다. 이미 삭제되었을 수 있습니다.";
+
+  return serverMessage || fallback;
+}
+
 export const useQuestStore = create<QuestStore>((set, get) => ({
   quests: [],
   loading: false,
@@ -330,14 +345,20 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
         body: JSON.stringify(requestData),
       });
 
-      if (!response.ok) throw new Error("퀘스트 추가 실패");
+      if (!response.ok) {
+        throw new Error(await getErrorMessage(response, "퀘스트 추가 실패"));
+      }
 
-      await Promise.all([
-        useQuestStore.getState().fetchQuests(),
-        useUserStore.getState().fetchCharacter(),
-      ]);
+      await useQuestStore.getState().fetchQuests();
+      const questFetchError = useQuestStore.getState().error;
+      if (questFetchError) {
+        throw new Error("퀘스트는 생성됐지만 목록을 다시 불러오지 못했습니다. 목록 화면에서 새로고침해 주세요.");
+      }
+
+      await useUserStore.getState().fetchCharacter();
     } catch (err) {
       console.error("퀘스트 추가 실패:", err);
+      throw err;
     }
   },
 
@@ -395,7 +416,9 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) throw new Error("퀘스트 수정 실패");
+      if (!response.ok) {
+        throw new Error(await getErrorMessage(response, "퀘스트 수정 실패"));
+      }
 
       set((state) => ({
         quests: state.quests.map((q) =>
@@ -404,6 +427,7 @@ export const useQuestStore = create<QuestStore>((set, get) => ({
       }));
     } catch (err) {
       console.error("퀘스트 수정 실패:", err);
+      throw err;
     }
   },
 }));
