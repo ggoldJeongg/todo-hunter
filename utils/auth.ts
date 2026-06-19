@@ -4,12 +4,22 @@ import { VerifyAccessTokenUsecase } from "@/application/usecases/auth/VerifyAcce
 import { VerifyRefreshTokenUsecase } from "@/application/usecases/auth/VerifyRefreshTokenUsecase";
 import { GenerateAccessTokenUsecase } from "@/application/usecases/auth/GenerateAccessTokenUsecase";
 import { RdAuthenticationRepository } from "@/infrastructure/repositories/RdAuthenticationRepository";
+import { prisma } from "@/lib/prisma";
 
 interface UserPayload extends JWTPayload {
   id: number;
   loginId: string;
   nickname?: string;
   createdAt?: string;
+}
+
+async function isActiveUser(id: number, loginId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: { loginId: true },
+  });
+
+  return user?.loginId === loginId;
 }
 
 export async function getUserFromCookie(
@@ -28,7 +38,16 @@ export async function getUserFromCookie(
 
     const payload = await verifyAccessTokenUsecase.execute(accessToken);
     if (payload) {
-      return { user: payload as UserPayload };
+      const id = Number(payload.id);
+      const loginId = payload.loginId;
+      if (!Number.isFinite(id) || typeof loginId !== "string") {
+        return { user: null };
+      }
+      if (!(await isActiveUser(id, loginId))) {
+        return { user: null };
+      }
+
+      return { user: { ...payload, id, loginId } as UserPayload };
     }
 
     if (!refreshToken) {
@@ -43,6 +62,9 @@ export async function getUserFromCookie(
     const id = Number(refreshPayload.id);
     const loginId = refreshPayload.loginId;
     if (!Number.isFinite(id) || typeof loginId !== "string") {
+      return { user: null };
+    }
+    if (!(await isActiveUser(id, loginId))) {
       return { user: null };
     }
 
