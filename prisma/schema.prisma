@@ -145,5 +145,8 @@ model SuccessDay {
   id        Int      @id @default(autoincrement())
   quest     Quest    @relation(fields: [questId], references: [id])
   questId   Int      @map("quest_id")
+  cycleKey  String   @map("cycle_key")
   createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([questId, cycleKey])
 }
