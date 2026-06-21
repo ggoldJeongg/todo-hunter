@@ -23,9 +23,10 @@ interface QuestFormProps {
   title: string;
   submitLabel: string;
   onSubmit: () => Promise<void>;
+  errorMessage?: string | null;
 }
 
-const QuestForm = ({ title, submitLabel, onSubmit }: QuestFormProps) => {
+const QuestForm = ({ title, submitLabel, onSubmit, errorMessage }: QuestFormProps) => {
   const router = useRouter();
   const {
     questName, tagged, selectedDate, isWeekly,
@@ -36,8 +37,11 @@ const QuestForm = ({ title, submitLabel, onSubmit }: QuestFormProps) => {
   } = useQuestFormStore();
 
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const toggleDay = (day: string) => {
+    if (isSubmitting) return;
+
     const next = selectedDays.includes(day)
       ? selectedDays.filter((d) => d !== day)
       : [...selectedDays, day];
@@ -48,15 +52,21 @@ const QuestForm = ({ title, submitLabel, onSubmit }: QuestFormProps) => {
   const goBack = () => { resetForm(); router.push("/play/quest"); };
 
   const handleSubmit = async () => {
-    if (!questName.trim()) return;
-    await onSubmit();
+    if (!questName.trim() || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      await onSubmit();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="flex flex-col bg-[#2a2a2a] text-white h-screen overflow-hidden">
       {/* ── 헤더 ── */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3 shrink-0">
-        <button onClick={goBack} className="text-white text-2xl cursor-pointer">
+        <button onClick={goBack} className="text-white text-2xl cursor-pointer" disabled={isSubmitting}>
           &larr;
         </button>
         <h1 className="text-lg font-bold">{title}</h1>
@@ -64,12 +74,18 @@ const QuestForm = ({ title, submitLabel, onSubmit }: QuestFormProps) => {
           state="primary"
           size="S"
           onClick={handleSubmit}
-          disabled={!questName.trim()}
-          className={!questName.trim() ? "opacity-40" : ""}
+          disabled={!questName.trim() || isSubmitting}
+          className={!questName.trim() || isSubmitting ? "opacity-40" : ""}
         >
-          {submitLabel}
+          {isSubmitting ? "저장 중" : submitLabel}
         </Button>
       </div>
+
+      {errorMessage && (
+        <p role="alert" className="mx-5 mb-3 rounded bg-red-950/60 px-3 py-2 text-sm text-red-100">
+          {errorMessage}
+        </p>
+      )}
 
       {/* ── 폼 스크롤 영역 ── */}
       <div className="flex-1 overflow-y-auto px-5 pb-28 space-y-7 scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
@@ -82,6 +98,7 @@ const QuestForm = ({ title, submitLabel, onSubmit }: QuestFormProps) => {
             value={questName}
             maxLength={QUEST_NAME_MAX}
             onChange={(e) => setQuestName(e.target.value)}
+            disabled={isSubmitting}
             className="is-rounded-form w-full shadow-none text-black"
           />
           <p className="text-right text-xs text-gray-500 mt-1">
@@ -96,7 +113,7 @@ const QuestForm = ({ title, submitLabel, onSubmit }: QuestFormProps) => {
           </h3>
           <div className="grid grid-cols-5 gap-2">
             {STATUS_KEYS.map((key) => (
-              <button key={key} onClick={() => setTagged(key)} className="cursor-pointer">
+              <button key={key} onClick={() => setTagged(key)} className="cursor-pointer" disabled={isSubmitting}>
                 <Tag
                   variant={key}
                   size="lg"
@@ -129,6 +146,7 @@ const QuestForm = ({ title, submitLabel, onSubmit }: QuestFormProps) => {
                   : "bg-gray-700 text-gray-400"
               }`}
               onClick={() => { setIsWeekly(false); setSelectedDays([]); }}
+              disabled={isSubmitting}
             >
               일간 퀘스트
             </button>
@@ -139,6 +157,7 @@ const QuestForm = ({ title, submitLabel, onSubmit }: QuestFormProps) => {
                   : "bg-gray-700 text-gray-400"
               }`}
               onClick={() => setIsWeekly(true)}
+              disabled={isSubmitting}
             >
               주간 퀘스트
             </button>
@@ -164,6 +183,7 @@ const QuestForm = ({ title, submitLabel, onSubmit }: QuestFormProps) => {
                       : "bg-gray-700 text-gray-400"
                   }`}
                   onClick={() => toggleDay(day)}
+                  disabled={isSubmitting}
                 >
                   {day}
                 </button>
@@ -190,6 +210,7 @@ const QuestForm = ({ title, submitLabel, onSubmit }: QuestFormProps) => {
                       : "bg-gray-700 text-gray-400"
                   }`}
                   onClick={() => setDifficulty(key)}
+                  disabled={isSubmitting}
                 >
                   <div className="text-sm">
                     {"★".repeat(cfg.stars)}{"☆".repeat(3 - cfg.stars)}
@@ -214,6 +235,7 @@ const QuestForm = ({ title, submitLabel, onSubmit }: QuestFormProps) => {
               type="button"
               onClick={() => setCalendarOpen(true)}
               className="is-rounded-form w-full bg-gray-800 text-white px-4 py-3 text-sm text-left cursor-pointer flex items-center justify-between"
+              disabled={isSubmitting}
             >
               <span>{selectedDate || format(new Date(), "yyyy-MM-dd")}</span>
               <span className="text-gray-400">&#128197;</span>

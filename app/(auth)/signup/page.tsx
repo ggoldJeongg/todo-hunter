@@ -2,6 +2,7 @@
 
 import { LoginError } from "@/application/usecases/auth/errors/LoginError";
 import { Button, Input } from "@/components/common";
+import { submitEmailSignup } from "@/utils/signupSubmit";
 import { useUserStore } from "@/utils/stores/userStore";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useRef, useState } from "react";
@@ -274,6 +275,8 @@ const SignUp = () => {
   const [agreeTerms, setAgreeTerms] = useState<boolean>(false);
   const [agreePrivacy, setAgreePrivacy] = useState<boolean>(false);
   const [showAgreementMessage, setShowAgreementMessage] = useState<boolean>(false);
+  const [isSigningUp, setIsSigningUp] = useState<boolean>(false);
+  const [signupErrorMessage, setSignupErrorMessage] = useState<string>("");
 
   const handleAgreeAllChange = (checked: boolean) => {
     setAgreeTerms(checked);
@@ -308,7 +311,30 @@ const SignUp = () => {
 
 
   /* 가입 시작 */
+  const getSignupErrorMessage = (status: number, serverMessage?: string) => {
+    if (serverMessage) return serverMessage;
+
+    switch (status) {
+      case 400:
+        return "입력값을 확인해 주세요.";
+      case 403:
+        return "이메일 인증을 완료한 뒤 다시 시도해 주세요.";
+      case 409:
+        return "이미 가입된 아이디 또는 이메일입니다.";
+      case 429:
+        return "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.";
+      case 500:
+        return "서버 오류로 회원가입에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+      case 503:
+        return "가입은 완료됐지만 자동 로그인에 실패했습니다. 로그인 화면에서 다시 로그인해 주세요.";
+      default:
+        return "회원가입에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+    }
+  };
+
   const handleSignUp = async () => {
+    if (isSigningUp) return;
+
     const loginId = loginIdRef.current?.value;
     const email = emailRef.current?.value;
     const nickname = nicknameRef.current?.value;
@@ -366,26 +392,37 @@ const SignUp = () => {
       return; // 하나라도 실패하면 submit하지 않음
     }
 
-    try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ loginId, email, nickname, password }),
-        credentials: "include", // 쿠키 포함
-      });
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
+    setSignupErrorMessage("");
+    setIsSigningUp(true);
+
+    const signupResult = await submitEmailSignup(
+      { loginId, email, nickname, password },
+      {
+        getErrorMessage: getSignupErrorMessage,
+        onSuccess: () => undefined,
+        onFailure: (message) => {
+          setSignupErrorMessage(message);
+          alert(message);
+        },
+        onNetworkError: (error) => {
+          console.error("Error signing up:", error);
+        },
       }
-      // const data = await response.json(); // 회원가입 정보 클라이언트 측에 로그로 표시
-      // console.log(data); // 회원가입 정보 클라이언트 측에 로그로 표시
-    } catch (error) {
-      console.error("Error signing up:", error);
-    }
+    );
+    setIsSigningUp(false);
+    if (!signupResult.ok) return;
 
     alert("가입이 완료되었습니다!");
 
     // 회원가입 성공 시 fetchUser 호출 후 리디렉션
-    await fetchUser();
+    try {
+      await fetchUser();
+    } catch (error) {
+      console.error("Error fetching user after signup:", error);
+      alert("회원가입은 완료됐지만 사용자 정보를 불러오지 못했습니다. 로그인 후 다시 이용해 주세요.");
+      router.push("/signin");
+      return;
+    }
 
     // // 가입 성공 시 로그인 페이지로 이동
     // router.push("/signin");
@@ -628,7 +665,15 @@ const SignUp = () => {
       {/* 버튼 */}
       <div className="mt-6">
         <Button className="w-full max-w-none" state="primary" size="L"
-          onClick={isKakao ? handleKakaoSignUp : handleSignUp}>회원가입하기</Button>
+          disabled={isSigningUp}
+          onClick={isKakao ? handleKakaoSignUp : handleSignUp}>
+          {isSigningUp ? "가입 중..." : "회원가입하기"}
+        </Button>
+        {signupErrorMessage && (
+          <span className="block mt-2 text-sm text-[#A72F35]">
+            {signupErrorMessage}
+          </span>
+        )}
       </div>
 
       </div>

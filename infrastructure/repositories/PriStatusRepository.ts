@@ -1,21 +1,20 @@
-import { PrismaClient, Status } from "@prisma/client";
+import { Status } from "@prisma/client";
 import { IStatusRepository } from "@/domain/repositories";
+import { PrismaRepositoryClient } from "./prisma-client";
 
 export class PriStatusRepository implements IStatusRepository {
-  constructor(private readonly prisma: PrismaClient) {} // 의존성 주입
+  constructor(private readonly prisma: PrismaRepositoryClient) {} // 의존성 주입
 
   async create(characterId: number): Promise<Status> {
-    return await this.prisma.$transaction(async (tx) => {
-      return tx.status.create({
-        data: {
-          characterId: characterId,
-          str: 0,
-          int: 0,
-          emo: 0,
-          fin: 0,
-          liv: 0,
-        },
-      });
+    return await this.prisma.status.create({
+      data: {
+        characterId: characterId,
+        str: 0,
+        int: 0,
+        emo: 0,
+        fin: 0,
+        liv: 0,
+      },
     });
   }
 
@@ -36,20 +35,18 @@ export class PriStatusRepository implements IStatusRepository {
   }
 
   async update(status: Status): Promise<Status> {
-    return await this.prisma.$transaction(async (tx) => {
-      return tx.status.update({
-        where: {
-          id: status.id,
-          characterId: status.characterId,
-        },
-        data: {
-          str: status.str,
-          int: status.int,
-          emo: status.emo,
-          fin: status.fin,
-          liv: status.liv,
-        },
-      });
+    return await this.prisma.status.update({
+      where: {
+        id: status.id,
+        characterId: status.characterId,
+      },
+      data: {
+        str: status.str,
+        int: status.int,
+        emo: status.emo,
+        fin: status.fin,
+        liv: status.liv,
+      },
     });
   }
 }

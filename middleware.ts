@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
-import { getUserFromCookie } from "@/utils/auth";
+import { getUserFromCookieEdge } from "@/utils/auth";
 
 // 인증 페이지 — 이미 로그인된 유저는 게임으로 리다이렉트
 const AUTH_REDIRECT_PATHS = new Set<string>([
@@ -31,7 +31,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // 토큰 검증 (+ 만료 시 자동 갱신)
-  const { user, response: refreshedResponse } = await getUserFromCookie(request);
+  const { user, response: refreshedResponse } = await getUserFromCookieEdge(request);
 
   // 누구나 열람 가능한 페이지: 통과
   if (OPEN_PATHS.has(pathname)) {

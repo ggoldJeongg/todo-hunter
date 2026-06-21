@@ -29,6 +29,7 @@ export class SendSignUpEmailUsecase {
     
     const verificationCode = this.generateVerifyCodeUsecase.execute();
 
+    await this.verificationRepository.deleteSignupVerifiedEmail(email);
     await this.verificationRepository.saveVerificationCode(email, verificationCode, 300);
 
     const emailHtml = sendSignUpEmailTemplate(verificationCode);

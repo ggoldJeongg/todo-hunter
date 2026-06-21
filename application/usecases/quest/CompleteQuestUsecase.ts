@@ -66,7 +66,11 @@ export class CompleteQuestUsecase {
     }
 
     // 3. SuccessDay에 퀘스트 완료 기록 추가
-    await this.PriSuccessDayRepository.create(questId);
+    const cycleKey = this.getCompletionCycleKey(quest.isWeekly);
+    const successDay = await this.PriSuccessDayRepository.createForCycle(questId, cycleKey);
+    if (!successDay) {
+        return;
+    }
 
     // 3-1. 일간 퀘스트(일회성 할일)는 완료 즉시 expiredAt을 다음 날 0시로 세팅하여
     //      자정이 지나면 UI에서 자연스럽게 사라지게 한다. 주간 퀘스트(반복 습관)는 건너뜀.
@@ -127,5 +131,14 @@ export class CompleteQuestUsecase {
         willpower: newWillpower,
         maxWillpower: newMaxWillpower,
     });
+  }
+
+  private getCompletionCycleKey(isWeekly: boolean, now: Date = new Date()): string {
+    const start = isWeekly ? getThisWeekStart(now) : getTodayStart(now);
+    const year = start.getFullYear();
+    const month = String(start.getMonth() + 1).padStart(2, "0");
+    const day = String(start.getDate()).padStart(2, "0");
+
+    return `${isWeekly ? "weekly" : "daily"}:${year}-${month}-${day}`;
   }
 }

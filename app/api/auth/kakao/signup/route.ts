@@ -4,6 +4,7 @@ import { GenerateAccessTokenUsecase } from "@/application/usecases/auth/Generate
 import { GenerateRefreshTokenUsecase } from "@/application/usecases/auth/GenerateRefreshTokenUsecase";
 import { RdAuthenticationRepository } from "@/infrastructure/repositories/RdAuthenticationRepository";
 import { checkRateLimit, getClientIp } from "@/infrastructure/rate-limiter";
+import { ValidationError, validateKakaoPendingInput, validateKakaoSignupInput } from "@/utils/validation";
 
 const KAKAO_SIGNUP_RATE_LIMIT = { maxRequests: 3, windowSeconds: 60 };
 
@@ -33,22 +34,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { kakaoId, kakaoEmail } = JSON.parse(pendingCookie);
-    if (!kakaoId || !kakaoEmail) {
-      return NextResponse.json(
-        { error: "카카오 인증 정보가 올바르지 않습니다." },
-        { status: 400 }
-      );
-    }
+    const { kakaoId, kakaoEmail } = validateKakaoPendingInput(JSON.parse(pendingCookie));
 
     // 요청 body에서 닉네임 받기
-    const { nickname } = await req.json();
-    if (!nickname || typeof nickname !== "string" || nickname.trim().length === 0) {
-      return NextResponse.json(
-        { error: "닉네임을 입력해주세요." },
-        { status: 400 }
-      );
-    }
+    const body = await req.json().catch(() => null);
+    const { nickname } = validateKakaoSignupInput(body);
 
     // 이미 가입된 사용자인지 재확인
     const existingUser = await prisma.user.findUnique({
@@ -68,7 +58,7 @@ export async function POST(req: NextRequest) {
         loginId: `kakao_${kakaoId}`,
         email: kakaoEmail,
         password: null,
-        nickname: nickname.trim(),
+        nickname,
         provider: "kakao",
         providerId: kakaoId,
         characters: {
@@ -126,6 +116,13 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error) {
+    if (error instanceof ValidationError || error instanceof SyntaxError) {
+      return NextResponse.json(
+        { error: error instanceof ValidationError ? error.message : "카카오 인증 정보가 올바르지 않습니다." },
+        { status: 400 }
+      );
+    }
+
     console.error("카카오 가입 오류:", error instanceof Error ? error.message : "unknown error");
     return NextResponse.json(
       { error: "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요." },

@@ -1,6 +1,7 @@
 import { ResetPasswordUsecase } from "@/application/usecases/auth/ResetPasswordUsecase";
 import { VerifyCodeError } from "@/application/usecases/auth/errors/VerifyCodeError";
 import { PriUserRepository } from "@/infrastructure/repositories/PriUserRepository";
+import { RdAuthenticationRepository } from "@/infrastructure/repositories/RdAuthenticationRepository";
 import { RdVerificationRepository } from "@/infrastructure/repositories/RdVerificationRepository";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
@@ -35,7 +36,12 @@ export async function POST(req: NextRequest) {
 
     const userRepository = new PriUserRepository(prisma);
     const verificationRepository = new RdVerificationRepository();
-    const resetPasswordUsecase = new ResetPasswordUsecase(userRepository, verificationRepository);
+    const authenticationRepository = new RdAuthenticationRepository();
+    const resetPasswordUsecase = new ResetPasswordUsecase(
+      userRepository,
+      verificationRepository,
+      authenticationRepository
+    );
 
     await resetPasswordUsecase.execute(loginId, email, verificationCode, newPassword);
 

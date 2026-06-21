@@ -10,8 +10,6 @@ import { LoginError, LoginErrorType } from "@/application/usecases/auth/errors/L
 import { RdAuthenticationRepository } from "@/infrastructure/repositories/RdAuthenticationRepository";
 import { GenerateAccessTokenUsecase } from "@/application/usecases/auth/GenerateAccessTokenUsecase";
 import { GenerateRefreshTokenUsecase } from "@/application/usecases/auth/GenerateRefreshTokenUsecase";
-import { VerifyRefreshTokenUsecase } from "@/application/usecases/auth/VerifyRefreshTokenUsecase";
-import { RenewRefreshTokenUsecase } from "@/application/usecases/auth/RenewRefreshTokenUsecase";
 import { FindUserIdByLoginIdUsecase } from "@/application/usecases/auth/FindUserIdByLoginIdUsecase";
 import { checkRateLimit, getClientIp } from "@/infrastructure/rate-limiter";
 
@@ -44,39 +42,21 @@ export async function POST(req: NextRequest) {
         const verifyPasswordUsecase = new VerifyPasswordUsecase();
         const signInUsecase = new SignInUsecase(userRepository, verifyPasswordUsecase);
         const signInResponseDto: SignInResponseDTO = await signInUsecase.execute(request);
-        
+
         const authenticationRepository = new RdAuthenticationRepository();
         const generateAccessTokenUsecase = new GenerateAccessTokenUsecase();
         const generateRefreshTokenUsecase = new GenerateRefreshTokenUsecase(authenticationRepository);
-        const renewRefreshTokenUsecase = new RenewRefreshTokenUsecase(authenticationRepository);
-        const verifyRefreshTokenUsecase = new VerifyRefreshTokenUsecase();
-        
-        // 사용자 ID 생성 (FindUserIdByLoginIdUsecase를 사용하여 loginId로 id 가져오기)
+
+        // 사용자 ID 조회 (FindUserIdByLoginIdUsecase를 사용하여 loginId로 id 가져오기)
         const findUserIdByLoginIdUsecase = new FindUserIdByLoginIdUsecase(userRepository);
         const idRaw = await findUserIdByLoginIdUsecase.execute(signInResponseDto.loginId);
         const id = parseInt(idRaw, 10);
 
-        // 사용자 로그인 ID 생성
+        // 사용자 로그인 ID
         const loginId = signInResponseDto.loginId;
 
-        // 기존 Refresh Token 확인
-        const existingRefreshToken = await authenticationRepository.getRefreshToken(loginId);
-        let refreshToken: string;
+        const refreshToken = await generateRefreshTokenUsecase.execute({ id: id, loginId: loginId });
 
-        if (existingRefreshToken) {
-            // 기존 Refresh Token이 유효한지 검증
-            const decoded = await verifyRefreshTokenUsecase.execute(existingRefreshToken);
-            if (decoded) {
-                // 유효하면 재사용
-                refreshToken = existingRefreshToken;
-            } else {
-                // 유효하지 않으면 새로 발급
-                refreshToken = await renewRefreshTokenUsecase.execute({ id: id, loginId: loginId });
-            }
-        } else {
-            // Refresh Token이 없으면 새로 발급
-            refreshToken = await generateRefreshTokenUsecase.execute({ id: id, loginId: loginId });
-        }
 
         // Access Token 생성
         const accessToken = await generateAccessTokenUsecase.execute({ id: id, loginId: loginId });

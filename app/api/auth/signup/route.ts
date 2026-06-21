@@ -1,14 +1,35 @@
 import { SignUpRequestDTO } from "@/application/usecases/auth/dtos/SignUpRequestDTO";
-import { SignUpUsecase } from "@/application/usecases/auth/SignUpUsecase";
+import { SignUpTokenPersistenceError, SignUpUsecase } from "@/application/usecases/auth/SignUpUsecase";
 import { ICharacterRepository, IStatusRepository, IUserRepository } from "@/domain/repositories";
 import { IRdAuthenticationRepository } from "@/domain/repositories/IRdAuthenticationRepository";
 import { PriCharacterRepository, PriStatusRepository, PriUserRepository } from "@/infrastructure/repositories";
 import { RdAuthenticationRepository } from "@/infrastructure/repositories/RdAuthenticationRepository";
+import { RdVerificationRepository } from "@/infrastructure/repositories/RdVerificationRepository";
 import { prisma } from "@/lib/prisma";
+import { ValidationError, validateSignupInput } from "@/utils/validation";
+import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, getClientIp } from "@/infrastructure/rate-limiter";
 
 const SIGNUP_RATE_LIMIT = { maxRequests: 3, windowSeconds: 60 };
+
+function getDuplicateSignupMessage(error: unknown) {
+    if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+    ) {
+        const target = Array.isArray(error.meta?.target) ? error.meta.target : [];
+        if (target.includes("login_id") || target.includes("loginId")) {
+            return "이미 가입된 아이디입니다.";
+        }
+        if (target.includes("email")) {
+            return "이미 가입된 이메일입니다.";
+        }
+        return "이미 가입된 회원 정보입니다.";
+    }
+
+    return null;
+}
 
 export async function POST(req: NextRequest) {
     const clientIp = getClientIp(req.headers);
@@ -25,11 +46,21 @@ export async function POST(req: NextRequest) {
         );
     }
 
-    const userData: SignUpRequestDTO = await req.json();
+    const body = await req.json().catch(() => null);
+    let userData: SignUpRequestDTO;
+    try {
+        userData = validateSignupInput(body);
+    } catch (error) {
+        if (error instanceof ValidationError) {
+            return NextResponse.json({ error: error.message }, { status: 400 });
+        }
+        throw error;
+    }
 
-    // 필수 필드 체크
-    if (!userData.loginId || !userData.email || !userData.nickname || !userData.password) {
-        return NextResponse.json({ error: "모든 필드를 입력해야 합니다." }, { status: 400 });
+    const verificationRepository = new RdVerificationRepository();
+    const isEmailVerified = await verificationRepository.hasSignupVerifiedEmail(userData.email);
+    if (!isEmailVerified) {
+        return NextResponse.json({ error: "Email verification is required." }, { status: 403 });
     }
 
     // 리포지토리 생성
@@ -39,7 +70,20 @@ export async function POST(req: NextRequest) {
     const rdAuthenticationRepository: IRdAuthenticationRepository = new RdAuthenticationRepository();
     
     // 유스케이스 생성
-    const signUpUsecase = new SignUpUsecase(userRepository, characterRepository, statusRepository, rdAuthenticationRepository);
+    const signUpUsecase = new SignUpUsecase(
+        userRepository,
+        characterRepository,
+        statusRepository,
+        rdAuthenticationRepository,
+        (operation) =>
+            prisma.$transaction((tx) =>
+                operation({
+                    userRepository: new PriUserRepository(tx),
+                    characterRepository: new PriCharacterRepository(tx),
+                    statusRepository: new PriStatusRepository(tx),
+                })
+            )
+    );
 
     // // 유스케이스 실행 (가입만 실행 시)
     // await signUpUsecase.execute(userData);
@@ -51,10 +95,11 @@ export async function POST(req: NextRequest) {
     //     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     // }
 
-    // 유스케이스 실행 (가입 후 토큰 생성 후 로그인)
-    const { accessToken, refreshToken } = await signUpUsecase.execute(userData);
-
     try {
+        // 유스케이스 실행 (가입 후 토큰 생성 후 로그인)
+        const { accessToken, refreshToken } = await signUpUsecase.execute(userData);
+        await verificationRepository.deleteSignupVerifiedEmail(userData.email);
+
         // 쿠키 설정 및 응답
         const response = NextResponse.json({ message: "회원가입 성공" }, { status: 201 });
         response.cookies.set("accessToken", accessToken, {
@@ -75,6 +120,16 @@ export async function POST(req: NextRequest) {
         return response;
     } catch (error) {
         console.error("❌ 회원가입 오류", error);
+        const duplicateMessage = getDuplicateSignupMessage(error);
+        if (duplicateMessage) {
+            return NextResponse.json({ error: duplicateMessage }, { status: 409 });
+        }
+        if (error instanceof SignUpTokenPersistenceError) {
+            return NextResponse.json(
+                { error: "Account created, but sign-in token setup failed. Please sign in again." },
+                { status: 503 }
+            );
+        }
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

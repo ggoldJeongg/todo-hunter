@@ -6,6 +6,7 @@ import { CreateQuestDTO } from '@/application/usecases/quest/dtos';
 import { getUserFromCookie } from '@/utils/auth';
 import { getTodayStart, getThisWeekStart } from '@/utils/date';
 import { calculateWeeklyStreak } from '@/utils/questStreak';
+import { ValidationError, validateQuestInput } from '@/utils/validation';
 
 // POST 요청 (새 퀘스트 생성)
 export async function POST(req: NextRequest) {
@@ -22,28 +23,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "캐릭터를 찾을 수 없습니다." }, { status: 404 });
     }
 
-    // 🔹 요청 바디 파싱
-    const body = await req.json();
-
-    const { name, tagged, isWeekly, difficulty, expiredAt, days, subTasks } = body;
-
-    // 🔹 필수 값 검증
-    if (!name || !tagged) {
-      return NextResponse.json({ success: false, error: "필수 값이 누락되었습니다." }, { status: 400 });
-    }
+    // 🔹 요청 바디 파싱 및 검증
+    const body = await req.json().catch(() => null);
+    const questInput = validateQuestInput(body);
 
     // 🔹 DTO 생성 (캐릭터 ID를 정확히 사용)
     const dto: CreateQuestDTO = {
       characterId: character.id,
-      name,
-      tagged,
-      isWeekly,
-      difficulty: difficulty || "normal",
-      expiredAt: expiredAt ? new Date(expiredAt) : undefined,
-      days: Array.isArray(days) ? days : undefined,
-      subTasks: Array.isArray(subTasks)
-        ? (subTasks as unknown[]).filter((s): s is string => typeof s === "string")
-        : undefined,
+      name: questInput.name,
+      tagged: questInput.tagged,
+      isWeekly: questInput.isWeekly,
+      difficulty: questInput.difficulty,
+      expiredAt: questInput.expiredAt,
+      days: questInput.days,
+      subTasks: questInput.subTasks,
     };
 
     // 🔹 퀘스트 생성
@@ -55,6 +48,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, quest: newQuest }, { status: 201 });
   } catch (error) {
+    if (error instanceof ValidationError) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    }
+
     console.error("퀘스트 생성 중 오류 발생:", error);
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : "알 수 없는 오류 발생" },

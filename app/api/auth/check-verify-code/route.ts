@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
             // 만료 시간이 설정되지 않은 경우
             if (isValid) {
                 // 인증 코드가 유효한 경우
+                await verificationRepository.saveSignupVerifiedEmail(email, 600);
                 await deleteCodeUsecase.execute(email);
                 return NextResponse.json({ message: "인증이 완료되었습니다.", isVerified: true }, { status: 200 });
             } else {
@@ -64,6 +65,7 @@ export async function POST(req: NextRequest) {
 
         // 코드 인증 성공 시
         if (isValid) {
+            await verificationRepository.saveSignupVerifiedEmail(email, 600);
             await deleteCodeUsecase.execute(email);
             return NextResponse.json({ message: "인증이 완료되었습니다.", isVerified: true }, { status: 200 });
         }

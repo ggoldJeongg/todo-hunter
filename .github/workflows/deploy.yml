@@ -39,6 +39,16 @@ jobs:
       - name: Check code style
         run: npm run lint
 
+      - name: Check TypeScript types
+        run: npm run typecheck
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build Next.js
+        run: npm run build
+
+
       - name: Checkout cron repo for ending sync check
         uses: actions/checkout@v4
         with:

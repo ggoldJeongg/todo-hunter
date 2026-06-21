@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { CompleteQuestUsecase } from "./CompleteQuestUsecase";
+import { CompleteQuestError } from "./errors/CompleteQuestError";
 import type {
   IQuestRepository,
   ICharacterRepository,
@@ -56,7 +57,7 @@ describe("CompleteQuestUsecase", () => {
 
     const successDayRepo = {
       findByQuestIdSince: vi.fn().mockResolvedValue([]), // 오늘 완료 기록 없음
-      create: vi.fn().mockResolvedValue({}),
+      createForCycle: vi.fn().mockResolvedValue({}),
     } as unknown as ISuccessDayRepository;
 
     const characterRepo = {
@@ -85,5 +86,177 @@ describe("CompleteQuestUsecase", () => {
       willpower: 95, // 100 - WILLPOWER_COST(5)
       maxWillpower: 100,
     });
+  });
+
+  it("does not grant character rewards when status persistence fails", async () => {
+    const fakeQuest = {
+      id: 1,
+      characterId: 100,
+      tagged: "STR",
+      name: "test quest",
+      isWeekly: false,
+      difficulty: "normal",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      expiredAt: new Date("2099-01-01T00:00:00.000Z"),
+      days: [],
+    };
+    const fakeCharacter = {
+      id: 100,
+      userId: 1,
+      level: 1,
+      exp: 0,
+      willpower: 100,
+      maxWillpower: 100,
+      endingCount: 0,
+      endingState: 0,
+      endingCode: null,
+      outfitId: "fstr_v01",
+      hairId: "bob1_v01",
+      hatId: null,
+    };
+    const fakeStatus = {
+      id: 1,
+      characterId: 100,
+      str: 0,
+      int: 0,
+      emo: 0,
+      fin: 0,
+      liv: 0,
+    };
+    const questRepo = {
+      findById: vi.fn().mockResolvedValue(fakeQuest),
+      update: vi.fn(),
+    } as unknown as IQuestRepository;
+    const successDayRepo = {
+      findByQuestIdSince: vi.fn().mockResolvedValue([]),
+      createForCycle: vi.fn().mockResolvedValue({ id: 1 }),
+    } as unknown as ISuccessDayRepository;
+    const characterRepo = {
+      findById: vi.fn().mockResolvedValue(fakeCharacter),
+      updateCharacterStats: vi.fn(),
+    } as unknown as ICharacterRepository;
+    const statusRepo = {
+      findByCharacterId: vi.fn().mockResolvedValue(fakeStatus),
+      update: vi.fn().mockRejectedValue(new Error("status write failed")),
+    } as unknown as IStatusRepository;
+
+    const usecase = new CompleteQuestUsecase(
+      questRepo,
+      successDayRepo,
+      characterRepo,
+      statusRepo
+    );
+
+    await expect(usecase.completeQuest(100, 1)).rejects.toThrow("status write failed");
+    expect(characterRepo.updateCharacterStats).not.toHaveBeenCalled();
+  });
+
+  it("does not grant duplicate rewards when the completion cycle already exists", async () => {
+    const fakeQuest = {
+      id: 1,
+      characterId: 100,
+      tagged: "STR",
+      name: "test quest",
+      isWeekly: false,
+      difficulty: "normal",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      expiredAt: null,
+      days: [],
+    };
+    const fakeCharacter = {
+      id: 100,
+      userId: 1,
+      level: 1,
+      exp: 0,
+      willpower: 100,
+      maxWillpower: 100,
+      endingCount: 0,
+      endingState: 0,
+      endingCode: null,
+      outfitId: "fstr_v01",
+      hairId: "bob1_v01",
+      hatId: null,
+    };
+    const fakeStatus = {
+      id: 1,
+      characterId: 100,
+      str: 0,
+      int: 0,
+      emo: 0,
+      fin: 0,
+      liv: 0,
+    };
+    const questRepo = {
+      findById: vi.fn().mockResolvedValue(fakeQuest),
+      update: vi.fn().mockResolvedValue(fakeQuest),
+    } as unknown as IQuestRepository;
+    const successDayRepo = {
+      findByQuestIdSince: vi.fn().mockResolvedValue([]),
+      createForCycle: vi.fn()
+        .mockResolvedValueOnce({ id: 1 })
+        .mockResolvedValueOnce(null),
+    } as unknown as ISuccessDayRepository;
+    const characterRepo = {
+      findById: vi.fn().mockResolvedValue(fakeCharacter),
+      updateCharacterStats: vi.fn().mockResolvedValue(fakeCharacter),
+    } as unknown as ICharacterRepository;
+    const statusRepo = {
+      findByCharacterId: vi.fn().mockResolvedValue(fakeStatus),
+      update: vi.fn().mockResolvedValue(fakeStatus),
+    } as unknown as IStatusRepository;
+    const usecase = new CompleteQuestUsecase(
+      questRepo,
+      successDayRepo,
+      characterRepo,
+      statusRepo
+    );
+
+    await usecase.completeQuest(100, 1);
+    await usecase.completeQuest(100, 1);
+
+    expect(successDayRepo.createForCycle).toHaveBeenCalledTimes(2);
+    expect(statusRepo.update).toHaveBeenCalledTimes(1);
+    expect(characterRepo.updateCharacterStats).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects completion for a quest owned by another character", async () => {
+    const questRepo = {
+      findById: vi.fn().mockResolvedValue({
+        id: 1,
+        characterId: 200,
+        tagged: "STR",
+        name: "other quest",
+        isWeekly: false,
+        difficulty: "normal",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        expiredAt: null,
+        days: [],
+      }),
+    } as unknown as IQuestRepository;
+    const successDayRepo = {
+      findByQuestIdSince: vi.fn(),
+      createForCycle: vi.fn(),
+    } as unknown as ISuccessDayRepository;
+    const characterRepo = {
+      findById: vi.fn(),
+      updateCharacterStats: vi.fn(),
+    } as unknown as ICharacterRepository;
+    const statusRepo = {
+      findByCharacterId: vi.fn(),
+      update: vi.fn(),
+    } as unknown as IStatusRepository;
+    const usecase = new CompleteQuestUsecase(
+      questRepo,
+      successDayRepo,
+      characterRepo,
+      statusRepo
+    );
+
+    await expect(usecase.completeQuest(100, 1)).rejects.toBeInstanceOf(CompleteQuestError);
+    expect(characterRepo.findById).not.toHaveBeenCalled();
+    expect(successDayRepo.createForCycle).not.toHaveBeenCalled();
   });
 });
