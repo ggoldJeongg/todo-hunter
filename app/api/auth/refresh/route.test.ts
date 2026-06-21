@@ -106,4 +106,42 @@ describe("POST /api/auth/refresh", () => {
     expect(mocks.generateAccessToken).not.toHaveBeenCalled();
     expect(mocks.generateRefreshToken).not.toHaveBeenCalled();
   });
+
+  it("rotates refresh tokens and rejects reuse of the previous token", async () => {
+    const { POST } = await import("./route");
+
+    const firstResponse = await POST(createRefreshRequest());
+
+    expect(firstResponse.status).toBe(200);
+    expect(firstResponse.headers.get("set-cookie")).toContain("refreshToken=new-refresh-token");
+
+    vi.clearAllMocks();
+    mocks.checkRateLimit.mockResolvedValue({
+      allowed: true,
+      remaining: 9,
+      retryAfterSeconds: 0,
+    });
+    mocks.getClientIp.mockReturnValue("127.0.0.1");
+    mocks.verifyRefreshToken.mockResolvedValue({ id: 1, loginId: "userA" });
+    mocks.getRefreshToken.mockResolvedValue("new-refresh-token");
+    mocks.generateAccessToken.mockResolvedValue("second-access-token");
+    mocks.generateRefreshToken.mockResolvedValue("second-refresh-token");
+
+    const reusedOldTokenResponse = await POST(createRefreshRequest());
+
+    expect(reusedOldTokenResponse.status).toBe(401);
+    expect(mocks.generateAccessToken).not.toHaveBeenCalled();
+    expect(mocks.generateRefreshToken).not.toHaveBeenCalled();
+  });
+
+  it("rejects a refresh token after logout removes the Redis stored token", async () => {
+    const { POST } = await import("./route");
+    mocks.getRefreshToken.mockResolvedValue(null);
+
+    const response = await POST(createRefreshRequest());
+
+    expect(response.status).toBe(401);
+    expect(mocks.generateAccessToken).not.toHaveBeenCalled();
+    expect(mocks.generateRefreshToken).not.toHaveBeenCalled();
+  });
 });

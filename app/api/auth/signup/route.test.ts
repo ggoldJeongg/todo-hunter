@@ -50,7 +50,7 @@ vi.mock("@/lib/prisma", () => ({
 const signupBody = {
   loginId: "hunter",
   email: "hunter@example.com",
-  nickname: "hunter",
+  nickname: "hunt",
   password: "password123",
 };
 
@@ -134,6 +134,19 @@ describe("POST /api/auth/signup", () => {
 
     expect(response.status).toBe(409);
     expect(body.error).toBe("이미 가입된 이메일입니다.");
+    expect(mocks.deleteSignupVerifiedEmail).not.toHaveBeenCalled();
+  });
+
+  it("returns a plain 500 failure without success cookies when signup fails unexpectedly", async () => {
+    const { POST } = await import("./route");
+    mocks.signUp.mockRejectedValue(new Error("database unavailable"));
+
+    const response = await POST(createSignupRequest());
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body.error).toBe("Internal Server Error");
+    expect(response.headers.get("set-cookie")).toBeNull();
     expect(mocks.deleteSignupVerifiedEmail).not.toHaveBeenCalled();
   });
 });

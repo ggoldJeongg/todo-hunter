@@ -56,7 +56,7 @@ describe("CompleteQuestUsecase", () => {
 
     const successDayRepo = {
       findByQuestIdSince: vi.fn().mockResolvedValue([]), // 오늘 완료 기록 없음
-      create: vi.fn().mockResolvedValue({}),
+      createForCycle: vi.fn().mockResolvedValue({}),
     } as unknown as ISuccessDayRepository;
 
     const characterRepo = {
