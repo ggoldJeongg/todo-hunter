@@ -68,9 +68,7 @@ export default function DeleteAccountPage() {
         <h2 className="mb-3 text-[17px] font-bold text-[#C84B3A]">탈퇴 전 꼭 확인해주세요</h2>
         <ul className="mb-5 list-disc space-y-2 pl-5">
           <li>캐릭터, 스탯, 퀘스트, 완료 기록, 칭호, 엔딩 기록이 모두 삭제됩니다.</li>
-          <li>삭제는 트랜잭션으로 처리되며 실패 시 일부 데이터만 삭제된 상태로 남지 않습니다.</li>
-          <li>탈퇴가 완료되면 Access Token과 Refresh Token 쿠키가 제거됩니다.</li>
-          <li>탈퇴 후에는 기존 토큰으로 서비스 API를 사용할 수 없습니다.</li>
+          <li>삭제는 일괄 처리되며 실패 시 일부 데이터만 삭제된 상태로 남지 않습니다.</li>
         </ul>
 
         <label className="mb-4 block">
