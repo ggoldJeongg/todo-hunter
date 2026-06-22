@@ -34,6 +34,10 @@ const MAP_SCALE = 2.5;
 const MAP_ASPECT = 1536 / 1024;
 const MOVE_SPEED = 25; // %/초
 
+// NPC 상호작용: NPC 앞(플레이어 쪽)에서 멈추는 거리(맵 %).
+// 이 거리 이내면 걷지 않고 즉시 상호작용한다.
+const INTERACT_STAND_GAP = 5;
+
 // 캐릭터 표시 크기(px)
 // swordsman은 프레임(100px) 안 캐릭터가 ~1/4라 큰 값이 필요. NPC는 프레임을 꽉 채움.
 // → 둘의 "보이는 크기" 차이를 줄이려고 플레이어는 키우고 NPC는 줄임.
@@ -206,6 +210,11 @@ export class PixiSquareScene {
   private lastTimeSec = -1;
   private lastRunning = false;
 
+  // NPC까지 걸어간 뒤 도착하면 발동할 상호작용. (x,y)는 바라볼 NPC 위치(맵 %).
+  private pendingInteraction:
+    | { action: "rest" | "roulette" | undefined; x: number; y: number }
+    | null = null;
+
   private get mapWidth() {
     return Math.max(this.width * MAP_SCALE, this.height * MAP_ASPECT);
   }
@@ -347,7 +356,7 @@ export class PixiSquareScene {
       node.cursor = npc.interactive ? "pointer" : "default";
       node.on("pointertap", (e: FederatedPointerEvent) => {
         e.stopPropagation();
-        if (npc.interactive) this.opts?.onNpcClick(npc.action);
+        if (npc.interactive) this._approachNpc(i, npc.action);
       });
 
       node.addChild(display);
@@ -507,6 +516,9 @@ export class PixiSquareScene {
   }
 
   private _handleMapClick(e: FederatedPointerEvent) {
+    // 빈 땅을 클릭하면 진행 중이던 NPC 접근은 취소 (다른 곳으로 가려는 의도)
+    this.pendingInteraction = null;
+
     const local = this.world.toLocal(e.global);
     const xPct = clamp((local.x / this.mapWidth) * 100, 0, 100);
     const yPct = clamp((local.y / this.mapHeight) * 100, 0, 100);
@@ -520,6 +532,51 @@ export class PixiSquareScene {
     if (Math.abs(reach.x - cur.x) < 0.3 && Math.abs(reach.y - cur.y) < 0.3) return;
 
     useSquareStore.getState().moveTo(reach.x, reach.y);
+  }
+
+  /**
+   * NPC를 클릭하면 그 앞까지 걸어간 뒤 상호작용한다.
+   * 이미 충분히 가까우면 즉시 발동.
+   */
+  private _approachNpc(
+    index: number,
+    action: "rest" | "roulette" | undefined
+  ) {
+    const npcPos = this.npcPcts[index];
+    if (!npcPos) return;
+    const cur = this.animPos;
+
+    const distToNpc = Math.hypot(npcPos.x - cur.x, npcPos.y - cur.y);
+    // 이미 NPC 앞이면 바로 상호작용
+    if (distToNpc <= INTERACT_STAND_GAP + 1.5) {
+      this.pendingInteraction = null;
+      this._faceTowards(npcPos.x);
+      this.opts?.onNpcClick(action);
+      return;
+    }
+
+    // NPC에서 플레이어 쪽으로 STAND_GAP 만큼 떨어진 "서는 지점" 계산
+    const dx = cur.x - npcPos.x;
+    const dy = cur.y - npcPos.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const standXRaw = npcPos.x + (dx / len) * INTERACT_STAND_GAP;
+    const standYRaw = npcPos.y + (dy / len) * INTERACT_STAND_GAP;
+
+    // 충돌을 고려해 도달 가능한 지점으로 보정 (맵 클릭과 동일한 footprint)
+    const reach = findReachablePoint(cur.x, cur.y, standXRaw, standYRaw, 0.5, {
+      halfWidthPct: (PLAYER_FOOTPRINT_WIDTH / 2 / this.mapWidth) * 100,
+      heightPct: (PLAYER_FOOTPRINT_HEIGHT / this.mapHeight) * 100,
+    });
+
+    this.pendingInteraction = { action, x: npcPos.x, y: npcPos.y };
+    useSquareStore.getState().moveTo(reach.x, reach.y);
+  }
+
+  /** 대상 x좌표(맵 %)를 향해 좌우 방향을 맞춘다. */
+  private _faceTowards(targetXPct: number) {
+    const left = targetXPct < this.animPos.x;
+    useSquareStore.getState().setFacing(left ? "left" : "right");
+    this.player?.setFlip(left);
   }
 
   private _startTicker() {
@@ -566,6 +623,17 @@ export class PixiSquareScene {
       }
 
       this._updatePlayerTime();
+
+      // NPC 앞까지 걸어가 도착하면(이동 목표 소진) 상호작용 발동
+      if (
+        this.pendingInteraction &&
+        !useSquareStore.getState().targetPosition
+      ) {
+        const pending = this.pendingInteraction;
+        this.pendingInteraction = null;
+        this._faceTowards(pending.x);
+        this.opts?.onNpcClick(pending.action);
+      }
     });
   }
 
