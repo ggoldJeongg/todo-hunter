@@ -5,6 +5,24 @@ export class ValidationError extends Error {
   }
 }
 
+// 경로 파라미터/바디로 들어온 ID를 양의 정수로 파싱한다.
+// number 또는 숫자 문자열("1")을 허용하고, 소수·음수·0·NaN·기타 타입은 거부한다.
+// 라우트마다 제각각이던 `Number(id)` + `isNaN` / `if (!id)` 검증을 한 곳으로 통일하기 위한 헬퍼.
+export function parseId(value: unknown, label = "ID"): number {
+  const num =
+    typeof value === "number"
+      ? value
+      : typeof value === "string" && value.trim() !== ""
+        ? Number(value)
+        : NaN;
+
+  if (!Number.isInteger(num) || num < 1) {
+    throw new ValidationError(`유효하지 않은 ${label}입니다.`);
+  }
+
+  return num;
+}
+
 const LOGIN_ID_PATTERN = /^[A-Za-z0-9_]+$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const STATUS_TAGS = ["STR", "INT", "EMO", "FIN", "LIV"] as const;
