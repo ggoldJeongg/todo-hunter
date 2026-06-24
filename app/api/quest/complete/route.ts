@@ -34,7 +34,18 @@ export async function POST(req: NextRequest) {
       questRepository,
       successDayRepository,
       characterRepository,
-      statusRepository
+      statusRepository,
+      undefined, // 서브태스크 없는 단일 완료 경로
+      // SuccessDay 생성 · Quest 만료 · Status · Character 보상을 하나의 트랜잭션으로 원자 처리
+      (operation) =>
+        prisma.$transaction((tx) =>
+          operation({
+            questRepository: new PriQuestRepository(tx),
+            successDayRepository: new PriSuccessDayRepository(tx),
+            characterRepository: new PriCharacterRepository(tx),
+            statusRepository: new PriStatusRepository(tx),
+          })
+        )
     );
 
     // UseCase 실행
