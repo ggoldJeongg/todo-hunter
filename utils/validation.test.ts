@@ -1,10 +1,30 @@
 import { describe, expect, it } from "vitest";
 import {
+  parseId,
   validateKakaoPendingInput,
   validateKakaoSignupInput,
   validateQuestInput,
   validateSignupInput,
 } from "@/utils/validation";
+
+describe("parseId", () => {
+  it("accepts positive integers and numeric strings", () => {
+    expect(parseId(1)).toBe(1);
+    expect(parseId(42)).toBe(42);
+    expect(parseId("1")).toBe(1);
+    expect(parseId(" 7 ")).toBe(7);
+  });
+
+  it("rejects non-integer, non-positive, and non-numeric values", () => {
+    for (const bad of [0, -1, 1.5, NaN, "abc", "", "  ", null, undefined, {}, [], true]) {
+      expect(() => parseId(bad)).toThrow("유효하지 않은");
+    }
+  });
+
+  it("includes the provided label in the error message", () => {
+    expect(() => parseId("abc", "퀘스트 ID")).toThrow("유효하지 않은 퀘스트 ID입니다.");
+  });
+});
 
 describe("signup validation", () => {
   const validSignup = {

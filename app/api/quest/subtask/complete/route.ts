@@ -9,6 +9,7 @@ import {
 } from "@/infrastructure/repositories";
 import { prisma } from "@/lib/prisma";
 import { getUserFromCookie } from "@/utils/auth";
+import { parseId, ValidationError } from "@/utils/validation";
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,14 +23,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "캐릭터를 찾을 수 없습니다." }, { status: 404 });
     }
 
-    const body = await req.json();
-    const { subTaskId } = body;
+    const body = await req.json().catch(() => null);
 
-    if (typeof subTaskId !== "number") {
-      return NextResponse.json(
-        { success: false, error: "subTaskId가 필요합니다." },
-        { status: 400 }
-      );
+    let subTaskId: number;
+    try {
+      subTaskId = parseId((body as { subTaskId?: unknown } | null)?.subTaskId, "서브태스크 ID");
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+      }
+      throw error;
     }
 
     const usecase = new CompleteSubTaskUsecase(

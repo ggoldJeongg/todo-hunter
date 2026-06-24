@@ -3,7 +3,7 @@ import { DeleteQuestUseCase } from "@/application/usecases/quest/DeleteQuestUsec
 import { PriQuestRepository, PriSuccessDayRepository } from "@/infrastructure/repositories";
 import { prisma } from "@/lib/prisma";
 import { getUserFromCookie } from "@/utils/auth";
-import { ValidationError, validateQuestInput } from "@/utils/validation";
+import { ValidationError, validateQuestInput, parseId } from "@/utils/validation";
 
 // PUT 요청 (퀘스트 수정)
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -20,10 +20,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ success: false, error: "캐릭터를 찾을 수 없습니다." }, { status: 404 });
     }
 
-    const questId = Number(id);
-    if (isNaN(questId)) {
-      return NextResponse.json({ success: false, error: "유효하지 않은 퀘스트 ID입니다." }, { status: 400 });
-    }
+    const questId = parseId(id, "퀘스트 ID");
 
     // 퀘스트 소유자 검증
     const quest = await prisma.quest.findUnique({ where: { id: questId } });
@@ -61,10 +58,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  if (!id) {
-    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
-  }
-
   try {
     const { user } = await getUserFromCookie(req);
     if (!user || !user.id) {
@@ -77,10 +70,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     }
 
     const characterId = character.id;
-    const questId = Number(id);
-    if (isNaN(questId)) {
-      return NextResponse.json({ success: false, error: "유효하지 않은 퀘스트 ID입니다." }, { status: 400 });
-    }
+    const questId = parseId(id, "퀘스트 ID");
 
     // 퀘스트 삭제 처리
     const questRepository = new PriQuestRepository(prisma);
