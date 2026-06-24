@@ -1,9 +1,10 @@
-import { PrismaClient, Quest } from "@prisma/client";
+import { Quest } from "@prisma/client";
 import { IQuestRepository } from "@/domain/repositories/IQuestRepository";
+import { PrismaRepositoryClient } from "./prisma-client";
 
 export class PriQuestRepository implements IQuestRepository {
-  
-  constructor(private readonly prisma: PrismaClient) {}
+
+  constructor(private readonly prisma: PrismaRepositoryClient) {} // PrismaClient | tx 둘 다 수용 (트랜잭션 주입용)
 
   async findById(id: number): Promise<Quest | null>{
     return await this.prisma.quest.findUnique({ where: { id } });

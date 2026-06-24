@@ -40,7 +40,17 @@ export async function POST(req: NextRequest) {
       new PriSubTaskRepository(prisma),
       new PriSuccessDayRepository(prisma),
       new PriCharacterRepository(prisma),
-      new PriStatusRepository(prisma)
+      new PriStatusRepository(prisma),
+      // 마지막 서브태스크로 퀘스트가 완료될 때, 보상 쓰기를 하나의 트랜잭션으로 원자 처리
+      (operation) =>
+        prisma.$transaction((tx) =>
+          operation({
+            questRepository: new PriQuestRepository(tx),
+            successDayRepository: new PriSuccessDayRepository(tx),
+            characterRepository: new PriCharacterRepository(tx),
+            statusRepository: new PriStatusRepository(tx),
+          })
+        )
     );
 
     const result = await usecase.execute(character.id, subTaskId);
