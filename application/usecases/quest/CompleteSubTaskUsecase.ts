@@ -6,7 +6,7 @@ import {
   ISubTaskRepository,
   ISuccessDayRepository,
 } from "@/domain/repositories";
-import { CompleteQuestUsecase } from "@/application/usecases/quest/CompleteQuestUsecase";
+import { CompleteQuestUsecase, CompleteQuestTransaction } from "@/application/usecases/quest/CompleteQuestUsecase";
 import { WILLPOWER_COST } from "@/constants/game";
 
 export interface CompleteSubTaskResult {
@@ -28,7 +28,9 @@ export class CompleteSubTaskUsecase {
     private PriSubTaskRepository: ISubTaskRepository,
     private PriSuccessDayRepository: ISuccessDayRepository,
     private PriCharacterRepository: ICharacterRepository,
-    private PriStatusRepository: IStatusRepository
+    private PriStatusRepository: IStatusRepository,
+    // 마지막 서브태스크 완료로 퀘스트가 끝날 때, 위임되는 퀘스트 완료 보상도 동일하게 원자 처리.
+    private transaction?: CompleteQuestTransaction
   ) {}
 
   // 단일 서브태스크 완료 처리.
@@ -95,7 +97,8 @@ export class CompleteSubTaskUsecase {
         this.PriSuccessDayRepository,
         this.PriCharacterRepository,
         this.PriStatusRepository,
-        this.PriSubTaskRepository
+        this.PriSubTaskRepository,
+        this.transaction
       );
       await completeQuestUsecase.completeQuest(characterId, quest.id);
       questCompleted = true;
