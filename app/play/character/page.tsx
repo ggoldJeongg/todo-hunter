@@ -6,7 +6,6 @@ import Character from "./_components/character";
 import FeedbackButton from "./_components/FeedbackButton";
 import StatsTabs from "./_components/StatsTabs";
 import { useUserStore } from "@/utils/stores/userStore";
-import { Button } from "@/components/common";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, Suspense, useState, useMemo, useCallback } from "react";
 import { EXP_TO_LEVEL_UP } from "@/constants/game";
@@ -97,15 +96,6 @@ export default function CharacterPage() {
         }
     }, [pathname, id, fetchUser, fetchExtras]);
 
-    const handleLogout = async () => {
-        try {
-            await fetch("/api/auth/signout", { method: "POST" });
-            router.push("/");
-        } catch (error) {
-            console.error("로그아웃 실패:", error);
-        }
-    };
-
     const currentLevel = level ?? 1;
     const currentExp = exp ?? 0;
     const expToNext = EXP_TO_LEVEL_UP(currentLevel);
@@ -158,12 +148,18 @@ export default function CharacterPage() {
 
     return (
         <div className={styles["cozy-page"]}>
-            {/* 상단 — 좌: 피드백 / 우: 로그아웃 */}
+            {/* 상단 — 좌: 피드백 / 우: 설정 진입 */}
             <div className={styles["char-logout-area"]}>
                 <FeedbackButton />
-                <Button size={"S"} state={"error"} onClick={handleLogout}>
-                    로그아웃
-                </Button>
+                <button
+                    type="button"
+                    onClick={() => router.push("/settings")}
+                    className="inline-flex cursor-pointer items-center gap-[5px] rounded-none border-2 border-[#FFFDF2] bg-[#4A3F2F] py-[6px] pl-[9px] pr-[11px] text-[13px] font-extrabold text-[#FFFDF2] shadow-[2px_2px_0_0_rgba(0,0,0,0.3)] transition-none [image-rendering:pixelated] hover:bg-[#5A4D38] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                    aria-label="설정"
+                >
+                    <span className="text-[14px] leading-none" aria-hidden="true">⚙</span>
+                    설정
+                </button>
             </div>
 
             {/* ===== 메인 양피지 패널 — 좌: 캐릭터 카드 / 우: EXP+스탯 ===== */}
