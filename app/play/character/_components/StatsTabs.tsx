@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import * as Tabs from "@radix-ui/react-tabs";
 import styles from "./character.module.css";
+import GrowthGarden from "./GrowthGarden";
 
 // 스탯 태그 → 표시 라벨 매핑 (성장 기록 / 생활 리듬 공용)
 const TAG_TO_LABEL: Record<string, string> = {
@@ -41,27 +42,6 @@ export interface RecentCompletedItem {
 
 interface StatsTabsProps {
     recentCompleted: RecentCompletedItem[];
-}
-
-/* ============================================================
-   퍼블리싱용 샘플 데이터 (성장정원 잔디는 아직 샘플 — 별도 작업)
-   ============================================================ */
-
-// 잔디 — 최근 1년(364일) 결정론적 완료 수
-const GRASS_DAYS: number[] = Array.from({ length: 364 }, (_, i) => {
-    const dow = i % 7;
-    const weekend = dow === 0 || dow === 6 ? 3 : 1;
-    // 결정론적 의사난수 (사인 기반)
-    const wobble = Math.round((Math.sin(i * 1.7) + Math.sin(i * 0.4) + 2) * 1.6);
-    return Math.max(0, weekend + wobble - 1);
-});
-
-function grassColor(count: number): string {
-    if (count <= 0) return "#EBE3CF";
-    if (count < 2) return "#C6E0B4";
-    if (count < 4) return "#8FC97A";
-    if (count < 6) return "#5B8C5A";
-    return "#3A6B3A";
 }
 
 export default function StatsTabs({ recentCompleted }: StatsTabsProps) {
@@ -114,30 +94,6 @@ export default function StatsTabs({ recentCompleted }: StatsTabsProps) {
     const peakLabel =
         peakHour < 12 ? "아침형 인간" : peakHour < 18 ? "오후형 인간" : "저녁형 인간";
     const peakEmoji = peakHour < 12 ? "🌅" : peakHour < 18 ? "☀️" : "🌙";
-
-    // ── 잔디: KPI 계산 ──
-    const grassStats = useMemo(() => {
-        const total = GRASS_DAYS.reduce((a, b) => a + b, 0);
-        let cur = 0;
-        let best = 0;
-        GRASS_DAYS.forEach((c) => {
-            if (c > 0) {
-                cur += 1;
-                best = Math.max(best, cur);
-            } else {
-                cur = 0;
-            }
-        });
-        const week = GRASS_DAYS.slice(-7).reduce((a, b) => a + b, 0);
-        return { total, best, week };
-    }, []);
-
-    // ── 잔디 SVG 좌표 ──
-    const CELL = 11;
-    const GAP = 3;
-    const WEEKS = Math.ceil(GRASS_DAYS.length / 7);
-    const gridW = 24 + WEEKS * (CELL + GAP);
-    const gridH = 16 + 7 * (CELL + GAP);
 
     // ── 리듬 시계 SVG: 시(0~23)마다 카테고리별로 누적된 스포크 ──
     // 스포크 길이 = 그 시간대 총 완료수 / 카테고리 색 = 어떤 종류를 했는지.
@@ -343,74 +299,9 @@ export default function StatsTabs({ recentCompleted }: StatsTabsProps) {
                         </div>
                     </Tabs.Content>
 
-                    {/* ── 3. 성장 정원*/}
+                    {/* ── 3. 성장 정원 (Pixi 아이소 정원) ── */}
                     <Tabs.Content value="grass" className={styles["stats-tabpanel"]}>
-                        <div className={styles["grass-kpi-row"]}>
-                            <div className={styles["grass-kpi"]}>
-                                <div className={styles["grass-kpi-num"]}>{grassStats.total}</div>
-                                <div className={styles["grass-kpi-label"]}>총 완료</div>
-                            </div>
-                            <div className={styles["grass-kpi"]}>
-                                <div className={styles["grass-kpi-num"]}>{grassStats.best}</div>
-                                <div className={styles["grass-kpi-label"]}>최장 연속(일)</div>
-                            </div>
-                            <div className={styles["grass-kpi"]}>
-                                <div className={styles["grass-kpi-num"]}>{grassStats.week}</div>
-                                <div className={styles["grass-kpi-label"]}>이번 주</div>
-                            </div>
-                        </div>
-                        <h3 className={styles["stats-section-title"]}>🌱 완료 잔디 (최근 1년)</h3>
-                        <div className={styles["grass-scroll"]}>
-                            <svg
-                                width={gridW}
-                                height={gridH}
-                                role="img"
-                                aria-label="최근 1년 완료 잔디"
-                            >
-                                {["", "월", "", "수", "", "금", ""].map((t, i) =>
-                                    t ? (
-                                        <text
-                                            key={i}
-                                            x={2}
-                                            y={16 + i * (CELL + GAP) + CELL - 1}
-                                            className={styles["grass-axis"]}
-                                        >
-                                            {t}
-                                        </text>
-                                    ) : null
-                                )}
-                                {GRASS_DAYS.map((count, i) => {
-                                    const week = Math.floor(i / 7);
-                                    const dow = i % 7;
-                                    return (
-                                        <rect
-                                            key={i}
-                                            x={20 + week * (CELL + GAP)}
-                                            y={14 + dow * (CELL + GAP)}
-                                            width={CELL}
-                                            height={CELL}
-                                            rx={2}
-                                            fill={grassColor(count)}
-                                            className={styles["grass-cell"]}
-                                        >
-                                            <title>{`완료 ${count}개`}</title>
-                                        </rect>
-                                    );
-                                })}
-                            </svg>
-                        </div>
-                        <div className={styles["grass-legend"]}>
-                            <span>적음</span>
-                            <span className={styles["grass-sq"]} style={{ background: "#EBE3CF" }} />
-                            <span className={styles["grass-sq"]} style={{ background: "#C6E0B4" }} />
-                            <span className={styles["grass-sq"]} style={{ background: "#8FC97A" }} />
-                            <span className={styles["grass-sq"]} style={{ background: "#5B8C5A" }} />
-                            <span className={styles["grass-sq"]} style={{ background: "#3A6B3A" }} />
-                            <span>많음</span>
-                        </div>
-                        <p className={styles["stats-panel-desc"]}>
-                            SuccessDay를 날짜별 집계 → 잔디. 칸 호버 시 완료 수.
-                        </p>
+                        <GrowthGarden active={tab === "grass"} />
                     </Tabs.Content>
                 </div>
             </Tabs.Root>
