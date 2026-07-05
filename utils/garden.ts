@@ -91,6 +91,17 @@ export function bushStage(count: number): 0 | 1 | 2 | 3 {
 }
 
 /**
+ * 완료수 → 농작물 성장 단계(스프라이트 시트 stage 1~5).
+ * 0 = 빈 흙(심지 않음) / 1·2·3·4 = 완료 갯수 그대로 / 5 = 5개 이상(수확기).
+ * "그날 완료한 갯수만큼 작물이 자란다"를 그대로 표현한다.
+ */
+export function cropStage(count: number): 0 | 1 | 2 | 3 | 4 | 5 {
+  if (count <= 0) return 0;
+  if (count >= 5) return 5;
+  return count as 1 | 2 | 3 | 4;
+}
+
+/**
  * 오늘부터 거꾸로 연속으로 ≥1 완료한 날의 수(연속일).
  * todayMs 기준 KST 날짜로 하루씩 거슬러 올라가며 끊기면 종료.
  */
