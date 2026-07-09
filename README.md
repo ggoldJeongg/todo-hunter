@@ -16,7 +16,7 @@ cd todo-hunter
 npm install
 npm run dev
 
-TEST ID : todohunter / TEST PASSWORD : todohuntertest
+TEST ID : test / TEST PASSWORD : testcode
 
 version : Typescript 5+ / React 19+ / Next.js 15+ / Node v22.14.0 (25.03.20 기준 LTS)
 ```
