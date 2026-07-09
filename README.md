@@ -11,7 +11,7 @@
  
 ### 시작 가이드
 ```
-git clone https://github.com/FRONT-END-BOOTCAMP-PLUS-3/todo-hunter.git
+git clone https://github.com/ggoldJeongg/todo-hunter
 cd todo-hunter
 npm install
 npm run dev
