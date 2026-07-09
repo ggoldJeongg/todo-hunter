@@ -23,6 +23,14 @@ const TAG_COLOR: Record<Tag, string> = {
   LIV: "#9B7CB8",
 };
 const TAG_ORDER: Tag[] = ["STR", "INT", "EMO", "FIN", "LIV"];
+// 카테고리별 대표 작물 (PixiGardenScene의 CROP_ROW와 일치)
+const TAG_CROP: Record<Tag, string> = {
+  STR: "🍅 토마토",
+  INT: "🍇 포도",
+  EMO: "🍓 딸기",
+  FIN: "🌽 옥수수",
+  LIV: "🥬 양배추",
+};
 
 interface GardenResponse {
   total: number;
@@ -114,16 +122,18 @@ export default function GrowthGarden({ active }: { active: boolean }) {
 
   return (
     <>
-      <h3 className={styles["stats-section-title"]}>🌱 성장 정원</h3>
       <p className={styles["stats-section-sub"]}>
-        완료한 날마다 덤불이 자라요 — 최근 365일. ← 드래그로 과거 보기 →
+        매일 꾸준히 완수해 정원을 풍성하게 키워보세요!
+      </p>
+      <p className={styles["stats-section-sub"]}>
+        다양한 작물 수확으로 더 큰 성장을 만들어요.
       </p>
 
       {/* KPI */}
       <div className={styles["grass-kpi-row"]}>
         <div className={styles["grass-kpi"]}>
           <div className={styles["grass-kpi-num"]}>{data?.total ?? 0}</div>
-          <div className={styles["grass-kpi-label"]}>총 꽃</div>
+          <div className={styles["grass-kpi-label"]}>총 수확</div>
         </div>
         <div className={styles["grass-kpi"]}>
           <div className={styles["grass-kpi-num"]}>{data?.streak ?? 0}</div>
@@ -248,13 +258,10 @@ export default function GrowthGarden({ active }: { active: boolean }) {
                 display: "inline-block",
               }}
             />
-            {TAG_LABEL[t]}
+            {TAG_LABEL[t]} {TAG_CROP[t]}
           </span>
         ))}
       </div>
-      <p className={styles["stats-panel-desc"]}>
-        덤불 크기 = 그날 완료량 · 색 = 카테고리 · 금색 테두리 = 오늘
-      </p>
     </>
   );
 }

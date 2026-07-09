@@ -5,6 +5,7 @@ import {
   buildGardenGrid,
   bushStage,
   computeStreak,
+  cropStage,
   dominantCategory,
   kstDateString,
   mondayDow,
@@ -80,6 +81,18 @@ describe("bushStage", () => {
     expect(bushStage(4)).toBe(2);
     expect(bushStage(5)).toBe(3);
     expect(bushStage(20)).toBe(3);
+  });
+});
+
+describe("cropStage", () => {
+  it("완료수 → 성장 단계 (0 / 1 / 2 / 3 / 4 / 5+)", () => {
+    expect(cropStage(0)).toBe(0);
+    expect(cropStage(1)).toBe(1);
+    expect(cropStage(2)).toBe(2);
+    expect(cropStage(3)).toBe(3);
+    expect(cropStage(4)).toBe(4);
+    expect(cropStage(5)).toBe(5);
+    expect(cropStage(20)).toBe(5);
   });
 });
 

@@ -3,6 +3,7 @@ import { CompleteQuestUsecase } from "@/application/usecases/quest/CompleteQuest
 import { PriQuestRepository, PriSuccessDayRepository, PriCharacterRepository, PriStatusRepository } from "@/infrastructure/repositories";
 import { prisma } from "@/lib/prisma";
 import { getUserFromCookie } from "@/utils/auth";
+import { parseId, ValidationError } from "@/utils/validation";
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,12 +17,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "캐릭터를 찾을 수 없습니다." }, { status: 404 });
     }
 
-    const body = await req.json();
-    const { questId } = body;
+    const body = await req.json().catch(() => null);
     const characterId = character.id;
 
-    if (!questId) {
-      return NextResponse.json({ success: false, error: "questId가 필요합니다." }, { status: 400 });
+    let questId: number;
+    try {
+      questId = parseId((body as { questId?: unknown } | null)?.questId, "퀘스트 ID");
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+      }
+      throw error;
     }
 
     // UseCase 인스턴스 생성
@@ -34,7 +40,18 @@ export async function POST(req: NextRequest) {
       questRepository,
       successDayRepository,
       characterRepository,
-      statusRepository
+      statusRepository,
+      undefined, // 서브태스크 없는 단일 완료 경로
+      // SuccessDay 생성 · Quest 만료 · Status · Character 보상을 하나의 트랜잭션으로 원자 처리
+      (operation) =>
+        prisma.$transaction((tx) =>
+          operation({
+            questRepository: new PriQuestRepository(tx),
+            successDayRepository: new PriSuccessDayRepository(tx),
+            characterRepository: new PriCharacterRepository(tx),
+            statusRepository: new PriStatusRepository(tx),
+          })
+        )
     );
 
     // UseCase 실행

@@ -3,6 +3,7 @@ import { AddSubTasksUsecase } from "@/application/usecases/quest/AddSubTasksUsec
 import { PriQuestRepository, PriSubTaskRepository } from "@/infrastructure/repositories";
 import { prisma } from "@/lib/prisma";
 import { getUserFromCookie } from "@/utils/auth";
+import { parseId, ValidationError } from "@/utils/validation";
 
 export async function POST(
   req: NextRequest,
@@ -21,10 +22,7 @@ export async function POST(
       return NextResponse.json({ success: false, error: "캐릭터를 찾을 수 없습니다." }, { status: 404 });
     }
 
-    const questId = Number(id);
-    if (isNaN(questId)) {
-      return NextResponse.json({ success: false, error: "유효하지 않은 퀘스트 ID입니다." }, { status: 400 });
-    }
+    const questId = parseId(id, "퀘스트 ID");
 
     const body = await req.json();
     const { names } = body;
@@ -46,6 +44,10 @@ export async function POST(
     return NextResponse.json({ success: true, subTasks: created }, { status: 201 });
   } catch (error) {
     console.error("서브태스크 추가 중 오류 발생:", error);
+
+    if (error instanceof ValidationError) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    }
 
     if (error instanceof Error && error.name === "CompleteQuestError") {
       const e = error as unknown as { type: string; message: string };

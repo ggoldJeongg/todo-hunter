@@ -1,9 +1,10 @@
-import { PrismaClient, SuccessDay } from "@prisma/client";
+import { SuccessDay } from "@prisma/client";
 import { ISuccessDayRepository } from "@/domain/repositories";
+import { PrismaRepositoryClient } from "./prisma-client";
 
 export class PriSuccessDayRepository implements ISuccessDayRepository {
 
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: PrismaRepositoryClient) {} // PrismaClient | tx 둘 다 수용 (트랜잭션 주입용)
 
     async findById(id: number): Promise<SuccessDay | null> {
         return this.prisma.successDay.findUnique({

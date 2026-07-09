@@ -5,8 +5,35 @@ export class ValidationError extends Error {
   }
 }
 
+// 경로 파라미터/바디로 들어온 ID를 양의 정수로 파싱한다.
+// number 또는 숫자 문자열("1")을 허용하고, 소수·음수·0·NaN·기타 타입은 거부한다.
+// 라우트마다 제각각이던 `Number(id)` + `isNaN` / `if (!id)` 검증을 한 곳으로 통일하기 위한 헬퍼.
+export function parseId(value: unknown, label = "ID"): number {
+  const num =
+    typeof value === "number"
+      ? value
+      : typeof value === "string" && value.trim() !== ""
+        ? Number(value)
+        : NaN;
+
+  if (!Number.isInteger(num) || num < 1) {
+    throw new ValidationError(`유효하지 않은 ${label}입니다.`);
+  }
+
+  return num;
+}
+
 const LOGIN_ID_PATTERN = /^[A-Za-z0-9_]+$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * 이메일 정규화 (앞뒤 공백 제거 + 소문자화).
+ * 인증 코드 발송/검증/가입 등 이메일이 Redis 키·DB 조회에 쓰이는 모든 곳에서
+ * 반드시 동일하게 적용해야 키가 어긋나지 않는다.
+ */
+export function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
 const STATUS_TAGS = ["STR", "INT", "EMO", "FIN", "LIV"] as const;
 const DIFFICULTIES = ["easy", "normal", "hard"] as const;
 const WEEK_DAYS = ["월", "화", "수", "목", "금", "토", "일"] as const;
@@ -54,7 +81,7 @@ function validateEmailValue(value: unknown) {
     throw new ValidationError("이메일 형식이 올바르지 않습니다.");
   }
 
-  const email = value.trim();
+  const email = normalizeEmail(value);
   assertStringLength(email, "이메일은 254자 이하로 입력해주세요.", 1, 254);
   if (!EMAIL_PATTERN.test(email)) {
     throw new ValidationError("이메일 형식이 올바르지 않습니다.");

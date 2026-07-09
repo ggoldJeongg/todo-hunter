@@ -4,6 +4,7 @@ import { SendSignUpEmailUsecase } from "@/application/usecases/auth/SendSignUpEm
 import { RdVerificationRepository } from "@/infrastructure/repositories/RdVerificationRepository";
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, getClientIp } from "@/infrastructure/rate-limiter";
+import { normalizeEmail } from "@/utils/validation";
 
 const EMAIL_RATE_LIMIT = { maxRequests: 3, windowSeconds: 120 };
 
@@ -23,15 +24,18 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { email } = await req.json();
+    const { email: rawEmail } = await req.json();
 
-    if (!email) {
+    if (!rawEmail || typeof rawEmail !== "string") {
       // 입력 에러 시
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
+
+    // 인증/가입과 동일한 정규화로 Redis 키 일치 보장
+    const email = normalizeEmail(rawEmail);
 
     // Infrastructure Layer DI 의존성 주입
     const generateVerifyCodeUsecase = new GenerateVerifyCodeUsecase();

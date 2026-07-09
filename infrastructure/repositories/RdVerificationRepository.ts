@@ -23,8 +23,10 @@ export class RdVerificationRepository implements IVerificationRepository {
     }
 
     async hasSignupVerifiedEmail(email: string): Promise<boolean> {
-        const verified = await redisClient.get<string>(SIGNUP_VERIFIED_KEY_PREFIX + email);
-        return verified === 'true';
+        // Upstash Redis는 GET 결과를 자동 역직렬화하므로 저장한 문자열 'true'가
+        // 불리언 true 로 돌아온다. String() 캐스팅으로 두 경우 모두 안전하게 비교.
+        const verified = await redisClient.get<string | boolean>(SIGNUP_VERIFIED_KEY_PREFIX + email);
+        return String(verified) === 'true';
     }
 
     async deleteSignupVerifiedEmail(email: string): Promise<void> {
