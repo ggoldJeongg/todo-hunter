@@ -74,7 +74,7 @@ describe("POST /api/auth/check-verify-code", () => {
     const response = await POST(createVerifyRequest());
 
     expect(response.status).toBe(200);
-    expect(mocks.saveSignupVerifiedEmail).toHaveBeenCalledWith("hunter@example.com", 600);
+    expect(mocks.saveSignupVerifiedEmail).toHaveBeenCalledWith("hunter@example.com", 1800);
     expect(mocks.deleteVerifyCode).toHaveBeenCalledWith("hunter@example.com");
   });
 });

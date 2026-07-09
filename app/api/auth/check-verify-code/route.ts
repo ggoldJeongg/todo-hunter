@@ -3,6 +3,7 @@ import { DeleteVerifyCodeUsecase } from "@/application/usecases/auth/DeleteVerif
 import { RdVerificationRepository } from "@/infrastructure/repositories/RdVerificationRepository";
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, getClientIp } from "@/infrastructure/rate-limiter";
+import { normalizeEmail } from "@/utils/validation";
 
 const VERIFY_RATE_LIMIT = { maxRequests: 5, windowSeconds: 300 };
 
@@ -25,12 +26,15 @@ export async function POST(req: NextRequest) {
         }
 
         // Client Request json parsed
-        const { email, verificationCode } = await req.json();
+        const { email: rawEmail, verificationCode } = await req.json();
 
         // 2차 유효성 검사
-        if(!email || !verificationCode ) {
+        if(!rawEmail || !verificationCode ) {
             return NextResponse.json({error: "이메일과 인증 코드를 입력해야합니다."}, {status:400});
-        } 
+        }
+
+        // 발송/가입과 동일한 정규화로 Redis 키 일치 보장
+        const email = normalizeEmail(rawEmail);
 
         // Repository 
         const verificationRepository = new RdVerificationRepository();
@@ -48,7 +52,7 @@ export async function POST(req: NextRequest) {
             // 만료 시간이 설정되지 않은 경우
             if (isValid) {
                 // 인증 코드가 유효한 경우
-                await verificationRepository.saveSignupVerifiedEmail(email, 600);
+                await verificationRepository.saveSignupVerifiedEmail(email, 1800);
                 await deleteCodeUsecase.execute(email);
                 return NextResponse.json({ message: "인증이 완료되었습니다.", isVerified: true }, { status: 200 });
             } else {
@@ -65,7 +69,7 @@ export async function POST(req: NextRequest) {
 
         // 코드 인증 성공 시
         if (isValid) {
-            await verificationRepository.saveSignupVerifiedEmail(email, 600);
+            await verificationRepository.saveSignupVerifiedEmail(email, 1800);
             await deleteCodeUsecase.execute(email);
             return NextResponse.json({ message: "인증이 완료되었습니다.", isVerified: true }, { status: 200 });
         }

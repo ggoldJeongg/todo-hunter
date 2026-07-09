@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { PriUserRepository } from '@/infrastructure/repositories/PriUserRepository';
 import { CheckExistEmailUsecase } from '@/application/usecases/auth/CheckExistEmailUsecase';
 import { checkRateLimit, getClientIp } from '@/infrastructure/rate-limiter';
+import { normalizeEmail } from '@/utils/validation';
 
 const userRepository = new PriUserRepository(prisma);
 const checkExistEmailUsecase = new CheckExistEmailUsecase(userRepository);
@@ -24,11 +25,14 @@ export async function POST(req: NextRequest) {
         );
     }
 
-    const { email } = await req.json();
+    const { email: rawEmail } = await req.json();
 
-    if (!email || typeof email !== 'string') {
+    if (!rawEmail || typeof rawEmail !== 'string') {
         return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
+
+    // 가입 시 저장되는 이메일과 동일한 정규화로 조회 일치 보장
+    const email = normalizeEmail(rawEmail);
 
     try {
         const isExist = await checkExistEmailUsecase.execute({ email });
