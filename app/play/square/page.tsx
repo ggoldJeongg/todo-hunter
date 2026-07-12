@@ -15,8 +15,8 @@ import type { PixiSquareScene } from "@/utils/pixi/PixiSquareScene";
 
 // NPC 기준 위치 (맵 % 기준) — 마스크 로드 후 scene이 걸어갈 수 있는 점으로 보정
 const NPC_POSITIONS = [
-  { x: 15, y: 55 }, // 왼쪽 노점
-  { x: 82, y: 50 }, // 오른쪽 노점
+  { x: 25, y: 65 }, // 왼쪽 노점
+  { x: 82, y: 65 }, // 오른쪽 노점
   { x: 40, y: 48 }, // 분수 왼쪽
   { x: 60, y: 58 }, // 분수 오른쪽
 ];
