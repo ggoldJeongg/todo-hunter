@@ -49,6 +49,13 @@ const NPC_DEFAULT_SIZE = 96; // NPC 프레임 표시 크기 (보이는 캐릭터
 const PLAYER_FOOTPRINT_WIDTH = 36;
 const PLAYER_FOOTPRINT_HEIGHT = 14;
 
+// 원근감(깊이 스케일): 발-y가 화면 아래(앞)일수록 크게, 위(뒤)일수록 작게.
+// 걸을 수 있는 y 범위(대략 48~100%)를 스케일 0.9~1.2로 매핑.
+const DEPTH_Y_FAR = 48;
+const DEPTH_Y_NEAR = 100;
+const DEPTH_S_FAR = 0.9;
+const DEPTH_S_NEAR = 1.2;
+
 const NAME_FONT = "Galmuri11, system-ui, sans-serif";
 
 export interface SquareSceneOptions {
@@ -69,6 +76,12 @@ function formatTime(seconds: number): string {
 
 const clamp = (v: number, min: number, max: number) =>
   Math.max(min, Math.min(v, max));
+
+/** 발-y(맵 %)를 원근 스케일로 변환. 앞(아래)=크게, 뒤(위)=작게. */
+function depthScale(yPct: number): number {
+  const t = clamp((yPct - DEPTH_Y_FAR) / (DEPTH_Y_NEAR - DEPTH_Y_FAR), 0, 1);
+  return DEPTH_S_FAR + (DEPTH_S_NEAR - DEPTH_S_FAR) * t;
+}
 
 /** 둥근 사각형 배경 + 가운데 정렬 텍스트로 이루어진 "알약" UI. x=0 기준 가로 중앙. */
 function makePill(opts: {
@@ -252,6 +265,9 @@ export class PixiSquareScene {
     });
 
     this.app.stage.addChild(this.world);
+    // Y축 깊이 정렬(painter's algorithm): 자식들을 zIndex(=발의 월드 y) 순으로 그린다.
+    // 발이 화면 아래(y 큼)일수록 나중에(위에) 그려져 앞에 있는 것처럼 보인다.
+    this.world.sortableChildren = true;
 
     await this._buildBackground();
     await this._buildPlayer();
@@ -280,7 +296,9 @@ export class PixiSquareScene {
     this.bg.on("pointertap", (e: FederatedPointerEvent) =>
       this._handleMapClick(e)
     );
-    this.world.addChildAt(this.bg, 0);
+    // 배경은 항상 맨 뒤 (어떤 캐릭터보다 작은 zIndex)
+    this.bg.zIndex = -Number.MAX_SAFE_INTEGER;
+    this.world.addChild(this.bg);
   }
 
   private async _buildPlayer() {
@@ -298,6 +316,8 @@ export class PixiSquareScene {
       this.pctToPxX(this.animPos.x),
       this.pctToPxY(this.animPos.y)
     );
+    this.player.container.zIndex = this.pctToPxY(this.animPos.y);
+    this.player.container.scale.set(depthScale(this.animPos.y));
 
     // 본체 클릭 영역. Pixi는 알파(투명도)가 아니라 사각 영역으로 히트 판정하므로
     // 스프라이트 전체가 아닌 "실제 보이는 캐릭터 몸통"에 맞춘 박스를 지정한다.
@@ -354,13 +374,29 @@ export class PixiSquareScene {
       display.y = npc.offsetY ?? 0;
       if (npc.flip) display.scale.x = -Math.abs(display.scale.x);
 
-      // 클릭: interactive면 모달, 그 외엔 클릭만 소비(이동 방지)
-      node.eventMode = "static";
-      node.cursor = npc.interactive ? "pointer" : "default";
-      node.on("pointertap", (e: FederatedPointerEvent) => {
-        e.stopPropagation();
-        if (npc.interactive) this._approachNpc(i, npc.action);
-      });
+      // 클릭 판정.
+      // Pixi는 스프라이트를 알파가 아닌 "사각 바운딩 박스"로 히트 판정한다.
+      // 그대로 두면 투명 여백까지 클릭을 삼켜 주변 빈 땅 클릭 시 이동이 막힌다.
+      //  - interactive NPC: 실제 그림 크기에 맞춘 hitArea로 좁혀 받는다.
+      //  - 그 외 NPC: eventMode "none" → 클릭을 통과시켜 항상 이동 가능.
+      if (npc.interactive) {
+        const hitW = size * 0.8;
+        const hitH = size * 0.9;
+        node.eventMode = "static";
+        node.cursor = "pointer";
+        node.hitArea = new Rectangle(
+          (npc.offsetX ?? 0) - hitW / 2,
+          (npc.offsetY ?? 0) - hitH,
+          hitW,
+          hitH
+        );
+        node.on("pointertap", (e: FederatedPointerEvent) => {
+          e.stopPropagation();
+          this._approachNpc(i, npc.action);
+        });
+      } else {
+        node.eventMode = "none";
+      }
 
       node.addChild(display);
 
@@ -374,6 +410,8 @@ export class PixiSquareScene {
 
       node.x = this.pctToPxX(this.npcPcts[i].x);
       node.y = this.pctToPxY(this.npcPcts[i].y);
+      node.zIndex = node.y; // 발 y 기준 깊이 정렬
+      node.scale.set(depthScale(this.npcPcts[i].y)); // 원근 스케일
       this.world.addChild(node);
       this.npcContainers.push(node);
     }
@@ -387,6 +425,8 @@ export class PixiSquareScene {
       if (node) {
         node.x = this.pctToPxX(snapped.x);
         node.y = this.pctToPxY(snapped.y);
+        node.zIndex = node.y;
+        node.scale.set(depthScale(snapped.y));
       }
     }
   }
@@ -629,6 +669,11 @@ export class PixiSquareScene {
       const px = this.pctToPxX(this.animPos.x);
       const py = this.pctToPxY(this.animPos.y);
       this.player?.setWorldPosition(px, py);
+      // 발 y가 바뀔 때마다 깊이 갱신 → NPC보다 아래면 앞, 위면 뒤로 자동 정렬 + 원근 스케일
+      if (this.player) {
+        this.player.container.zIndex = py;
+        this.player.container.scale.set(depthScale(this.animPos.y));
+      }
       this._updateCamera(px, py);
       this.player?.update(this.app!.renderer, ticker.deltaMS);
 
@@ -683,10 +728,12 @@ export class PixiSquareScene {
     for (let i = 0; i < this.npcContainers.length; i++) {
       this.npcContainers[i].x = this.pctToPxX(this.npcPcts[i].x);
       this.npcContainers[i].y = this.pctToPxY(this.npcPcts[i].y);
+      this.npcContainers[i].zIndex = this.npcContainers[i].y;
     }
     const px = this.pctToPxX(this.animPos.x);
     const py = this.pctToPxY(this.animPos.y);
     this.player?.setWorldPosition(px, py);
+    if (this.player) this.player.container.zIndex = py;
     this._updateCamera(px, py);
   }
 
