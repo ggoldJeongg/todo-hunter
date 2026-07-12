@@ -107,6 +107,15 @@ export const useSquareStore = create<SquareStore>()(
     }),
     {
       name: "square-session-data",
+      // 저장 대상: 타이머 + 공유 퀘스트만. 캐릭터 위치/이동 상태는 저장하지 않는다.
+      // (위치까지 persist하면 설정한 초기 위치 {50,70}을 덮어쓰고,
+      //  옛 좌표가 흰 길 밖이면 이동 불가로 갇힘 → 매 세션 초기 위치에서 시작)
+      partialize: (state) => ({
+        isRunning: state.isRunning,
+        startedAt: state.startedAt,
+        elapsed: state.elapsed,
+        sharedQuest: state.sharedQuest,
+      }),
       // localStorage 사용 — 앱 종료/재실행 후에도 타이머 유지
       // (Date.now() - startedAt 기반이라 백그라운드/앱종료 시간도 자동 반영)
       storage: {

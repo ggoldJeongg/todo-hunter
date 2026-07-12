@@ -44,6 +44,21 @@ export function isCollisionMaskLoaded(): boolean {
   return maskLoaded;
 }
 
+// 걸어갈 수 있는 픽셀 판정.
+// square_mask.png는 순수 흑백 마스크가 아니라 "컬러 배경 위에 흰색 길만 덧칠"한 이미지다.
+// 따라서 빨강 채널만 보면 노란 차양막/과일/하늘 등 밝은 컬러도 통과해버린다.
+// → R·G·B 세 채널이 모두 밝을 때(=덧칠한 흰색)만 walkable로 본다. (가장자리 AA 허용 위해 200)
+const WHITE_MIN = 200;
+function isWhiteAt(index: number): boolean {
+  if (!maskData) return false;
+  return (
+    maskData[index] > WHITE_MIN &&
+    maskData[index + 1] > WHITE_MIN &&
+    maskData[index + 2] > WHITE_MIN &&
+    maskData[index + 3] > 128
+  );
+}
+
 // xPct, yPct: 0~100 (맵 % 좌표)
 export function isWalkable(xPct: number, yPct: number): boolean {
   // 마스크 로딩 전엔 통과 허용 (UX 깨지지 않도록)
@@ -57,7 +72,7 @@ export function isWalkable(xPct: number, yPct: number): boolean {
   }
 
   const index = (py * maskImage.width + px) * 4;
-  return maskData[index] > 128 && maskData[index + 3] > 128;
+  return isWhiteAt(index);
 }
 
 export interface CollisionFootprint {
@@ -93,7 +108,7 @@ export function isFootprintWalkable(
   for (let py = top; py <= bottom; py++) {
     for (let px = left; px <= right; px++) {
       const index = (py * maskImage.width + px) * 4;
-      if (maskData[index] <= 128 || maskData[index + 3] <= 128) return false;
+      if (!isWhiteAt(index)) return false;
     }
   }
 
