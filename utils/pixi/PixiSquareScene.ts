@@ -257,9 +257,12 @@ export class PixiSquareScene {
     await this._buildPlayer();
     await this._buildNpcs();
 
-    // 충돌 마스크 로드 후 NPC 위치를 걸어갈 수 있는 점으로 보정
+    // 충돌 마스크 로드 후 NPC + 플레이어 위치를 걸어갈 수 있는 점으로 보정
     loadCollisionMask(COLLISION_MASK_SRC)
-      .then(() => this._snapNpcPositions())
+      .then(() => {
+        this._snapNpcPositions();
+        this._snapPlayerPosition();
+      })
       .catch((err) => console.error("[Square] 충돌 마스크 로드 실패:", err));
 
     this._startTicker();
@@ -386,6 +389,24 @@ export class PixiSquareScene {
         node.y = this.pctToPxY(snapped.y);
       }
     }
+  }
+
+  // 저장된(persist) 플레이어 위치가 흰 길 밖이면(예: 옛 버그로 상점 위로 걸어간 값)
+  // 가장 가까운 길 위로 끌어와, 첫 스텝부터 막혀 갇히는 것을 방지한다.
+  // 스토어에도 반영해 다음 세션부터 자가 교정되게 한다.
+  private _snapPlayerPosition() {
+    const snapped = findNearestWalkable(this.animPos.x, this.animPos.y);
+    if (snapped.x === this.animPos.x && snapped.y === this.animPos.y) return;
+    this.animPos = { x: snapped.x, y: snapped.y };
+    const px = this.pctToPxX(snapped.x);
+    const py = this.pctToPxY(snapped.y);
+    this.player?.setWorldPosition(px, py);
+    this._updateCamera(px, py);
+    useSquareStore.setState({
+      position: { x: snapped.x, y: snapped.y },
+      targetPosition: null,
+      isWalking: false,
+    });
   }
 
   // ===== 이름표 =====
