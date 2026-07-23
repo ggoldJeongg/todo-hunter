@@ -3,7 +3,6 @@
 import Status from "@/app/play/character/_components/status";
 import styles from "./_components/character.module.css";
 import Character from "./_components/character";
-import FeedbackButton from "./_components/FeedbackButton";
 import StatsTabs from "./_components/StatsTabs";
 import { useUserStore } from "@/utils/stores/userStore";
 import { useRouter, usePathname } from "next/navigation";
@@ -63,7 +62,7 @@ export default function CharacterPage() {
     const [selectedTitle, setSelectedTitle] = useState<SelectedTitle | null>(null);
     const [recentCompleted, setRecentCompleted] = useState<RecentCompletedItem[]>([]);
     const [weather, setWeather] = useState<WeatherInfo | null>(null);
-    
+
     // 장착 칭호 + 최근 완료 퀘스트 + 날씨 fetch
     const fetchExtras = useCallback(async () => {
         try {
@@ -148,146 +147,141 @@ export default function CharacterPage() {
 
     return (
         <div className={styles["cozy-page"]}>
-            {/* 상단 — 좌: 피드백 / 우: 설정 진입 */}
-            <div className={styles["char-logout-area"]}>
-                <FeedbackButton />
+            {/* ===== 상단 헤더 — 설정 (sticky) ===== */}
+            <header className="sticky top-0 z-50 mx-auto flex w-[92%] max-w-[460px] items-center justify-end gap-2 px-[2px] pt-[max(10px,env(safe-area-inset-top,10px))] pb-2">
                 <button
                     type="button"
                     onClick={() => router.push("/settings")}
-                    className="inline-flex cursor-pointer items-center gap-[5px] rounded-none border-2 border-[#FFFDF2] bg-[#4A3F2F] py-[6px] pl-[9px] pr-[11px] text-[13px] font-extrabold text-[#FFFDF2] shadow-[2px_2px_0_0_rgba(0,0,0,0.3)] transition-none [image-rendering:pixelated] hover:bg-[#5A4D38] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                    className="inline-flex cursor-pointer items-center gap-[5px] border-2 border-ink bg-paper py-[6px] pl-[11px] pr-[13px] text-[13px] font-bold text-ink shadow-[2px_2px_0_0_theme(colors.ink)] transition-none [image-rendering:pixelated] hover:bg-[#DED7C8] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
                     aria-label="설정"
                 >
                     <span className="text-[14px] leading-none" aria-hidden="true">⚙</span>
                     설정
                 </button>
-            </div>
+            </header>
 
-            {/* ===== 메인 양피지 패널 — 좌: 캐릭터 카드 / 우: EXP+스탯 ===== */}
-            <div className={styles["parchment-panel"]}>
-                <div className={styles["parchment-content"]}>
-                    {/* 좌측: 캐릭터 → 닉네임 배너 → Lv·칭호 */}
-                    <div className={styles["char-portrait-frame"]}>
-                        <div className={styles["char-portrait-bg"]} style={{ padding: 0 }}>
-                            <Suspense>
-                                <Character direction="down" isWalking={false} />
-                            </Suspense>
-                        </div>
-
-                        {/* 닉네임 배너 (3-슬라이스) */}
-                        <div className={styles["char-name-banner"]}>
-                            <span>{nickname ?? "모험가"}</span>
-                        </div>
-
-                        {/* Lv + 칭호 한 줄 */}
-                        <div className={styles["char-cardmeta"]}>
-                            <span className={styles["char-cardmeta-lv"]}>Lv.{currentLevel}</span>
-                            <span>{selectedTitle?.titleName ?? "아직 칭호 없음"}</span>
-                        </div>
-                    </div>
-
-                    {/* 우측: 라벨 + EXP + 6 스탯 */}
-                    <div className={styles["stats-side"]}>
-                        {/* 캐릭터 정보 라벨 배너 */}
-                        <div className={styles["stats-label-banner"]}>캐릭터 정보</div>
-
-                        <div className={styles["char-exp-row"]}>
-                            <span className={styles["exp-line-text"]}>
-                                EXP {currentExp} / {expToNext}
-                            </span>
-                            <div className={styles["exp-line-track"]}>
-                                <div
-                                    className={styles["exp-line-fill"]}
-                                    style={{ width: `${expPercent}%` }}
-                                />
-                            </div>
-                        </div>
-
+            {/* ===== 캐릭터 카드 + 레벨/정보 패널 ===== */}
+            <section className="mx-auto mt-1 flex w-[92%] max-w-[460px] gap-2">
+                {/* 좌: 초상 · 닉네임 · Lv (단일 카드, 내부 가로 구분선) */}
+                <div className="flex w-[150px] shrink-0 flex-col overflow-hidden pixel-card">
+                    {/* canvas 원본 250px → 표시 크기 명시 */}
+                    <div className="flex h-[160px] items-center justify-center overflow-hidden [&_canvas]:!h-[140px] [&_canvas]:!w-[140px]">
                         <Suspense>
-                            <Status
-                                str={str ?? 0}
-                                int={int ?? 0}
-                                emo={emo ?? 0}
-                                fin={fin ?? 0}
-                                liv={liv ?? 0}
-                                stress={stress}
-                            />
+                            <Character direction="down" isWalking={false} />
                         </Suspense>
                     </div>
-                </div>
-            </div>
-
-            {/* ===== 미니 카드 row: 컨디션 / 날씨 / 성격 ===== */}
-            <div className={styles["mini-card-row"]}>
-                {/* 컨디션 — 의지력 60% + 오늘 활동량 40% */}
-                <div className={styles["mini-card"]}>
-                    <div className={styles["mini-card-title"]}>컨디션</div>
-                    <div className={styles["mini-card-icon"]}>🍀</div>
-                    <div className={styles["mini-card-value"]}>{condition.label}</div>
-                    <div className={styles["mini-card-bar"]}>
-                        <div
-                            className={styles["mini-card-bar-fill"]}
-                            style={{ width: `${condition.value}%` }}
-                        />
-                    </div>
-                    <div className={styles["mini-card-sub"]}>
-                        {condition.sub || `${condition.value}점 / 100점`}
+                    <p className="border-t-2 border-ink px-2 py-[7px] text-center font-galmuri11-bold text-[15px] text-ink">
+                        {nickname ?? "모험가"}
+                    </p>
+                    <div className="border-t-2 border-ink px-2 py-[8px] text-center text-[11px] font-bold leading-snug text-ink break-keep">
+                        {selectedTitle?.titleName ?? "아직 칭호 없음"}
                     </div>
                 </div>
 
-                {/* 오늘의 날씨 — Open-Meteo 실시간 (서울 좌표, 1시간 캐싱) */}
-                <div className={styles["mini-card"]}>
-                    <div className={styles["mini-card-title"]}>
-                        오늘의 날씨
-                        {weather?.temp !== null && weather?.temp !== undefined && (
-                            <span style={{ marginLeft: 4, fontWeight: 600, color: "#6B5C42" }}>
-                                {weather.temp}°
+                {/* 우: 레벨(작게) → 컨디션 → 성격·특성 세로 스택 (왼쪽 카드 높이만큼 채움) */}
+                <div className="flex min-w-0 flex-1 flex-col gap-2">
+                    {/* 레벨 패널 (compact) */}
+                    <div className="pixel-card flex items-center gap-3 px-3 py-2">
+                        <div className="grid h-[46px] w-[46px] shrink-0 place-items-center bg-ink">
+                            <span className="flex flex-col items-center leading-none">
+                                <span className="text-[8px] font-bold tracking-wide text-stone">LV</span>
+                                <span className="font-galmuri11-bold text-[18px] text-paper">{currentLevel}</span>
                             </span>
-                        )}
-                    </div>
-                    <div className={styles["mini-card-icon"]}>{weather?.emoji ?? "🌥️"}</div>
-                    <div className={styles["mini-card-value"]}>{weather?.label ?? "로딩 중..."}</div>
-                    <div className={styles["mini-card-sub"]} style={{ whiteSpace: "pre-line" }}>
-                        {weather?.buff ?? ""}
-                    </div>
-                </div>
-
-                {/* 성격·특성 — derive from stats + 활동량 */}
-                <div className={styles["mini-card"]}>
-                    <div className={styles["mini-card-title"]}>성격·특성</div>
-                    <div className={styles["trait-list"]}>
-                        {traits.length === 0 ? (
-                            <div className={styles["trait-item"]}>
-                                <span className={styles["trait-icon"]} style={{ background: "#E8E0CC" }}>🔒</span>
-                                <span className={`${styles["trait-text"]} ${styles.muted}`}>아직 분석 중...</span>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-[10px] font-bold text-stone">다음 레벨까지</p>
+                            <p className="text-[11px] font-bold tabular-nums text-ink">
+                                EXP {currentExp} / {expToNext}
+                            </p>
+                            <div
+                                className="relative mt-[4px] h-[10px] w-full overflow-hidden bg-ink"
+                                role="meter"
+                                aria-label="경험치"
+                                aria-valuenow={currentExp}
+                                aria-valuemin={0}
+                                aria-valuemax={expToNext}
+                            >
+                                <div className="h-full bg-[#E89BB5]" style={{ width: `${expPercent}%` }} />
                             </div>
-                        ) : (
-                            <>
-                                {traits.map((t) => {
-                                    const d = TRAIT_DISPLAY[t] ?? DEFAULT_TRAIT_DISPLAY;
-                                    return (
-                                        <div key={t} className={styles["trait-item"]}>
-                                            <span className={styles["trait-icon"]} style={{ background: d.bg }}>
-                                                {d.icon}
-                                            </span>
-                                            <span className={styles["trait-text"]}>{t}</span>
-                                        </div>
-                                    );
-                                })}
-                                {/* 잠긴 슬롯 — 다음 특성 잠금 표시 */}
-                                {traits.length < 3 && (
-                                    <div className={styles["trait-item"]}>
-                                        <span className={styles["trait-icon"]} style={{ background: "#E8E0CC" }}>🔒</span>
-                                        <span className={`${styles["trait-text"]} ${styles.muted}`}>????????</span>
-                                    </div>
+                        </div>
+                    </div>
+
+                    {/* 컨디션 | 성격·특성 가로 2열 (남는 높이 채움) */}
+                    <div className="flex flex-1 gap-2">
+                        {/* 컨디션 — 가운데 정렬 (제목 / 이모지 / 값 / 바 / 점수) */}
+                        <div className="pixel-card flex flex-1 flex-col items-center justify-center px-2 py-3 text-center">
+                            <p className="text-[11px] font-bold text-ink">컨디션</p>
+                            <span className="mt-2 text-[24px] leading-none" aria-hidden="true">🍀</span>
+                            <p className="mt-2 font-galmuri11-bold text-[15px] text-ink">{condition.label}</p>
+                            <div
+                                className="mt-2 h-[8px] w-full overflow-hidden bg-ink"
+                                role="meter"
+                                aria-label="컨디션"
+                                aria-valuenow={condition.value}
+                                aria-valuemin={0}
+                                aria-valuemax={100}
+                            >
+                                <div className="h-full bg-[#6AAF6A]" style={{ width: `${condition.value}%` }} />
+                            </div>
+                            <p className="mt-1 text-[9px] tabular-nums text-stone">{condition.value}점 / 100점</p>
+                        </div>
+
+                        {/* 성격·특성 — 제목 가운데, 목록은 왼쪽 정렬 블록을 중앙 배치 */}
+                        <div className="pixel-card flex flex-1 flex-col items-center justify-center px-2 py-3">
+                            <p className="text-center text-[11px] font-bold text-ink">성격·특성</p>
+                            <ul className="mx-auto mt-2 flex w-fit flex-col gap-[6px]">
+                                {traits.length === 0 ? (
+                                    <li className="flex items-center gap-[5px]">
+                                        <span className="grid h-[16px] w-[16px] shrink-0 place-items-center bg-stone/30 text-[9px]">🔒</span>
+                                        <span className="truncate text-[10px] text-stone">분석 중</span>
+                                    </li>
+                                ) : (
+                                    <>
+                                        {traits.map((t) => {
+                                            const d = TRAIT_DISPLAY[t] ?? DEFAULT_TRAIT_DISPLAY;
+                                            return (
+                                                <li key={t} className="flex items-center gap-[5px]">
+                                                    <span
+                                                        className="grid h-[16px] w-[16px] shrink-0 place-items-center text-[9px]"
+                                                        style={{ background: d.bg }}
+                                                    >
+                                                        {d.icon}
+                                                    </span>
+                                                    <span className="truncate text-[10px] font-bold text-ink">{t}</span>
+                                                </li>
+                                            );
+                                        })}
+                                        {traits.length < 3 && (
+                                            <li className="flex items-center gap-[5px]">
+                                                <span className="grid h-[16px] w-[16px] shrink-0 place-items-center bg-stone/30 text-[9px]">🔒</span>
+                                                <span className="truncate text-[10px] text-stone">??????</span>
+                                            </li>
+                                        )}
+                                    </>
                                 )}
-                            </>
-                        )}
+                            </ul>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
+            {/* ===== 스탯 패널 ===== */}
+            <section className="mx-auto mt-2 w-[92%] max-w-[460px] pixel-card p-3">
+                <Suspense>
+                    <Status
+                        str={str ?? 0}
+                        int={int ?? 0}
+                        emo={emo ?? 0}
+                        fin={fin ?? 0}
+                        liv={liv ?? 0}
+                        stress={stress}
+                    />
+                </Suspense>
+            </section>
 
-            {/* ===== 모험 통계 — 생활 리듬 / 성장 기록 /성장정원 탭 = */}
-            <StatsTabs recentCompleted={recentCompleted} />
+            {/* ===== 모험 통계 — 생활 리듬 / 성장 기록 / 성장정원 탭 ===== */}
+            <div className="mt-2">
+                <StatsTabs recentCompleted={recentCompleted} />
+            </div>
 
             {/* 하단 네비바에 가리지 않도록 spacer */}
             <div className={styles["bottom-nav-spacer"]} />
