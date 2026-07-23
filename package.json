@@ -13,7 +13,10 @@
     "test:watch": "vitest",
     "audit": "npm audit --audit-level=high",
     "audit:fix": "npm audit fix",
-    "metrics": "node scripts/harness-metrics.mjs"
+    "metrics": "node scripts/harness-metrics.mjs",
+    "icons": "node scripts/generate-icons.mjs",
+    "frames": "node scripts/recolor-frames.mjs",
+    "icons:strip": "node scripts/strip-icon-bg.mjs"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",
