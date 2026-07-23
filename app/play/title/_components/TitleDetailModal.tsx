@@ -36,15 +36,13 @@ export default function TitleDetailModal({
   return (
     <Dialog open={safeOpen} onOpenChange={onOpenChange}>
       <DialogPortal>
-        <DialogOverlay style={{ background: "rgba(26,16,8,0.72)" }} />
+        <DialogOverlay style={{ background: "rgba(21,20,19,0.72)" }} />
         <DialogPrimitive.Content
           onOpenAutoFocus={(e) => e.preventDefault()}
-          className="font-galmuri9 fixed left-1/2 top-1/2 z-50 w-[calc(100%-36px)] -translate-x-1/2 -translate-y-1/2 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+          className="font-galmuri9 pixel-card fixed left-1/2 top-1/2 z-50 w-[calc(100%-36px)] -translate-x-1/2 -translate-y-1/2 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
           style={{
             maxWidth: 320,
-            aspectRatio: "1151 / 1437",
-            background: "url('/images/backgrounds/titlebook-background_02.png') center/100% 100% no-repeat",
-            padding: "32px 36px 28px",
+            padding: "24px 22px 20px",
           }}
         >
           <DialogTitle className="sr-only">{unlocked ? (title?.name ?? "") : "미해금 칭호"}</DialogTitle>
@@ -52,7 +50,7 @@ export default function TitleDetailModal({
           <DialogPrimitive.Close
             aria-label="닫기"
             className="font-galmuri11-bold absolute cursor-pointer"
-            style={{ top: 36, right: 42, fontSize: 14, color: "#3a2a18", background: "none", border: 0 }}
+            style={{ top: 36, right: 42, fontSize: 14, color: "#151413", background: "none", border: 0 }}
           >
             ✕
           </DialogPrimitive.Close>
@@ -63,9 +61,9 @@ export default function TitleDetailModal({
             style={{
               width: 116, height: 116, margin: "4px auto 8px",
               background: unlocked
-                ? `radial-gradient(circle, ${stat.color}33 0%, transparent 70%), rgba(255,247,224,0.6)`
-                : "rgba(40,28,18,0.18)",
-              border: `2px solid ${unlocked ? stat.color : "#7a6850"}`,
+                ? `radial-gradient(circle, ${stat.color}33 0%, transparent 70%), rgba(233,227,215,0.6)`
+                : "rgba(21,20,19,0.14)",
+              border: `2px solid ${unlocked ? stat.color : "#B0AAA1"}`,
               boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.3)",
             }}
           >
@@ -104,7 +102,7 @@ export default function TitleDetailModal({
           {/* 칭호명 */}
           <div
             className="font-galmuri11-bold text-center"
-            style={{ fontSize: 16, color: "#2a1d10", marginBottom: 4 }}
+            style={{ fontSize: 16, color: "#151413", marginBottom: 4 }}
           >
             {unlocked ? (title?.name ?? "") : "??? 미해금 칭호"}
           </div>
@@ -115,14 +113,14 @@ export default function TitleDetailModal({
               className="font-galmuri11-bold"
               style={{
                 fontSize: 9, background: stat.color, color: "#fff",
-                padding: "2px 7px", letterSpacing: 1, border: "1.5px solid #2a1d10",
+                padding: "2px 7px", letterSpacing: 1, border: "1.5px solid #151413",
               }}
             >
               {stat.short}
             </span>
             <span
               className="font-galmuri11-bold"
-              style={{ fontSize: 9, background: "#2a1d10", color: "#ffd96b", padding: "2px 7px" }}
+              style={{ fontSize: 9, background: "#151413", color: "#ffd96b", padding: "2px 7px" }}
             >
               티어 {tierIdx}
             </span>
@@ -130,8 +128,8 @@ export default function TitleDetailModal({
               <span
                 className="font-galmuri11-bold"
                 style={{
-                  fontSize: 9, background: "#fff7e0", color: "#3a2a18",
-                  padding: "2px 7px", border: "1.5px solid #3a2a18",
+                  fontSize: 9, background: "#E9E3D7", color: "#151413",
+                  padding: "2px 7px", border: "1.5px solid #151413",
                 }}
               >
                 ×{title?.count}
@@ -143,9 +141,9 @@ export default function TitleDetailModal({
           <div
             className="text-center"
             style={{
-              fontSize: 11, color: "#3a2a18",
+              fontSize: 11, color: "#151413",
               background: "rgba(255,255,255,0.5)",
-              border: "1.5px dashed #b59a6a",
+              border: "1.5px dashed #B0AAA1",
               padding: "8px 10px", marginBottom: 10, lineHeight: 1.5,
             }}
           >
@@ -156,7 +154,7 @@ export default function TitleDetailModal({
           <div style={{ marginBottom: 12 }}>
             <div
               className="font-galmuri11-bold flex justify-between"
-              style={{ fontSize: 10, color: "#5a4a38", marginBottom: 3 }}
+              style={{ fontSize: 10, color: "#B0AAA1", marginBottom: 3 }}
             >
               <span>{stat.label} 진행도</span>
               <span style={{ color: stat.color }}>
@@ -165,7 +163,7 @@ export default function TitleDetailModal({
             </div>
             <div
               className="relative"
-              style={{ height: 9, background: "rgba(58,42,24,0.18)", border: "1.5px solid #3a2a18" }}
+              style={{ height: 9, background: "rgba(21,20,19,0.14)", border: "1.5px solid #151413" }}
             >
               <div
                 style={{
@@ -173,7 +171,7 @@ export default function TitleDetailModal({
                   height: "100%",
                   background: unlocked
                     ? `repeating-linear-gradient(90deg, ${stat.color} 0 4px, ${stat.color}cc 4px 8px)`
-                    : "#b59a6a",
+                    : "#B0AAA1",
                 }}
               />
             </div>
@@ -190,13 +188,13 @@ export default function TitleDetailModal({
               fontSize: 12,
               cursor: unlocked ? "pointer" : "not-allowed",
               background: !unlocked
-                ? "rgba(58,42,24,0.18)"
+                ? "rgba(21,20,19,0.14)"
                 : equipped
-                  ? "#fff7e0"
+                  ? "#E9E3D7"
                   : stat.color,
-              color: !unlocked ? "#7a6850" : equipped ? "#3a2a18" : "#fff",
-              border: `2px solid ${!unlocked ? "#7a6850" : "#3a2a18"}`,
-              boxShadow: unlocked ? "0 3px 0 #3a2a18" : "none",
+              color: !unlocked ? "#B0AAA1" : equipped ? "#151413" : "#fff",
+              border: `2px solid ${!unlocked ? "#B0AAA1" : "#151413"}`,
+              boxShadow: unlocked ? "0 3px 0 #151413" : "none",
               letterSpacing: 1,
             }}
           >

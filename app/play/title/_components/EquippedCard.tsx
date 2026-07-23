@@ -36,7 +36,7 @@ export default function EquippedCard({ equipped, onClick }: Props) {
         className="font-galmuri11-bold absolute"
         style={{
           top: -10, left: "50%", transform: "translateX(-50%)",
-          background: "#3a2a18", color: "#ffd96b",
+          background: "#151413", color: "#ffd96b",
           fontSize: 12, padding: "2px 10px",
           letterSpacing: 1.5,
           whiteSpace: "nowrap",
@@ -50,9 +50,9 @@ export default function EquippedCard({ equipped, onClick }: Props) {
         style={{
           width: 52, height: 52,
           background: equipped && stat
-            ? `radial-gradient(circle, ${stat.color}55 0%, rgba(255,247,224,0.4) 70%)`
-            : "rgba(58,42,24,0.18)",
-          border: `2px solid ${equipped && stat ? stat.color : "#7a6850"}`,
+            ? `radial-gradient(circle, ${stat.color}55 0%, rgba(233,227,215,0.4) 70%)`
+            : "rgba(21,20,19,0.14)",
+          border: `2px solid ${equipped && stat ? stat.color : "#B0AAA1"}`,
         }}
       >
         {equipped ? (
@@ -65,18 +65,18 @@ export default function EquippedCard({ equipped, onClick }: Props) {
             unoptimized
           />
         ) : (
-          <span style={{ fontSize: 22, color: "#7a6850" }}>?</span>
+          <span style={{ fontSize: 22, color: "#B0AAA1" }}>?</span>
         )}
       </div>
 
       <div className="min-w-0 text-center">
         <div
           className="font-galmuri11-bold"
-          style={{ fontSize: 14, color: "#3a2a18", lineHeight: 1.1 }}
+          style={{ fontSize: 14, color: "#151413", lineHeight: 1.1 }}
         >
           {equipped ? equipped.name : "칭호 없음"}
         </div>
-        <div style={{ fontSize: 9.5, color: "#5a4a38", marginTop: 3, lineHeight: 1.35 }}>
+        <div style={{ fontSize: 9.5, color: "#B0AAA1", marginTop: 3, lineHeight: 1.35 }}>
           {equipped ? equipped.description : "원하는 칭호를 선택하세요"}
         </div>
       </div>
