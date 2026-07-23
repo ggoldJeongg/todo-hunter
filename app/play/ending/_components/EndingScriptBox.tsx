@@ -19,25 +19,25 @@ interface EndingScriptBoxProps {
 const TYPING_SPEED = 40; // ms per character
 const PORTRAIT_SIZE = 84;
 
-// 화자별 UI 설정
+// 화자별 UI 설정 — 어두운 씬 위 크림 pixel-card 대화창 (팔레트 통일)
 const SPEAKER_CONFIG = {
   narrator: {
     label: "",
     align: "center" as const,
-    bg: "bg-black/60",
-    text: "text-white/80 italic",
+    bg: "pixel-card",
+    text: "text-ink italic",
   },
   player: {
     label: "나",
     align: "right" as const,
-    bg: "bg-blue-900/60",
-    text: "text-blue-100",
+    bg: "pixel-card",
+    text: "text-ink",
   },
   npc: {
     label: "???",
     align: "left" as const,
-    bg: "bg-amber-900/60",
-    text: "text-amber-100",
+    bg: "pixel-card",
+    text: "text-ink",
   },
 };
 
@@ -140,7 +140,7 @@ const EndingScriptBox = ({
           {/* 캐릭터 portrait — speaker 에 따라 좌/우 배치 */}
           {speaker === "player" && (
             <div className="absolute -top-2 left-2 z-10">
-              <div className="bg-blue-950/90 border-2 border-blue-400/60 rounded-md p-1 shadow-lg">
+              <div className="bg-paper border-2 border-ink p-1">
                 <EndingPortrait
                   outfitId={playerOutfitId}
                   hairId={playerHairId}
@@ -153,7 +153,7 @@ const EndingScriptBox = ({
           )}
           {speaker === "npc" && (
             <div className="absolute -top-2 right-2 z-10">
-              <div className="bg-amber-950/90 border-2 border-amber-400/60 rounded-md p-1 shadow-lg">
+              <div className="bg-paper border-2 border-ink p-1">
                 <EndingPortrait
                   outfitId={npc.outfitId}
                   hairId={npc.hairId}
@@ -167,7 +167,7 @@ const EndingScriptBox = ({
 
           {/* 대사 박스 */}
           <div
-            className={`relative ${config.bg} rounded-lg p-4 cursor-pointer ${
+            className={`relative ${config.bg} p-4 cursor-pointer ${
               speaker === "player"
                 ? "pl-[112px] min-h-[110px]"
                 : speaker === "npc"
@@ -186,7 +186,7 @@ const EndingScriptBox = ({
                     : config.align === "right"
                     ? "right-3"
                     : "left-3"
-                } text-[11px] font-bold px-2 py-0.5 rounded bg-black/70 text-white`}
+                } text-[11px] font-bold px-2 py-0.5 bg-ink text-paper`}
               >
                 {speakerLabel}
               </span>
@@ -204,13 +204,21 @@ const EndingScriptBox = ({
 
             {/* 다음 표시 */}
             {isTypingDone && !isLastLine && (
-              <span className="absolute bottom-2 right-3 text-[10px] text-white/50 animate-bounce">
+              <span
+                className={`absolute bottom-2 text-[10px] text-ink/50 animate-bounce ${
+                  speaker === "npc" ? "left-3" : "right-3"
+                }`}
+              >
                 ▼ 탭하여 계속
               </span>
             )}
 
             {isTypingDone && isLastLine && (
-              <span className="absolute bottom-2 right-3 text-[10px] text-amber-400/70 animate-pulse">
+              <span
+                className={`absolute bottom-2 text-[10px] text-brand animate-pulse ${
+                  speaker === "npc" ? "left-3" : "right-3"
+                }`}
+              >
                 ▼ 탭하여 종료
               </span>
             )}

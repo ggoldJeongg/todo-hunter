@@ -70,49 +70,25 @@ const HudBox = ({
 };
 
 interface HudOverlayProps {
-  mapName: string;
+  /** 맵 이름 — 두루마리 배너 제거로 현재 미표시 (FightField 가 계속 전달) */
+  mapName?: string;
   monsterName: string;
 }
 
-const HudOverlay = ({ mapName, monsterName }: HudOverlayProps) => {
+const HudOverlay = ({ monsterName }: HudOverlayProps) => {
   const { isDefeated, killCount, monsterHp, monsterMaxHp } = useQuestStore();
   const { nickname, level, willpower, maxWillpower } = useUserStore();
 
   return (
     <div className="absolute inset-0 pointer-events-none z-20">
-      {/* 맵 이름 + 처치 카운트 — 상단 중앙 (네임태그 이미지 배경) */}
-      <div className="absolute top-1 left-1/2 -translate-x-1/2 flex items-center gap-2">
-        <div
-          className="flex items-center justify-center"
-          style={{
-            // map_title.png는 가운데 가로 띠(가로 11.4~88.3%·세로 34.2~59.1%)에만 두루마리가
-            // 있고 위아래는 투명 여백 → 그 배너 영역만 잘라(crop) 라벨에 꽉 채운다.
-            // size/position 값은 sprite crop 공식: size=100/region, pos=start/(1-region).
-            // 컨테이너 비율(150:32≈4.69)을 배너 영역 비율(≈4.63)에 맞춰 왜곡 없이 표시.
-            backgroundImage: "url('/images/backgrounds/map_title.png')",
-            backgroundSize: "130.2% 402%",
-            backgroundPosition: "49.1% 45.5%",
-            backgroundRepeat: "no-repeat",
-            width: "150px",
-            height: "32px",
-          }}
-        >
-          <span
-            className="text-[10px] font-bold tracking-widest text-black uppercase"
-            style={{
-              fontFamily: "Galmuri11Bold, monospace",
-              transform: "translateY(5px)", // 양피지 중앙에 맞춰 살짝 아래로
-            }}
-          >
-            {mapName}
-          </span>
-        </div>
-        {killCount > 0 && (
+      {/* 처치 카운트 — 상단 중앙 (맵 이름 두루마리는 프레임과 겹쳐 제거) */}
+      {killCount > 0 && (
+        <div className="absolute top-1 left-1/2 -translate-x-1/2">
           <span className="text-[9px] font-bold text-yellow-300/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
             💀 {killCount}
           </span>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* HP 바 — 상단 좌우 */}
       <div className="absolute top-5 left-0 right-0 flex justify-between px-3">
