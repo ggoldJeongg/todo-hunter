@@ -64,6 +64,15 @@ textarea,
     --success-color-blue: #2049BD;
     --warning-color-yellow: #D5B946;
     --current-color-green: #3E8B75;
+    /* 브랜드 레드 (버튼·탭·활성 상태 등 UI 크롬 전용 단일 소스) */
+    --brand-red: #C84B3A;
+    --brand-red-active: #a33a2c;
+    /* 도트 픽셀 UI 3색 팔레트 — 배경·테두리·글자 단일 소스.
+       Tailwind 의 bg-paper / border-stone / text-ink 가 이 값을 참조하므로,
+       색을 바꾸려면 여기만 고치면 유틸리티와 CSS 양쪽에 동시에 반영된다. */
+    --pixel-paper: #E9E3D7;
+    --pixel-stone: #B0AAA1;
+    --pixel-ink: #151413;
   }
   .dark {
     --background: 240 10% 3.9%;
@@ -248,13 +257,14 @@ textarea,
   }
   
   .is-rounded {
+    /* 보더 픽셀 축소: 8x8/4px → 6x6/3px (padding·margin·색은 유지) */
     border-style: solid;
-    border-width: 4px;
-    border-image-slice:3;
-    border-image-width:3;
+    border-width: 3px;
+    border-image-slice:2;
+    border-image-width:2;
     border-image-repeat:stretch;
-    border-image-source:url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(33,37,41)" /></svg>');
-    border-image-outset:2;
+    border-image-source:url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="6" height="6" xmlns="http://www.w3.org/2000/svg"><path d="M2 0 h2 v1 h-2 z M1 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M0 2 h1 v2 h-1 z M5 2 h1 v2 h-1 z M1 4 h1 v1 h-1 z M4 4 h1 v1 h-1 z M2 5 h2 v1 h-2 z" fill="rgb(33,37,41)" /></svg>');
+    border-image-outset:1;
     padding:1rem 1.5rem;
     margin:4px;
   }
@@ -330,17 +340,6 @@ textarea,
     align-items: center;
     flex-direction: column;
     justify-content: center;
-  .gap-box .input-box:first-child {
-    margin-top: 0;
-  }
-  .gap-box .input-box + .input-box {
-    margin-top: 1rem;
-  }
-  .gap-box button:first-child {
-    margin-top: 0;
-  }
-  .gap-box button + button {
-    margin-top: 1.4rem;
   }
 
   .gap-box .input-box:first-child {
@@ -355,7 +354,6 @@ textarea,
   .gap-box button + button {
     margin-top: 1.4rem;
   }
-}
 
 @keyframes loading-spin {
   0% {
@@ -683,24 +681,13 @@ textarea,
   }
 }
 
-@keyframes shake {
-  0% { transform: translate(-50%, -50%) translateX(0) scaleX(-1); filter: brightness(0);}
-  /* 25% { filter: hue-rotate(0deg) saturate(1000%) brightness(1); } */
-  25% {filter: brightness(1);}
-  50% { transform: translate(-50%, -50%) translateX(5px) scaleX(-1);}
-  75% { filter: hue-rotate(0deg) saturate(1000%) brightness(1);}
-  /* 75% {filter: brightness(1);} */
-  100% { transform: translate(-50%, -50%) translateX(0) scaleX(-1); filter: brightness(0);}
-}
 }
 
 @keyframes shake {
   0% { transform: translate(-50%, -50%) translateX(0) scaleX(-1); filter: brightness(0);}
-  /* 25% { filter: hue-rotate(0deg) saturate(1000%) brightness(1); } */
   25% {filter: brightness(1);}
   50% { transform: translate(-50%, -50%) translateX(5px) scaleX(-1);}
   75% { filter: hue-rotate(0deg) saturate(1000%) brightness(1);}
-  /* 75% {filter: brightness(1);} */
   100% { transform: translate(-50%, -50%) translateX(0) scaleX(-1); filter: brightness(0);}
 }
 
@@ -819,4 +806,68 @@ textarea,
 /* 바깥 달 날짜 */
 .pixel-calendar .rdp-outside .pixel-cal-day {
   opacity: 0.2;
+}
+
+/* ============================================
+   Pixel Card — 라운드 카드 + 하드 픽셀 그림자
+   흑백 브루탈리즘 레퍼런스의 "떠 보이는 카드" 를 밝은 3색 팔레트로 옮긴 것.
+   같은 paper 배경이라도 ink 테두리 + offset 그림자로 카드가 떠 보인다.
+   ============================================ */
+@layer components {
+  .pixel-card {
+    /* 게임보이 테트리스 창틀 톤 — 3톤 이중 라인.
+       외곽선(ink) 2px + 중간톤 띠(stone) 2px + 안쪽선(ink) 2px.
+       가운데를 배경색이 아니라 stone 으로 채워 "창틀" 입체감을 낸다. */
+    background: var(--pixel-paper);
+    border: 2px solid var(--pixel-ink);
+    box-shadow:
+      inset 0 0 0 2px var(--pixel-stone),
+      inset 0 0 0 4px var(--pixel-ink);
+    image-rendering: pixelated;
+  }
+}
+
+/* ============================================
+   Pixel Panel — 나인슬라이스 프레임 (3색 팔레트)
+   border-image 는 Tailwind 유틸리티가 없어서 컴포넌트 클래스로 둔다.
+   나머지 스타일(배경·여백·타이포)은 전부 Tailwind 로 처리할 것.
+   에셋은 npm run frames 로 생성한 -3tone 버전 사용.
+   ============================================ */
+@layer components {
+  /* 픽셀 콘솔 게임 UI 프레임 — 이미지(나인슬라이스) 없이 순수 CSS.
+     네 귀퉁이를 계단식으로 깎은(notched) 레트로 창 테두리.
+     구조: 바깥 ink 레이어(테두리) 위에 --bw 만큼 안쪽으로 들어간 paper 채움.
+     둘 다 같은 8각 clip-path 를 써서 모서리가 정확히 겹쳐 깎인다.
+     --bw(테두리 두께) / --nc(모서리 깎임 크기) 로 조절. */
+  .pixel-frame {
+    --bw: 4px;
+    --nc: 8px;
+    position: relative;
+    background: var(--pixel-ink);
+    clip-path: polygon(
+      var(--nc) 0, calc(100% - var(--nc)) 0,
+      100% var(--nc), 100% calc(100% - var(--nc)),
+      calc(100% - var(--nc)) 100%, var(--nc) 100%,
+      0 calc(100% - var(--nc)), 0 var(--nc)
+    );
+    image-rendering: pixelated;
+  }
+  .pixel-frame::before {
+    content: "";
+    position: absolute;
+    inset: var(--bw);
+    background: var(--pixel-paper);
+    /* 안쪽 채움도 같은 비율로 깎아 테두리 폭이 모서리에서도 일정하게 */
+    clip-path: polygon(
+      calc(var(--nc) - var(--bw)) 0, calc(100% - var(--nc) + var(--bw)) 0,
+      100% calc(var(--nc) - var(--bw)), 100% calc(100% - var(--nc) + var(--bw)),
+      calc(100% - var(--nc) + var(--bw)) 100%, calc(var(--nc) - var(--bw)) 100%,
+      0 calc(100% - var(--nc) + var(--bw)), 0 calc(var(--nc) - var(--bw))
+    );
+  }
+  /* 프레임 내용은 채움 위로 올린다 (positioned ::before 가 static 자식을 덮지 않도록) */
+  .pixel-frame > * {
+    position: relative;
+    z-index: 1;
+  }
 }

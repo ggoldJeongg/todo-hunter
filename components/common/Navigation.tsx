@@ -165,7 +165,7 @@ const Navigation: React.FC<NavigationProps> = ({
                     className="
                       absolute -top-3 left-1/2 -translate-x-1/2 z-10
                       whitespace-nowrap pointer-events-none
-                      bg-[#C84B3A] text-white
+                      bg-brand text-white
                       text-[9px] font-extrabold tracking-wide
                       px-2 py-0.5 rounded-full
                       border-2 border-white
@@ -179,7 +179,7 @@ const Navigation: React.FC<NavigationProps> = ({
                         absolute -bottom-[5px] left-1/2 -translate-x-1/2
                         w-0 h-0
                         border-l-[5px] border-r-[5px] border-t-[5px]
-                        border-l-transparent border-r-transparent border-t-[#C84B3A]
+                        border-l-transparent border-r-transparent border-t-brand
                       "
                     />
                   </span>
