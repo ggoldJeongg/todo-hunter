@@ -42,30 +42,25 @@ export default function DeleteAccountPage() {
 
   return (
     <div
-      className="flex min-h-screen flex-col overflow-hidden px-5 py-6 text-[#4A3F2F]"
-      style={{
-        backgroundImage: "url('/images/backgrounds/bg_01.png')",
-        backgroundSize: "100% 100%",
-        backgroundRepeat: "no-repeat",
-      }}
+      className="flex min-h-screen flex-col overflow-hidden bg-paper px-5 py-6 text-[#4A3F2F]"
     >
       <div className="mx-auto flex w-full max-w-[520px] items-center pb-4">
         <button
           type="button"
           onClick={() => router.back()}
-          className="text-2xl text-white"
+          className="text-2xl text-ink"
           aria-label="뒤로가기"
         >
           ←
         </button>
-        <h1 className="flex-1 pr-6 text-center font-galmuri11-bold text-xl text-white">회원 탈퇴</h1>
+        <h1 className="flex-1 pr-6 text-center font-galmuri11-bold text-xl text-ink">회원 탈퇴</h1>
       </div>
 
       <form
         onSubmit={handleSubmit}
         className="mx-auto w-full max-w-[520px] border-[3px] border-[#4A3F2F] bg-[#fffdf2] p-5 text-[13px] leading-6 shadow-[4px_4px_0_#c9b178]"
       >
-        <h2 className="mb-3 text-[17px] font-bold text-[#C84B3A]">탈퇴 전 꼭 확인해주세요</h2>
+        <h2 className="mb-3 text-[17px] font-bold text-brand">탈퇴 전 꼭 확인해주세요</h2>
         <ul className="mb-5 list-disc space-y-2 pl-5">
           <li>캐릭터, 스탯, 퀘스트, 완료 기록, 칭호, 엔딩 기록이 모두 삭제됩니다.</li>
           <li>삭제는 일괄 처리되며 실패 시 일부 데이터만 삭제된 상태로 남지 않습니다.</li>
@@ -94,7 +89,7 @@ export default function DeleteAccountPage() {
           />
         </label>
 
-        {error && <p className="mb-4 border-2 border-[#C84B3A] bg-[#FDE9E6] p-3 text-[#C84B3A]">{error}</p>}
+        {error && <p className="mb-4 border-2 border-brand bg-[#FDE9E6] p-3 text-brand">{error}</p>}
 
         <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
           <Button type="button" size="M" state="outline" onClick={() => router.back()} disabled={isSubmitting}>

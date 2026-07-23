@@ -7,22 +7,17 @@ export default function TermsPage() {
 
   return (
     <div
-      className="flex flex-col min-h-screen overflow-hidden"
-      style={{
-        backgroundImage: "url('/images/backgrounds/bg_01.png')",
-        backgroundSize: "100% 100%",
-        backgroundRepeat: "no-repeat",
-      }}
+      className="flex flex-col min-h-screen overflow-hidden bg-paper"
     >
       <div className="flex items-center px-4 pt-6 pb-4">
         <button
           onClick={() => router.back()}
-          className="text-white text-2xl cursor-pointer"
+          className="text-ink text-2xl cursor-pointer"
           aria-label="뒤로가기"
         >
           ←
         </button>
-        <h1 className="flex-1 text-center text-xl font-galmuri11-bold text-white mr-6">
+        <h1 className="flex-1 text-center text-xl font-galmuri11-bold text-ink mr-6">
           이용약관
         </h1>
       </div>
