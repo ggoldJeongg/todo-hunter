@@ -137,27 +137,26 @@ export default function StatsTabs({ recentCompleted }: StatsTabsProps) {
                     {/* 패널 내부 상단 — 세그먼트형 탭 */}
                     <Tabs.List className={styles["stats-tablist"]} aria-label="통계 탭">
                         <Tabs.Trigger value="rhythm" className={styles["stats-tab"]}>
-                            🕐 생활 리듬
+                            생활 리듬
                         </Tabs.Trigger>
                         <Tabs.Trigger value="growth" className={styles["stats-tab"]}>
-                            📜 성장 기록
+                            성장 기록
                         </Tabs.Trigger>
                         <Tabs.Trigger value="grass" className={styles["stats-tab"]}>
-                            🌱 성장정원
+                            성장정원
                         </Tabs.Trigger>
                     </Tabs.List>
 
                     {/* ── 1. 생활 리듬 시계 ── */}
                     <Tabs.Content value="rhythm" className={styles["stats-tabpanel"]}>
-                        <h3 className={styles["stats-section-title"]}>⏰ 생활 리듬 시계</h3>
                         <p className={styles["stats-section-sub"]}>
-                            완료한 할일을 시간대·카테고리별로 — 24시간 분포(최근 180일).
+                            하루동안 완료한 할일을 시간대·카테고리별로 확인해요.
                         </p>
 
                         {rhythmTotal === 0 ? (
                             <div
                                 className={styles["growth-item"]}
-                                style={{ justifyContent: "center", color: "#8A7D6B", marginTop: 8 }}
+                                style={{ justifyContent: "center", color: "var(--pixel-stone)", marginTop: 8 }}
                             >
                                 <span>아직 완료 기록이 없어요. 퀘스트를 완료하면 리듬이 채워져요.</span>
                             </div>
@@ -176,9 +175,9 @@ export default function StatsTabs({ recentCompleted }: StatsTabsProps) {
                                             cy={CY}
                                             r={OUTER + 14}
                                             fill="none"
-                                            stroke="#C8A04E"
+                                            stroke="var(--pixel-ink)"
                                             strokeWidth={1.5}
-                                            opacity={0.6}
+                                            opacity={0.25}
                                         />
                                         {/* 시(時)마다 카테고리별로 누적된 스포크 */}
                                         {spokes.flatMap((s) =>
@@ -198,7 +197,7 @@ export default function StatsTabs({ recentCompleted }: StatsTabsProps) {
                                             ))
                                         )}
                                         {/* 가운데 원 */}
-                                        <circle cx={CX} cy={CY} r={INNER} fill="#4A3F2F" />
+                                        <circle cx={CX} cy={CY} r={INNER} fill="var(--pixel-ink)" />
                                         <text
                                             x={CX}
                                             y={CY + 5}
@@ -234,7 +233,7 @@ export default function StatsTabs({ recentCompleted }: StatsTabsProps) {
                                                 gap: 4,
                                                 fontSize: 11,
                                                 fontWeight: 700,
-                                                color: "#6B5C42",
+                                                color: "var(--pixel-stone)",
                                             }}
                                         >
                                             <span
@@ -255,22 +254,18 @@ export default function StatsTabs({ recentCompleted }: StatsTabsProps) {
                                     {peakEmoji} {peakLabel}{" "}
                                     <span className={styles["rhythm-peak-hl"]}>(피크 {peakHour}시)</span>
                                 </div>
-                                <p className={styles["stats-panel-desc"]}>
-                                    바깥쪽으로 길수록 그 시간대에 많이 완료 · 색은 카테고리
-                                </p>
                             </>
                         )}
                     </Tabs.Content>
 
                     {/* ── 2. 성장 기록 ── */}
                     <Tabs.Content value="growth" className={styles["stats-tabpanel"]}>
-                        <h3 className={styles["stats-section-title"]}>📜 성장 기록</h3>
-                        <p className={styles["stats-section-sub"]}>최근 완료한 퀘스트와 능력치 변화.</p>
+                        <p className={styles["stats-section-sub"]}>최근 완료한 퀘스트를 순서대로 확인해요.</p>
                         <div className={styles["growth-list"]}>
                             {recentCompleted.length === 0 ? (
                                 <div
                                     className={styles["growth-item"]}
-                                    style={{ justifyContent: "center", color: "#8A7D6B" }}
+                                    style={{ justifyContent: "center", color: "var(--pixel-stone)" }}
                                 >
                                     <span>아직 완료한 퀘스트가 없어요.</span>
                                 </div>

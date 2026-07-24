@@ -70,14 +70,14 @@ const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hide
   return (
     <div className="pt-0">
       {!hideHeader && (
-        <h2 className="p-3 w-fit bg-black text-white font-bold">
+        <h2 className="p-3 w-fit bg-ink text-paper font-bold">
           주간 퀘스트 ({quests.filter((q) => q.isWeekly && q.completed).length}/
           {quests.filter((q) => q.isWeekly).length})
         </h2>
       )}
 
       {loading ? (
-        <p className="text-center text-gray-500">로딩 중...</p>
+        <p className="text-center text-stone">로딩 중...</p>
       ) : error ? (
         <p className="text-center text-red-500">{error}</p>
       ) : (
@@ -92,7 +92,7 @@ const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hide
             return (
               <div
                 key={id}
-                className={`relative flex flex-wrap items-center gap-3 is-rounded p-2.5 ${completed ? "opacity-60 bg-gray-100" : "bg-white"}`}
+                className={`relative flex flex-wrap items-center gap-3 pixel-card p-2.5 ${completed ? "opacity-60" : ""}`}
               >
                 {/* 완료 시 DEFEATED 띠 (카드 가운데 가로로, 살짝 회전) */}
                 {completed && (
@@ -135,7 +135,7 @@ const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hide
 
                 <div className="flex-1 min-w-0">
                   <span className="text-sm line-clamp-2 break-all block">{name}</span>
-                  <p className="text-xs text-gray-500 flex flex-wrap items-center gap-x-1.5">
+                  <p className="text-xs text-stone flex flex-wrap items-center gap-x-1.5">
                     {streak !== undefined && streak > 0 && (
                       <span className="text-orange-500 font-bold">🔥 {streak}주 연속</span>
                     )}
@@ -152,7 +152,7 @@ const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hide
 
                 {hasSubTasks && (
                   <button
-                    className="shrink-0 cursor-pointer text-xs text-gray-500 px-1"
+                    className="shrink-0 cursor-pointer text-xs text-stone px-1"
                     onClick={() => toggleExpand(id)}
                     aria-label={expanded ? "접기" : "펼치기"}
                   >
@@ -190,7 +190,7 @@ const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hide
 
                 {/* 서브태스크 펼침 영역 — w-full basis-full 로 다음 줄 배치 */}
                 {hasSubTasks && expanded && (
-                  <div className="w-full basis-full border-t border-gray-200 mt-2 pt-2 space-y-1.5">
+                  <div className="w-full basis-full border-t border-ink/15 mt-2 pt-2 space-y-1.5">
                     {subTasks!.map((s) => {
                       const isDone = !!s.completedAt;
                       return (
@@ -209,7 +209,7 @@ const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hide
                           </button>
                           <span
                             className={`text-xs flex-1 truncate ${
-                              isDone ? "line-through text-gray-400" : "text-gray-700"
+                              isDone ? "line-through text-stone" : "text-ink"
                             }`}
                           >
                             {s.name}

@@ -14,7 +14,6 @@ const AUTH_REDIRECT_PATHS = new Set<string>([
 const OPEN_PATHS = new Set<string>([
   "/terms",
   "/privacy",
-  "/splash", // PWA 진입용 splash — 인증 상태와 무관하게 통과 (자체적으로 다음 경로 결정)
 ]);
 
 // 차단 경로 (사용 중단된 페이지)
@@ -62,5 +61,10 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/|api/|endings/|titles/|fonts/|icons/|images/|js/|manifest.json).*)"],
+  // 정적 파일은 미들웨어를 타지 않는다.
+  // 예전에는 public 하위 폴더를 하나씩 나열했는데, 새 폴더를 추가할 때마다
+  // 빠뜨리면 그 폴더의 파일이 /signin 으로 리다이렉트돼 엑박이 되는 문제가 있었다.
+  // (실제로 /samples 추가 때 발생) 그래서 "확장자가 있는 경로"를 통째로 제외한다.
+  // 앱 라우트에는 점이 없으므로 보호 경로 판정에는 영향이 없다.
+  matcher: ["/((?!_next/|api/|.*\\.).*)"],
 };

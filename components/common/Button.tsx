@@ -6,7 +6,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex p-2 m-1 items-center justify-center transition-colors duration-500 two-step-border whitespace-nowrap overflow-hidden text-ellipsis",
+  "inline-flex p-2 m-1 items-center justify-center transition-colors duration-150 two-step-border whitespace-nowrap overflow-hidden text-ellipsis",
   {
     variants: {
       size:{
@@ -21,7 +21,7 @@ const buttonVariants = cva(
         success: "bg-[var(--success-color-blue)] text-white active:bg-blue-900",
         current: "bg-[var(--current-color-green)] text-white active:bg-green-900",
         warning: "bg-[var(--warning-color-yellow)] text-white active:bg-yellow-900",
-        primary: "bg-[#C84B3A] text-white active:bg-[#a33a2c] outline-[3px] outline-[#C84B3A]",
+        primary: "bg-brand text-white active:bg-brand-active outline-[3px] outline-brand",
         outline: "bg-white text-gray-800 active:bg-gray-100 outline-[3px] outline-white",
       },
     },

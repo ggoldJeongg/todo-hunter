@@ -138,14 +138,14 @@ const EndingPage = () => {
               {endingData.endingState === 3 ? (
                 <button
                   onClick={() => router.push("/play/character")}
-                  className="px-8 py-3 bg-gray-600 hover:bg-gray-700 text-white font-bold rounded-lg transition-colors"
+                  className="px-8 py-3 bg-brand text-white font-galmuri11-bold border-[3px] border-ink cursor-pointer shadow-[3px_3px_0_0_theme(colors.ink)] transition-all active:bg-brand-active active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_0_theme(colors.ink)]"
                 >
                   돌아가기
                 </button>
               ) : (
                 <button
                   onClick={handleConfirm}
-                  className="px-8 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg transition-colors"
+                  className="px-8 py-3 bg-brand text-white font-galmuri11-bold border-[3px] border-ink cursor-pointer shadow-[3px_3px_0_0_theme(colors.ink)] transition-all active:bg-brand-active active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_0_theme(colors.ink)]"
                 >
                   확인
                 </button>

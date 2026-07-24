@@ -1,6 +1,7 @@
 "use client";
 
 import { Button, Input } from "@/components/common";
+import KakaoLoginButton from "@/components/common/KakaoLoginButton";
 import { useUserStore } from "@/utils/stores/userStore";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -107,21 +108,13 @@ const SignIn = () => {
 
   return (
     <div
-      className="flex flex-col min-h-screen overflow-hidden"
-      style={{
-        backgroundImage:
-          "linear-gradient(rgba(255,255,255,0.3), rgba(255,255,255,0.3)), url('/images/backgrounds/bg_01.png')",
-        backgroundSize: "100% 100%",
-        backgroundRepeat: "no-repeat",
-      }}
+      className="flex flex-col min-h-screen overflow-hidden bg-paper"
     >
       {/* 상단 다크 영역 - 제목 + 입력폼 */}
       <div className="flex flex-col items-center justify-end pb-8 px-6" style={{ height: "55vh" }}>
         <h1
-          className="mb-10 text-center text-3xl sm:text-4xl font-galmuri11-bold"
-          style={{ textShadow: "-4px -4px 0 #555, 4px -4px 0 #555, -4px 4px 0 #555, 4px 4px 0 #555, 0 -4px 0 #555, 0 4px 0 #555, -4px 0 0 #555, 4px 0 0 #555" }}
-        >
-          <span className="text-white">로그인</span>
+          className="mb-10 text-center text-3xl sm:text-4xl font-galmuri11-bold"        >
+          <span className="text-ink">로그인</span>
         </h1>
 
         <div className="w-full max-w-[320px] space-y-4">
@@ -183,7 +176,7 @@ const SignIn = () => {
       </div>
 
       {/* 하단 밝은 영역 - 버튼 + 링크 + 카카오 */}
-      <div className="flex flex-col items-center flex-1 px-6" style={{ paddingTop: "70px" }}>
+      <div className="flex flex-col items-center flex-1 px-6" >
         <div className="flex flex-col items-center gap-3 w-full max-w-[320px]">
           <Button
             value={"play"}
@@ -211,23 +204,8 @@ const SignIn = () => {
           <div className="flex-1 h-px bg-gray-300"></div>
         </div>
 
-        {/* 카카오 로그인 */}
-        <a
-          href="/api/auth/kakao"
-          aria-label="카카오 로그인"
-          className="w-full max-w-[320px] h-12 flex items-center justify-center gap-2 bg-[#FEE500] text-[#191919] font-bold text-base rounded-md hover:bg-[#FDD800] active:bg-[#F5D000] transition-colors shadow-[0_2px_0_rgba(0,0,0,0.15)]"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 18 18"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path d="M9 0.5C4.029 0.5 0 3.717 0 7.685c0 2.583 1.708 4.851 4.273 6.123-.187.703-.679 2.55-.778 2.946-.121.491.18.484.38.353.156-.103 2.482-1.687 3.484-2.367a11.6 11.6 0 0 0 1.641.116c4.971 0 9-3.217 9-7.171S13.971 0.5 9 0.5z" />
-          </svg>
-          카카오 로그인
-        </a>
+        {/* 카카오 로그인 — 루트 랜딩(/)과 공유하는 컴포넌트 */}
+        <KakaoLoginButton />
       </div>
     </div>
   );

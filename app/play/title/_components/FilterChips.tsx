@@ -32,10 +32,10 @@ function Chip({
         flexShrink: 0,
         padding: "3px 9px",
         fontSize: 10,
-        background: active ? color : "rgba(255,247,224,0.85)",
-        color: active ? (color === "#3a2a18" ? "#ffd96b" : "#fff") : "#3a2a18",
-        border: "1.5px solid #3a2a18",
-        boxShadow: active ? "0 2px 0 #3a2a18" : "0 1px 0 rgba(58,42,24,0.4)",
+        background: active ? color : "rgba(233,227,215,0.9)",
+        color: active ? (color === "#151413" ? "#E9E3D7" : "#fff") : "#151413",
+        border: "1.5px solid #151413",
+        boxShadow: active ? "0 2px 0 #151413" : "0 1px 0 rgba(21,20,19,0.35)",
         transform: active ? "translateY(-1px)" : "none",
       }}
     >
@@ -60,7 +60,7 @@ export default function FilterChips({
         WebkitOverflowScrolling: "touch",
       }}
     >
-      <Chip active={value === "all"} color="#3a2a18" onClick={() => onChange("all")}>
+      <Chip active={value === "all"} color="#151413" onClick={() => onChange("all")}>
         전체 {totalAll}
       </Chip>
       {STAT_ORDER.map(key => {
