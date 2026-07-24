@@ -11,8 +11,17 @@ export default {
   theme: {
   	extend: {		  
   		colors: {
+  			// 도트 픽셀 UI 3색 팔레트. 실제 값은 globals.css 의 :root 가 단일 소스.
+  			// CSS 모듈·나인슬라이스 SVG 에서도 같은 var() 를 쓰므로 값이 갈라지지 않는다.
+  			paper: 'var(--pixel-paper)', // 배경 (양피지)
+  			stone: 'var(--pixel-stone)', // 테두리·보조 텍스트
+  			ink: 'var(--pixel-ink)', // 본문 텍스트·어두운 면·게이지 트랙
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
+  			brand: {
+  				DEFAULT: 'var(--brand-red)',
+  				active: 'var(--brand-red-active)'
+  			},
   			card: {
   				DEFAULT: 'hsl(var(--card))',
   				foreground: 'hsl(var(--card-foreground))'

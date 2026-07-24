@@ -26,7 +26,7 @@ import {
 import { STATUS } from "@/constants/status";
 import type { SquareUser } from "@/app/play/square/_components/NpcData";
 
-const BACKGROUND_SRC = "/endings/square.png";
+const BACKGROUND_SRC = "/images/backgrounds/square.png";
 const COLLISION_MASK_SRC = "/images/backgrounds/square_mask.png";
 
 // 맵 크기 (뷰포트 대비 배율). CSS 버전과 동일한 값 유지.

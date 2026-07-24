@@ -36,11 +36,7 @@
     height: 100dvh;
     overflow-y: auto;
     overflow-x: hidden;
-    background-image: url('/images/backgrounds/bg_01.png');
-    background-size: cover;
-    background-position: center top;
-    background-repeat: no-repeat;
-    background-color: #87C77B;
+    background-color: var(--pixel-paper);
     image-rendering: pixelated;
     font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
     /* 스크롤바 숨김 */
@@ -196,13 +192,13 @@
     border-style: solid;
     border-width: 20px;
     border-color: transparent;
-    border-image-source: url('/images/backgrounds/panel-border-01-parchment.png');
+    border-image-source: url('/images/backgrounds/panel-border-01-parchment-3tone.png');
     border-image-slice: 16;         /* 64px 원본에서 모서리 16px */
     border-image-width: 20px;       /* 전 패널 18px 통일 */
     border-image-repeat: stretch;
     border-image-outset: 0;
 
-    background: #F3E7C9;
+    background: var(--pixel-paper);
     background-clip: padding-box;
 
     padding: 10px 12px 12px;
@@ -236,7 +232,7 @@
     border-style: solid;
     border-width: 20px;
     border-color: transparent;
-    border-image-source: url('/images/backgrounds/portrait-border-19.png');
+    border-image-source: url('/images/backgrounds/portrait-border-19-3tone.png');
     border-image-slice: 16;
     border-image-width: 20px;
     border-image-repeat: stretch;
@@ -568,12 +564,12 @@
     border-style: solid;
     border-width: 18px;
     border-color: transparent;
-    border-image-source: url('/images/backgrounds/panel-border-01-parchment.png');
+    border-image-source: url('/images/backgrounds/panel-border-01-parchment-3tone.png');
     border-image-slice: 16;
     border-image-width: 18px;
     border-image-repeat: stretch;
     border-image-outset: 0;
-    background: #F3E7C9;
+    background: var(--pixel-paper);
     background-clip: padding-box;
     padding: 6px 8px 8px;
     text-align: center;
@@ -689,7 +685,7 @@
     border-style: solid;
     border-width: 18px;
     border-color: transparent;
-    border-image-source: url('/images/backgrounds/panel-border-01.png');
+    border-image-source: url('/images/backgrounds/panel-border-01-3tone.png');
     border-image-slice: 16;
     border-image-width: 18px;
     border-image-repeat: stretch;
@@ -720,7 +716,7 @@
     align-items: center;
     gap: 10px;
     padding: 6px 0;
-    border-bottom: 1px dashed #C8B88A;
+    border-bottom: 2px dashed rgba(21, 20, 19, 0.15);
 }
 
 .growth-item:last-child {
@@ -731,14 +727,14 @@
     flex-shrink: 0;
     font-size: 11px;
     font-weight: 800;
-    color: #6B5C42;
+    color: var(--pixel-stone);
     width: 38px;
 }
 
 .growth-msg {
     flex: 1;
     font-size: 11px;
-    color: #4A3F2F;
+    color: var(--pixel-ink);
     font-weight: 600;
     min-width: 0;
 }
@@ -747,11 +743,11 @@
     flex-shrink: 0;
     font-size: 11px;
     font-weight: 800;
-    color: #5B8C5A;
+    color: var(--pixel-ink);
 }
 
 .growth-gain.negative {
-    color: #C0533E;
+    color: var(--pixel-stone);
 }
 
 
@@ -787,16 +783,16 @@
     margin-left: 4px;
 }
 
-/* ── 세그먼트형 탭 (패널 내부 상단) ── */
+/* ── 세그먼트형 탭 (패널 내부 상단) — pill 컨테이너 + 선택 시 ink 채움 ── */
 .stats-tablist {
     display: flex;
-    gap: 3px;
-    /* 안쪽으로 들어간 트랙 느낌 (파치먼트 톤) */
-    background: #E6D8B8;
-    border: 2px solid #C8A04E;
-    border-radius: 8px;
-    padding: 3px;
+    gap: 4px;
+    background: var(--pixel-paper);
+    border: 2px solid var(--pixel-ink);
+    border-radius: 0;
+    padding: 4px;
     margin-bottom: 14px;
+    image-rendering: pixelated;
 }
 
 .stats-tab {
@@ -804,10 +800,10 @@
     padding: 8px 4px;
     font-size: 11px;
     font-weight: 800;
-    color: #8A7A5C;
+    color: var(--pixel-stone);
     background: transparent;
-    border: none;
-    border-radius: 6px;
+    border: 2px solid transparent;
+    border-radius: 0;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -816,33 +812,35 @@
     transition: background 0.15s, color 0.15s;
 }
 
-/* 클릭(선택)된 탭만 색 변경 — 마우스 오버에는 변화 없음 */
+/* 클릭(선택)된 탭만 색 변경 — 어두운 ink 채움 + paper 글자 */
 .stats-tab[data-state="active"] {
-    background: linear-gradient(180deg, #F0822E 0%, #DB6918 100%);
-    color: #FFF3E4;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 1px 2px rgba(74, 63, 47, 0.3);
+    background: var(--pixel-ink);
+    color: var(--pixel-paper);
+}
+/* 포켓몬 메뉴 선택 화살표 — 활성 탭 앞에 ▶ */
+.stats-tab[data-state="active"]::before {
+    content: "▶";
+    margin-right: 3px;
+    font-size: 8px;
+    line-height: 1;
 }
 
 .stats-tab:focus-visible {
-    outline: 2px solid #C84B3A;
+    outline: 2px solid var(--pixel-ink);
     outline-offset: -2px;
 }
 
-/* ── 패널 프레임 (탭을 내부에 삽입 — 사방 금색 테두리 유지) ── */
-/* 안쪽 베벨 색을 상아색 배경(#F3E7C9)에 맞춘 전용 테두리 사본 사용 → 투톤 제거 */
+/* ── 패널 프레임 (탭을 내부에 삽입) ──
+   히어로/미니카드와 같은 pixel-card(라운드 + 하드 픽셀 그림자). */
 .stats-panel-frame {
-    border-style: solid;
-    border-width: 18px;
-    border-color: transparent;
-    border-image-source: url('/images/backgrounds/panel-border-01-parchment.png');
-    border-image-slice: 16;
-    border-image-width: 18px;
-    border-image-repeat: stretch;
-    border-image-outset: 0;
-    background: #F3E7C9;
-    background-clip: padding-box;
+    /* 3톤 창틀 이중 라인 (globals .pixel-card 와 동일) */
+    background: var(--pixel-paper);
+    border: 2px solid var(--pixel-ink);
+    box-shadow:
+        inset 0 0 0 2px var(--pixel-stone),
+        inset 0 0 0 4px var(--pixel-ink);
     image-rendering: pixelated;
-    padding: 14px;
+    padding: 16px;
 }
 
 .stats-tabpanel:focus-visible {
@@ -852,7 +850,7 @@
 .stats-section-title {
     font-size: 13px;
     font-weight: 900;
-    color: #4A3F2F;
+    color: var(--pixel-ink);
     text-align: center;
     margin: 0 0 4px;
     letter-spacing: 0.5px;
@@ -860,7 +858,7 @@
 
 .stats-section-sub {
     font-size: 10px;
-    color: #6B5C42;
+    color: var(--pixel-stone);
     text-align: center;
     margin: 0 0 12px;
     line-height: 1.4;
@@ -868,7 +866,7 @@
 
 .stats-panel-desc {
     font-size: 10px;
-    color: #8A7D6B;
+    color: var(--pixel-stone);
     text-align: center;
     margin: 12px 0 0;
     line-height: 1.5;
@@ -888,7 +886,7 @@
 }
 
 .clock-num {
-    fill: #6B5C42;
+    fill: var(--pixel-stone);
     font-size: 11px;
     font-weight: 800;
 }
@@ -897,12 +895,12 @@
     text-align: center;
     font-size: 13px;
     font-weight: 900;
-    color: #4A3F2F;
+    color: var(--pixel-ink);
     margin-top: 8px;
 }
 
 .rhythm-peak-hl {
-    color: #B07A1E;
+    color: var(--pixel-stone);
 }
 
 /* ── 잔디 KPI ── */
@@ -914,24 +912,27 @@
 }
 
 .grass-kpi {
-    background: #FBF4E2;
-    border: 2px solid #C8A04E;
-    border-radius: 6px;
-    padding: 10px 6px;
+    /* 3톤 창틀 이중 라인 (globals .pixel-card 와 동일) */
+    background: var(--pixel-paper);
+    border: 2px solid var(--pixel-ink);
+    box-shadow:
+        inset 0 0 0 2px var(--pixel-stone),
+        inset 0 0 0 4px var(--pixel-ink);
+    padding: 12px 6px;
     text-align: center;
-    box-shadow: 0 2px 0 #B49A68;
+    image-rendering: pixelated;
 }
 
 .grass-kpi-num {
     font-size: 20px;
     font-weight: 900;
-    color: #4A3F2F;
+    color: var(--pixel-ink);
 }
 
 .grass-kpi-label {
     font-size: 10px;
     font-weight: 700;
-    color: #6B5C42;
+    color: var(--pixel-stone);
     margin-top: 2px;
 }
 
@@ -942,7 +943,7 @@
 }
 
 .grass-cell {
-    stroke: #F3E7C9;
+    stroke: var(--pixel-paper);
     stroke-width: 1px;
 }
 

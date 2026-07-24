@@ -25,14 +25,14 @@ export default function TitleCell({ title, onClick }: Props) {
         background: equipped
           ? "linear-gradient(180deg, #fff7d6 0%, #f3e3a5 100%)"
           : locked
-            ? "rgba(58,42,24,0.08)"
-            : "rgba(255,250,235,0.7)",
+            ? "rgba(21,20,19,0.06)"
+            : "var(--pixel-paper)",
         border: equipped
           ? "2px solid #b8862c"
-          : `1.5px solid ${locked ? "#9a8870" : `${stat.color}aa`}`,
+          : `1.5px solid ${locked ? "#B0AAA1" : `${stat.color}aa`}`,
         boxShadow: equipped
           ? "inset 0 0 0 1px #ffe680, 0 2px 0 #8b6a2c"
-          : "0 2px 0 rgba(58,42,24,0.2)",
+          : "0 2px 0 rgba(21,20,19,0.18)",
       }}
     >
       {equipped && (
@@ -42,7 +42,7 @@ export default function TitleCell({ title, onClick }: Props) {
             top: -7, left: "50%", transform: "translateX(-50%)",
             background: "#b8862c", color: "#fff",
             fontSize: 8, padding: "1px 6px",
-            border: "1.5px solid #3a2a18",
+            border: "1.5px solid #151413",
             letterSpacing: 0.5, zIndex: 2,
           }}
         >
@@ -61,8 +61,8 @@ export default function TitleCell({ title, onClick }: Props) {
         style={{
           aspectRatio: "1 / 1",
           background: locked
-            ? "rgba(40,28,18,0.18)"
-            : `radial-gradient(circle, ${stat.color}1a 0%, rgba(232,223,200,0.55) 80%)`,
+            ? "rgba(21,20,19,0.14)"
+            : `radial-gradient(circle, ${stat.color}1a 0%, rgba(233,227,215,0.55) 80%)`,
         }}
       >
         {locked ? (
@@ -102,7 +102,7 @@ export default function TitleCell({ title, onClick }: Props) {
             className="font-galmuri11-bold absolute"
             style={{
               bottom: 2, right: 2,
-              background: "#3a2a18", color: "#ffd96b",
+              background: "#151413", color: "#ffd96b",
               fontSize: 7.5, padding: "1px 4px",
             }}
           >
@@ -115,7 +115,7 @@ export default function TitleCell({ title, onClick }: Props) {
         className="font-galmuri11-bold text-center w-full"
         style={{
           fontSize: 9, lineHeight: 1.2, margin: "3px 0 0",
-          color: locked ? "#7a6850" : "#3a2a18",
+          color: locked ? "#B0AAA1" : "#151413",
           display: "-webkit-box",
           WebkitLineClamp: 2,
           WebkitBoxOrient: "vertical",
@@ -129,7 +129,7 @@ export default function TitleCell({ title, onClick }: Props) {
 
       <div
         className="font-galmuri9 flex items-center justify-center"
-        style={{ gap: 3, fontSize: 8, marginTop: 1, color: locked ? stat.color : "#7a6850" }}
+        style={{ gap: 3, fontSize: 8, marginTop: 1, color: locked ? stat.color : "#B0AAA1" }}
       >
         <span style={{ display: "inline-block", width: 5, height: 5, background: stat.color }} />
         <span>{stat.short} {title.reqValue}+</span>

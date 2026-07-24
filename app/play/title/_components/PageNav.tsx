@@ -22,7 +22,7 @@ export default function PageNav({ page, pages, onChange }: Props) {
         style={{
           all: "unset",
           cursor: atFirst ? "default" : "pointer",
-          color: atFirst ? "#b59a6a" : "#3a2a18",
+          color: atFirst ? "#B0AAA1" : "#151413",
         }}
       >
         ≪ 이전
@@ -33,7 +33,7 @@ export default function PageNav({ page, pages, onChange }: Props) {
           <span
             key={i}
             aria-hidden
-            style={{ width: 7, height: 7, background: i === page ? "#3a2a18" : "#b59a6a" }}
+            style={{ width: 7, height: 7, background: i === page ? "#151413" : "#B0AAA1" }}
           />
         ))}
       </div>
@@ -45,7 +45,7 @@ export default function PageNav({ page, pages, onChange }: Props) {
         style={{
           all: "unset",
           cursor: atLast ? "default" : "pointer",
-          color: atLast ? "#b59a6a" : "#3a2a18",
+          color: atLast ? "#B0AAA1" : "#151413",
         }}
       >
         다음 ≫
