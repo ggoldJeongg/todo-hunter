@@ -123,29 +123,32 @@ export default function TitlePage() {
 
   return (
     <div
-      className="font-galmuri9 flex flex-col flex-1 min-h-screen relative overflow-hidden bg-paper"
-      style={{ imageRendering: "pixelated" }}
+      className="font-galmuri9 flex flex-col flex-1 min-h-screen relative overflow-hidden"
+      style={{
+        background: "url('/images/backgrounds/table-background1.png') center/cover, #2a1d10",
+        imageRendering: "pixelated",
+      }}
     >
       {/* 헤더 — 카운터만 우측 상단 */}
       <div
         className="flex items-center justify-end"
         style={{
           padding: "12px 16px 8px",
-          color: "#151413",
+          color: "#fff",
+          textShadow: "1px 1px 0 #000, 2px 2px 0 #000",
         }}
       >
-        {/* 수집 진행 카운터 — 골드 강조 유지 (희귀도/달성감) */}
         <div
           className="font-galmuri11-bold flex items-center"
           style={{
             gap: 6,
-            background: "#151413",
+            background: "rgba(0,0,0,0.6)",
             padding: "5px 10px",
             border: "2px solid #b8862c",
           }}
         >
           <span style={{ color: "#ffd96b", fontSize: 13 }}>{totalUnlocked}</span>
-          <span style={{ fontSize: 10, color: "#E9E3D7", opacity: 0.7 }}>/ {totalAll}</span>
+          <span style={{ fontSize: 10, opacity: 0.7 }}>/ {totalAll}</span>
           <span style={{ fontSize: 9, color: "#ffd96b", marginLeft: 2 }}>{percent}%</span>
         </div>
       </div>
@@ -167,16 +170,17 @@ export default function TitlePage() {
 
       {/* 두루마리 그리드 */}
       <div
-        className="pixel-card flex flex-col relative flex-1"
+        className="flex flex-col relative flex-1"
         style={{
-          margin: "0 12px 90px",
-          padding: "16px",
+          margin: "0 10px 90px",
+          background: "url('/images/backgrounds/title-scroll.png') center/100% 100% no-repeat",
+          padding: "56px 70px 61px 76px",
         }}
       >
-        {/* 패널 상단 타이틀 */}
+        {/* 두루마리 안쪽 상단 타이틀 */}
         <div
           className="font-galmuri11-bold text-center"
-          style={{ fontSize: 17, color: "#151413", marginBottom: 10 }}
+          style={{ fontSize: 17, color: "#3a2a18", marginTop: 20, marginBottom: 8 }}
         >
           칭호 도감
         </div>
