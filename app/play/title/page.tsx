@@ -125,7 +125,8 @@ export default function TitlePage() {
     <div
       className="font-galmuri9 flex flex-col flex-1 min-h-screen relative overflow-hidden"
       style={{
-        background: "url('/images/backgrounds/table-background1.png') center/cover, #2a1d10",
+        background:
+  "linear-gradient(hsla(0, 0%, 79%, 0.50), rgba(55, 42, 31, 0.3)), url('/images/backgrounds/title_room.png') center/cover, rgb(210, 208, 206)",
         imageRendering: "pixelated",
       }}
     >
