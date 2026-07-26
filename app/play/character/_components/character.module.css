@@ -36,7 +36,6 @@
     height: 100dvh;
     overflow-y: auto;
     overflow-x: hidden;
-    background-color: var(--pixel-paper);
     image-rendering: pixelated;
     font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
     /* 스크롤바 숨김 */
@@ -716,7 +715,7 @@
     align-items: center;
     gap: 10px;
     padding: 6px 0;
-    border-bottom: 2px dashed rgba(21, 20, 19, 0.15);
+    border-bottom: 2px dashed rgba(255, 255, 255, 0.12);
 }
 
 .growth-item:last-child {
@@ -734,7 +733,7 @@
 .growth-msg {
     flex: 1;
     font-size: 11px;
-    color: var(--pixel-ink);
+    color: var(--pixel-paper);
     font-weight: 600;
     min-width: 0;
 }
@@ -743,7 +742,7 @@
     flex-shrink: 0;
     font-size: 11px;
     font-weight: 800;
-    color: var(--pixel-ink);
+    color: var(--pixel-paper);
 }
 
 .growth-gain.negative {
@@ -833,14 +832,10 @@
 /* ── 패널 프레임 (탭을 내부에 삽입) ──
    히어로/미니카드와 같은 pixel-card(라운드 + 하드 픽셀 그림자). */
 .stats-panel-frame {
-    /* 3톤 창틀 이중 라인 (globals .pixel-card 와 동일) */
-    background: var(--pixel-paper);
-    border: 2px solid var(--pixel-ink);
-    box-shadow:
-        inset 0 0 0 2px var(--pixel-stone),
-        inset 0 0 0 4px var(--pixel-ink);
+    border: 19px 17px 17px 17px solid transparent;
+    border-image: url('/images/frames/main_frame.png') 19 17 17 17 fill / 19px 17px 17px 17px stretch;
     image-rendering: pixelated;
-    padding: 16px;
+    padding: 1.5rem;
 }
 
 .stats-tabpanel:focus-visible {
@@ -895,7 +890,7 @@
     text-align: center;
     font-size: 13px;
     font-weight: 900;
-    color: var(--pixel-ink);
+    color: var(--pixel-paper);
     margin-top: 8px;
 }
 
@@ -948,7 +943,7 @@
 }
 
 .grass-axis {
-    fill: #6B5C42;
+    fill: var(--pixel-stone);
     font-size: 9px;
 }
 
@@ -958,7 +953,7 @@
     gap: 5px;
     justify-content: flex-end;
     font-size: 10px;
-    color: #6B5C42;
+    color: var(--pixel-stone);
     margin-top: 8px;
 }
 

@@ -59,13 +59,13 @@ const Status = ({ str, int, emo, fin, liv, stress }: StatusProps) => {
               )}
             </span>
 
-            <span className="w-[52px] shrink-0 whitespace-nowrap text-[12px] font-bold leading-none text-ink">
+            <span className="w-[52px] shrink-0 whitespace-nowrap text-[12px] font-bold leading-none text-paper">
               {key}
             </span>
 
             {/* 게이지 — 어두운 트랙 + 지표색 채움 (라운드 필) */}
             <div
-              className="relative h-[12px] w-[92px] shrink-0 overflow-hidden bg-ink"
+              className="relative h-[12px] w-[92px] shrink-0 overflow-hidden border border-ink bg-ink [image-rendering:pixelated]"
               role="meter"
               aria-label={key}
               aria-valuenow={value}
@@ -75,7 +75,7 @@ const Status = ({ str, int, emo, fin, liv, stress }: StatusProps) => {
               <div className="h-full" style={{ width: `${pct}%`, background: color }} />
             </div>
 
-            <span className="w-[26px] shrink-0 text-right text-[12px] font-bold leading-none tabular-nums text-ink">
+            <span className="w-[26px] shrink-0 text-right text-[12px] font-bold leading-none tabular-nums text-paper">
               {value}
             </span>
 

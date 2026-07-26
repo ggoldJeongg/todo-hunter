@@ -871,3 +871,48 @@ textarea,
     z-index: 1;
   }
 }
+
+/* ============================================
+   Frame Main — main_frame 나인슬라이스 (황금 장식 프레임)
+   원본: public/images/frames/main_frame.svg
+   빌드: node scripts/build-main-frame.mjs → main_frame.png (75x75, 중앙 남색 포함)
+   CSS 네이티브 border-image 로 9분할. slice=15(모서리), 두께=--frame-bw.
+   slice==두께==15px & DPR=1 이면 무배율(1:1)이라 픽셀이 완벽히 선명하다.
+   두께를 바꾸려면 원본 슬라이스(15)의 정수배(15/30/45) 권장.
+   ============================================ */
+@layer components {
+  .frame-main {
+    border: 19px 17px 17px 17px solid transparent;
+    border-image: url("/images/frames/main_frame.png") 19 17 17 17 / 19px 17px 17px 17px stretch;
+    image-rendering: pixelated;
+  }
+
+  .frame-card {
+    border: 19px 17px 17px 17px solid transparent;
+    border-image: url("/images/frames/main_frame.png") 19 17 17 17 fill / 19px 17px 17px 17px stretch;
+    image-rendering: pixelated;
+    color: var(--pixel-paper);
+  }
+
+  /* ── 패널별 채움색 변형 ──
+     main_frame.png 의 채움색(#201E26)만 다른 색으로 리컬러한 프레임 변형 사용.
+     외곽선(검정)·금장식은 원본 그대로. 프레임 shorthand 는 .frame-card 것을 물려받고
+     여기선 border-image-source 만 교체한다.
+     생성: node scripts/make-frame-variant.mjs --color=RRGGBB --out=파일명.png */
+  .frame-tint-condition {
+    /* 컨디션: 세이지(#92B2AA) */
+    border-image-source: url("/images/frames/main_frame_green.png");
+  }
+  .frame-tint-level {
+    /* 레벨: 크림(#DED1BC) */
+    border-image-source: url("/images/frames/main_frame_cream.png");
+  }
+
+  /* 캐릭터 카드 전용 — portrait_frame.png (99x99, 모서리 slice 26/25). */
+  .frame-portrait {
+    border: 26px 25px 25px 26px solid transparent; /* top right bottom left */
+    border-image: url("/images/frames/portrait_frame.png") 26 25 25 26 fill / 26px 25px 25px 26px stretch;
+    image-rendering: pixelated;
+    color: var(--pixel-paper);
+  }
+}
