@@ -36,7 +36,11 @@ export default function SettingsPage() {
 
   return (
     <div
-      className="flex min-h-screen flex-col overflow-hidden bg-paper"
+      className="flex min-h-screen flex-col overflow-hidden"
+      style={{
+        background:
+          "linear-gradient(hsla(0, 0%, 79%, 0.50), rgba(55, 42, 31, 0.3)), url('/images/backgrounds/character_room.png') center bottom 64px / cover no-repeat, var(--pixel-paper)",
+      }}
     >
       <div className="flex items-center px-4 pb-4 pt-6">
         <button
