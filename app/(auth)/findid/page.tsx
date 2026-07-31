@@ -42,8 +42,8 @@ const FindId = () => {
                 </h1>
             </div>
 
-            {/* 폼 영역 */}
-            <div className="flex-1 flex flex-col items-center justify-center px-6">
+            {/* 폼 영역 — 위로 치우친 중앙정렬(키보드가 가리지 않도록) */}
+            <div className="flex-1 flex flex-col items-center justify-center px-6 pb-[22vh]">
                 {loginId || error ? <FindIdView loginId={loginId} error={error} onBack={handleBack} /> : <FindIdForm onFindId={handleFindId} onError={handleError} onRegisterSubmit={handleRegisterSubmit} />}
             </div>
 

@@ -17,7 +17,7 @@ const FindPw = () => {
                 </h1>
             </div>
 
-            <div className="flex-1 flex flex-col items-center justify-center px-6">
+            <div className="flex-1 flex flex-col items-center justify-center px-6 pb-[22vh]">
                 <FindPwForm />
             </div>
         </div>
