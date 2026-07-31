@@ -117,9 +117,9 @@ map to the `--pixel-*` and `--brand-*` custom properties.
 - **Secondary — `#B0AAA1` (stone).** Mid-tone greige. Captions and sub-labels,
   and — critically — the middle band of the window frame that gives it depth.
   Code: `--pixel-stone`.
-- **Tertiary — `#C84B3A` (quest red).** The sole driver of interaction: the main
+- **Tertiary — `#7F4F21` (quest brown).** The sole driver of interaction: the main
   CTA and the active state. Use it sparingly — at most one per view.
-  `tertiary-active` is its pressed shade. Code: `--brand-red`.
+  `tertiary-active` is its pressed shade. Code: `--brand-brown`.
 - **Neutral — `#E9E3D7` (paper).** Warm parchment. The canvas for every screen
   and the fill inside every window frame. Never pure white. Code: `--pixel-paper`.
 

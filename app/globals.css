@@ -64,9 +64,9 @@ textarea,
     --success-color-blue: #2049BD;
     --warning-color-yellow: #D5B946;
     --current-color-green: #3E8B75;
-    /* 브랜드 레드 (버튼·탭·활성 상태 등 UI 크롬 전용 단일 소스) */
-    --brand-red: #C84B3A;
-    --brand-red-active: #a33a2c;
+    /* 브랜드 브라운 (버튼·탭·활성 상태 등 UI 크롬 전용 단일 소스) */
+    --brand-brown: #7F4F21;
+    --brand-brown-active: #663d18;
     /* 도트 픽셀 UI 3색 팔레트 — 배경·테두리·글자 단일 소스.
        Tailwind 의 bg-paper / border-stone / text-ink 가 이 값을 참조하므로,
        색을 바꾸려면 여기만 고치면 유틸리티와 CSS 양쪽에 동시에 반영된다. */
@@ -255,7 +255,13 @@ textarea,
     padding:1rem 1.5rem;
     margin:4px;
   }
-  
+
+  /* 버튼 전용: two-step-border 의 도트색만 진한 갈색(#5A3616)으로 오버라이드 → 채움색(#7F4F21)과 분리해 입체감.
+     .two-step-border 정의보다 뒤에 있어야 border-image-source 를 이긴다. */
+  .two-step-border-brown {
+    border-image-source:url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(90,54,22)" /></svg>');
+  }
+
   .is-rounded {
     /* 보더 픽셀 축소: 8x8/4px → 6x6/3px (padding·margin·색은 유지) */
     border-style: solid;

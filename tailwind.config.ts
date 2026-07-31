@@ -19,8 +19,8 @@ export default {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			brand: {
-  				DEFAULT: 'var(--brand-red)',
-  				active: 'var(--brand-red-active)'
+  				DEFAULT: 'var(--brand-brown)',
+  				active: 'var(--brand-brown-active)'
   			},
   			card: {
   				DEFAULT: 'hsl(var(--card))',
