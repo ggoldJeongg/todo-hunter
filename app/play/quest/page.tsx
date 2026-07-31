@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Button } from "@/components/common";
 import DailyQuest from "@/components/quest/DailyQuest";
 import WeeklyQuest from "@/components/quest/WeeklyQuest";
 import FightField from "@/components/quest/FightField";
@@ -66,12 +67,14 @@ const QuestPage = () => {
 
           {/* 할일 추가 버튼 — 프레임 내 우측 하단 고정 */}
           <div className="absolute bottom-4 right-4 z-20">
-            <button
-              className="bg-brand text-white px-4 py-2 border-[3px] border-ink font-galmuri11-bold text-sm cursor-pointer shadow-[3px_3px_0_0_theme(colors.ink)] transition-all active:bg-brand-active active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_0_theme(colors.ink)]"
+            <Button
+              type="button"
+              state="primary"
               onClick={() => router.push("/play/quest/add-quest")}
+              className="w-auto m-0 px-4 py-2 text-sm font-galmuri11-bold"
             >
               + 할일 추가
-            </button>
+            </Button>
           </div>
         </div>
       </div>

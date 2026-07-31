@@ -4,6 +4,7 @@ import Status from "@/app/play/character/_components/status";
 import styles from "./_components/character.module.css";
 import Character from "./_components/character";
 import StatsTabs from "./_components/StatsTabs";
+import { Button } from "@/components/common";
 import { useUserStore } from "@/utils/stores/userStore";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, Suspense, useState, useMemo, useCallback } from "react";
@@ -155,15 +156,16 @@ export default function CharacterPage() {
         >
             {/* ===== 상단 헤더 — 설정 (sticky) ===== */}
             <header className="sticky top-0 z-50 mx-auto flex w-[92%] max-w-[460px] items-center justify-end gap-2 px-[2px] pt-[max(10px,env(safe-area-inset-top,10px))] pb-2">
-                <button
+                <Button
                     type="button"
                     onClick={() => router.push("/settings")}
-                    className="inline-flex cursor-pointer items-center gap-[5px] border-2 border-ink bg-paper py-[6px] pl-[11px] pr-[13px] text-[13px] font-bold text-ink shadow-[2px_2px_0_0_theme(colors.ink)] transition-none [image-rendering:pixelated] hover:bg-[#DED7C8] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                    state="outline"
                     aria-label="설정"
+                    className="w-auto m-0 gap-[5px] px-3 py-1 text-[13px] font-bold bg-paper text-ink outline-0"
                 >
                     <span className="text-[14px] leading-none" aria-hidden="true">⚙</span>
                     설정
-                </button>
+                </Button>
             </header>
 
             {/* ===== 캐릭터 카드 + 레벨/정보 패널 ===== */}
