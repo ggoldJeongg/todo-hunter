@@ -23,7 +23,7 @@ const tagVariants = cva(
       //     높이 20px 로 옆 아이콘(20x20)과 정렬, 폭은 글자 길이만큼 auto(pill).
       // lg: 퀘스트 추가/수정 폼의 스탯 선택 버튼 — 픽셀 테두리(is-rounded) 유지. 두 줄(키 + 한글 라벨).
       size: {
-        sm: "h-[20px] px-2 text-xs rounded-md shadow-[0_1px_2px_rgba(90,54,22,0.25)]",
+        sm: "h-[20px] px-2 text-xs rounded-[var(--radius-soft-sm)] shadow-[var(--shadow-soft-sm)]",
         lg: "is-rounded px-2 py-2 text-xs",
       } satisfies Record<TagSize, string>,
     },
