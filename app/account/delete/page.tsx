@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/common";
+import { Button, PageHeader } from "@/components/common";
 import { useUserStore } from "@/utils/stores/userStore";
 
 export default function DeleteAccountPage() {
@@ -44,17 +44,7 @@ export default function DeleteAccountPage() {
     <div
       className="flex min-h-screen flex-col overflow-hidden bg-paper px-5 py-6 text-[#4A3F2F]"
     >
-      <div className="mx-auto flex w-full max-w-[520px] items-center pb-4">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="text-2xl text-ink"
-          aria-label="뒤로가기"
-        >
-          ←
-        </button>
-        <h1 className="flex-1 pr-6 text-center font-galmuri11-bold text-xl text-ink">회원 탈퇴</h1>
-      </div>
+      <PageHeader title="회원 탈퇴" className="mx-auto w-full max-w-[520px] px-0 pt-0" />
 
       <form
         onSubmit={handleSubmit}

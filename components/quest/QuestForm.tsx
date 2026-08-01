@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useQuestFormStore } from "@/utils/stores/useQuestFormStore";
 import { STATUS } from "@/constants/status";
 import { EXP_PER_QUEST } from "@/constants/game";
-import { Button, Input, Calendar } from "@/components/common";
+import { Button, Input, Calendar, PageHeader } from "@/components/common";
 import { Tag } from "@/components/common/Tag";
 import { format } from "date-fns";
 
@@ -65,21 +65,23 @@ const QuestForm = ({ title, submitLabel, onSubmit, errorMessage }: QuestFormProp
   return (
     <div className="flex flex-col bg-paper text-ink h-screen overflow-hidden">
       {/* ── 헤더 ── */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-3 shrink-0">
-        <button onClick={goBack} className="text-ink text-2xl cursor-pointer" disabled={isSubmitting}>
-          &larr;
-        </button>
-        <h1 className="text-lg font-bold">{title}</h1>
-        <Button
-          state="primary"
-          size="S"
-          onClick={handleSubmit}
-          disabled={!questName.trim() || isSubmitting}
-          className={!questName.trim() || isSubmitting ? "opacity-40" : ""}
-        >
-          {isSubmitting ? "저장 중" : submitLabel}
-        </Button>
-      </div>
+      <PageHeader
+        title={title}
+        onBack={goBack}
+        backDisabled={isSubmitting}
+        className="px-4 pt-4 pb-3 shrink-0"
+        right={
+          <Button
+            state="primary"
+            size="S"
+            onClick={handleSubmit}
+            disabled={!questName.trim() || isSubmitting}
+            className={!questName.trim() || isSubmitting ? "opacity-40" : ""}
+          >
+            {isSubmitting ? "저장 중" : submitLabel}
+          </Button>
+        }
+      />
 
       {errorMessage && (
         <p role="alert" className="mx-5 mb-3 rounded bg-red-950/60 px-3 py-2 text-sm text-red-100">

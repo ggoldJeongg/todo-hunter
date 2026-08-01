@@ -2,11 +2,10 @@
 
 import FindIdForm from "@/components/auth/FindIdForm";
 import FindIdView from "@/components/auth/FindIdView";
-import { useRouter } from "next/navigation";
+import { PageHeader } from "@/components/common";
 import { useCallback, useRef, useState } from "react";
 
 const FindId = () => {
-    const router = useRouter();
     const [loginId, setLoginId] = useState<string |  null>(null);
     const [error, setError] = useState<string |  null>(null);
     const submitFnRef = useRef<(() => void) | null>(null);
@@ -34,13 +33,7 @@ const FindId = () => {
         <div
             className="flex flex-col min-h-screen overflow-hidden bg-paper"
         >
-            {/* 상단 헤더 */}
-            <div className="flex items-center px-4 pt-6 pb-4">
-                <button onClick={() => router.back()} className="text-ink text-2xl cursor-pointer">←</button>
-                <h1 className="flex-1 text-center text-xl font-galmuri11-bold text-ink mr-6">
-                    아이디 찾기
-                </h1>
-            </div>
+            <PageHeader title="아이디 찾기" />
 
             {/* 폼 영역 — 위로 치우친 중앙정렬(키보드가 가리지 않도록) */}
             <div className="flex-1 flex flex-col items-center justify-center px-6 pb-[22vh]">

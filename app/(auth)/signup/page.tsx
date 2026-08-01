@@ -1,7 +1,7 @@
 "use client";
 
 import { LoginError } from "@/application/usecases/auth/errors/LoginError";
-import { Button, Input } from "@/components/common";
+import { Button, Input, PageHeader } from "@/components/common";
 import { submitEmailSignup } from "@/utils/signupSubmit";
 import { useUserStore } from "@/utils/stores/userStore";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -475,13 +475,7 @@ const SignUp = () => {
     <div
       className="flex flex-col min-h-screen overflow-hidden bg-paper"
     >
-      {/* 상단 헤더 */}
-      <div className="flex items-center px-4 pt-6 pb-4">
-        <button onClick={() => router.back()} className="text-ink text-2xl cursor-pointer">←</button>
-        <h1 className="flex-1 text-center text-xl font-galmuri11-bold text-ink mr-6">
-          {isKakao ? "닉네임 설정" : "회원가입"}
-        </h1>
-      </div>
+      <PageHeader title={isKakao ? "닉네임 설정" : "회원가입"} />
 
       {/* 폼 영역 */}
       <div className="flex-1 flex flex-col items-center px-6 pt-6 overflow-y-auto">

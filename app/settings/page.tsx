@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { PageHeader } from "@/components/common";
 import { useEffect, useRef } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { useUserStore } from "@/utils/stores/userStore";
@@ -42,16 +43,7 @@ export default function SettingsPage() {
           "linear-gradient(hsla(0, 0%, 79%, 0.50), rgba(55, 42, 31, 0.3)), url('/images/backgrounds/character_room.png') center bottom 64px / cover no-repeat, var(--pixel-paper)",
       }}
     >
-      <div className="flex items-center px-4 pb-4 pt-6">
-        <button
-          onClick={() => router.back()}
-          className="cursor-pointer text-2xl text-ink"
-          aria-label="뒤로가기"
-        >
-          ←
-        </button>
-        <h1 className="mr-6 flex-1 text-center font-galmuri11-bold text-xl text-ink">설정</h1>
-      </div>
+      <PageHeader title="설정" />
 
       <div className="flex-1 overflow-y-auto px-6 pb-10">
         <div className="mx-auto w-full max-w-[520px]">
