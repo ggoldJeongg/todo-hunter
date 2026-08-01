@@ -101,7 +101,7 @@ const QuestForm = ({ title, submitLabel, onSubmit, errorMessage }: QuestFormProp
             maxLength={QUEST_NAME_MAX}
             onChange={(e) => setQuestName(e.target.value)}
             disabled={isSubmitting}
-            className="is-rounded-form w-full shadow-none text-ink"
+            className="text-ink"
           />
           <p className="text-right text-xs text-stone mt-1">
             {questName.length} / {QUEST_NAME_MAX}

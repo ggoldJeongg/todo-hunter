@@ -49,7 +49,7 @@ const FindIdForm = ({ onFindId, onError, onRegisterSubmit }: { onFindId: (id: st
         <div className="w-full max-w-[360px]">
             <Input
                 placeholder="이메일"
-                className="is-rounded-form w-full shadow-none"
+                className=""
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

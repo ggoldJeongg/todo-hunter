@@ -188,14 +188,14 @@ const FindPwForm = () => {
                 <div className="w-full max-w-[360px] space-y-4">
                     <Input
                         placeholder="새 비밀번호 (8자 이상)"
-                        className="is-rounded-form w-full shadow-none"
+                        className=""
                         type="password"
                         value={newPassword}
                         onChange={(e) => { setNewPassword(e.target.value); setError(null); }}
                     />
                     <Input
                         placeholder="새 비밀번호 재입력"
-                        className="is-rounded-form w-full shadow-none"
+                        className=""
                         type="password"
                         value={confirmPassword}
                         onChange={(e) => { setConfirmPassword(e.target.value); setError(null); }}
@@ -227,7 +227,7 @@ const FindPwForm = () => {
                     </p>
                     <Input
                         placeholder="인증코드 6자리"
-                        className="is-rounded-form w-full shadow-none"
+                        className=""
                         value={verificationCode}
                         onChange={(e) => { setVerificationCode(e.target.value); setError(null); }}
                         inputMode="numeric"
@@ -263,13 +263,13 @@ const FindPwForm = () => {
             <div className="w-full max-w-[360px] space-y-4">
                 <Input
                     placeholder="아이디"
-                    className="is-rounded-form w-full shadow-none"
+                    className=""
                     value={loginId}
                     onChange={(e) => { setLoginId(e.target.value); setError(null); }}
                 />
                 <Input
                     placeholder="이메일"
-                    className="is-rounded-form w-full shadow-none"
+                    className=""
                     type="email"
                     value={email}
                     onChange={(e) => { setEmail(e.target.value); setError(null); }}

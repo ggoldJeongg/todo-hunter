@@ -128,7 +128,6 @@ const SignIn = () => {
           )}
           <div>
             <Input
-              className="is-rounded-form w-full shadow-none"
               type="text"
               placeholder="ID"
               value={loginId}
@@ -151,7 +150,6 @@ const SignIn = () => {
           </div>
           <div>
             <Input
-              className="is-rounded-form w-full shadow-none"
               type="password"
               placeholder="PASSWORD"
               value={password}
