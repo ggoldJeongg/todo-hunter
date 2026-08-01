@@ -113,7 +113,7 @@ const QuestForm = ({ title, submitLabel, onSubmit, errorMessage }: QuestFormProp
           </h3>
           <div className="grid grid-cols-5 gap-2">
             {STATUS_KEYS.map((key) => (
-              <button key={key} onClick={() => setTagged(key)} className="cursor-pointer" disabled={isSubmitting}>
+              <button key={key} onClick={() => setTagged(key)} className="cursor-pointer scale-90" disabled={isSubmitting}>
                 <Tag
                   variant={key}
                   size="lg"

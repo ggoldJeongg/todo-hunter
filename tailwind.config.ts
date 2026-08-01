@@ -22,6 +22,13 @@ export default {
   				DEFAULT: 'var(--brand-brown)',
   				active: 'var(--brand-brown-active)'
   			},
+  			stat: {
+  				str: 'var(--stat-str)',
+  				int: 'var(--stat-int)',
+  				emo: 'var(--stat-emo)',
+  				fin: 'var(--stat-fin)',
+  				liv: 'var(--stat-liv)',
+  			},
   			card: {
   				DEFAULT: 'hsl(var(--card))',
   				foreground: 'hsl(var(--card-foreground))'

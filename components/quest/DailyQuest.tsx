@@ -58,7 +58,7 @@ const DailyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hideA
               return (
                 <div
                   key={id}
-                  className={`relative flex flex-wrap items-center gap-3 pixel-card p-2.5 ${completed ? "opacity-60" : ""}`}
+                  className={`relative flex flex-wrap items-center gap-3 quest-card p-2.5 ${completed ? "opacity-60" : ""}`}
                 >
                   {/* 완료 시 DEFEATED 띠 (카드 가운데 가로로, 살짝 회전) */}
                   {completed && (

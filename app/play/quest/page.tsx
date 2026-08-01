@@ -30,7 +30,7 @@ const QuestPage = () => {
           <button
             className={`flex-1 py-3 text-center font-galmuri11-bold text-sm transition-colors cursor-pointer ${
               activeTab === "daily"
-                ? "bg-ink text-paper"
+                ? "bg-brand text-white"
                 : "bg-paper text-stone"
             }`}
             onClick={() => setActiveTab("daily")}
@@ -40,7 +40,7 @@ const QuestPage = () => {
           <button
             className={`flex-1 py-3 text-center font-galmuri11-bold text-sm transition-colors cursor-pointer ${
               activeTab === "weekly"
-                ? "bg-ink text-paper"
+                ? "bg-brand text-white"
                 : "bg-paper text-stone"
             }`}
             onClick={() => setActiveTab("weekly")}

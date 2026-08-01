@@ -17,12 +17,14 @@ const TAG_TO_LABEL: Record<string, string> = {
 // 카테고리(태그) 색상 — 앱 전역 스탯 팔레트와 동일
 const TAG_ORDER = ["STR", "INT", "EMO", "FIN", "LIV"] as const;
 type Tag = (typeof TAG_ORDER)[number];
+// 스탯 색 — globals.css 의 --stat-* 토큰 단일 소스 참조.
+// (SVG stroke/인라인 background 모두 var() 정상 동작 — 같은 파일 stroke="var(--pixel-stone)" 참고)
 const TAG_COLOR: Record<Tag, string> = {
-    STR: "#C84B3A",
-    INT: "#6B8FB8",
-    EMO: "#C97B8E",
-    FIN: "#B89A4E",
-    LIV: "#9B7CB8",
+    STR: "var(--stat-str)",
+    INT: "var(--stat-int)",
+    EMO: "var(--stat-emo)",
+    FIN: "var(--stat-fin)",
+    LIV: "var(--stat-liv)",
 };
 
 interface RhythmHour {
