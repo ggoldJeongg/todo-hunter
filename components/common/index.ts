@@ -3,6 +3,7 @@ export * from "@/components/common/Button";
 export * from "@/components/common/PageHeader";
 export * from "@/components/common/ChoiceButton";
 export * from "@/components/common/PixelTabs";
+export * from "@/components/common/IconButton";
 export * from "@/components/common/Select";
 export * from "@/components/common/Tag";
 export * from "@/components/common/Dialog";

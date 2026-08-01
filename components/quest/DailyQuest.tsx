@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
+import { IconButton } from "@/components/common";
 import { useQuestStore } from "@/utils/stores/questStore";
 import { Tag } from "@/components/common/Tag";
 import { Button } from "@/components/common/Button";
@@ -85,19 +85,13 @@ const DailyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hideA
                     </div>
                   )}
 
-                  <button
-                    className="shrink-0 cursor-pointer disabled:cursor-not-allowed"
+                  <IconButton
+                    src={completed ? "/icons/check_on.svg" : "/icons/check_off.svg"}
+                    alt={completed ? "완료" : "미완료"}
                     disabled={completed || hasSubTasks}
                     onClick={() => { if (!completed && !hasSubTasks) completeQuest(id); }}
                     title={hasSubTasks ? "서브태스크를 모두 완료해야 합니다" : ""}
-                  >
-                    <Image
-                      src={completed ? "/icons/check_on.svg" : "/icons/check_off.svg"}
-                      width={20}
-                      height={20}
-                      alt={completed ? "완료" : "미완료"}
-                    />
-                  </button>
+                  />
 
                   <div className="flex-1 min-w-0">
                     <span className="text-sm line-clamp-2 break-all block">{name}</span>
@@ -120,32 +114,22 @@ const DailyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hideA
                     </button>
                   )}
                   {!completed && (
-                    <button
-                      type="button"
-                      className="shrink-0 cursor-pointer"
+                    <IconButton
+                      src="/icons/Numbered-List.svg"
+                      alt="할일 쪼개기"
                       onClick={() => setSplitTarget(id)}
                       title="할일 쪼개기"
-                    >
-                      <Image
-                        src="/icons/Numbered-List.svg"
-                        width={20}
-                        height={20}
-                        alt="할일 쪼개기"
-                      />
-                    </button>
+                    />
                   )}
                   {!completed && (
-                    <button
-                      className="shrink-0 cursor-pointer"
+                    <IconButton
+                      src="/icons/Pencil.png"
+                      alt="수정"
                       onClick={() => router.push(`/play/quest/edit-quest/${id}`)}
-                    >
-                      <Image src="/icons/Pencil.png" width={20} height={20} alt="수정" />
-                    </button>
+                    />
                   )}
                   {!completed && (
-                    <button className="shrink-0 cursor-pointer" onClick={() => deleteQuest(id)}>
-                      <Image src="/icons/circle-x.svg" width={20} height={20} alt="삭제" />
-                    </button>
+                    <IconButton src="/icons/circle-x.svg" alt="삭제" onClick={() => deleteQuest(id)} />
                   )}
 
                   {/* 서브태스크 펼침 영역 — w-full basis-full 로 다음 줄에 배치 */}
@@ -155,18 +139,13 @@ const DailyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hideA
                         const isDone = !!s.completedAt;
                         return (
                           <div key={s.id} className="flex items-center gap-2">
-                            <button
-                              className="shrink-0 cursor-pointer disabled:cursor-not-allowed"
+                            <IconButton
+                              size={16}
+                              src={isDone ? "/icons/check_on.svg" : "/icons/check_off.svg"}
+                              alt={isDone ? "완료" : "미완료"}
                               disabled={isDone || completed}
                               onClick={() => { if (!isDone && !completed) completeSubTask(id, s.id); }}
-                            >
-                              <Image
-                                src={isDone ? "/icons/check_on.svg" : "/icons/check_off.svg"}
-                                width={16}
-                                height={16}
-                                alt={isDone ? "완료" : "미완료"}
-                              />
-                            </button>
+                            />
                             <span
                               className={`text-xs flex-1 truncate ${
                                 isDone ? "line-through text-stone" : "text-ink"
