@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "@/components/common";
+import { Button, PixelTabs } from "@/components/common";
 import DailyQuest from "@/components/quest/DailyQuest";
 import WeeklyQuest from "@/components/quest/WeeklyQuest";
 import FightField from "@/components/quest/FightField";
@@ -26,28 +26,14 @@ const QuestPage = () => {
       {/* 탭 + 리스트를 프레임 패널(pixel-card)로 감쌈 — mb-24 로 하단 네비바 위로 */}
       <div className="mx-3 mt-3 mb-24 flex flex-1 min-h-0 flex-col overflow-hidden pixel-card">
         {/* 탭 버튼 */}
-        <div className="flex shrink-0 border-b-2 border-ink">
-          <button
-            className={`flex-1 py-3 text-center font-galmuri11-bold text-sm transition-colors cursor-pointer ${
-              activeTab === "daily"
-                ? "bg-brand text-white"
-                : "bg-paper text-stone"
-            }`}
-            onClick={() => setActiveTab("daily")}
-          >
-            일간 퀘스트({dailyCount.filter(q => q.completed).length}/{dailyCount.length})
-          </button>
-          <button
-            className={`flex-1 py-3 text-center font-galmuri11-bold text-sm transition-colors cursor-pointer ${
-              activeTab === "weekly"
-                ? "bg-brand text-white"
-                : "bg-paper text-stone"
-            }`}
-            onClick={() => setActiveTab("weekly")}
-          >
-            주간 퀘스트({weeklyCount.filter(q => q.completed).length}/{weeklyCount.length})
-          </button>
-        </div>
+        <PixelTabs
+          active={activeTab}
+          onChange={(k) => setActiveTab(k as "daily" | "weekly")}
+          tabs={[
+            { key: "daily", label: `일간 퀘스트(${dailyCount.filter(q => q.completed).length}/${dailyCount.length})` },
+            { key: "weekly", label: `주간 퀘스트(${weeklyCount.filter(q => q.completed).length}/${weeklyCount.length})` },
+          ]}
+        />
 
         {/* 퀘스트 리스트 (프레임 내부 스크롤) */}
         <div className="flex-1 min-h-0 relative">
