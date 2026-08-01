@@ -15,8 +15,8 @@ export function ChoiceButton({ active, className, ...props }: ChoiceButtonProps)
   return (
     <button
       className={cn(
-        "is-rounded cursor-pointer transition-all",
-        active ? "bg-brand text-white ring-2 ring-ink" : "bg-paper text-stone",
+        "pixel-round pixel-bevel cursor-pointer transition-all",
+        active ? "bg-brand text-white" : "bg-[#DBD0BA] text-stone",
         className
       )}
       {...props}

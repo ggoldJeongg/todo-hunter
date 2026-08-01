@@ -90,7 +90,7 @@ const QuestForm = ({ title, submitLabel, onSubmit, errorMessage }: QuestFormProp
       )}
 
       {/* ── 폼 스크롤 영역 ── */}
-      <div className="flex-1 overflow-y-auto px-5 pb-28 space-y-7 scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+      <div className="flex-1 overflow-y-auto px-5 pt-1 pb-28 space-y-7 scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
 
         {/* 1. 할일 입력 */}
         <div>
@@ -121,7 +121,7 @@ const QuestForm = ({ title, submitLabel, onSubmit, errorMessage }: QuestFormProp
                   size="lg"
                   className={`w-full transition-all ${
                     tagged === key
-                      ? "ring-2 ring-ink scale-105"
+                      ? "scale-105"
                       : "opacity-60"
                   }`}
                 >
@@ -169,12 +169,12 @@ const QuestForm = ({ title, submitLabel, onSubmit, errorMessage }: QuestFormProp
             <h3 className="text-sm font-bold mb-3 flex items-center gap-1.5">
               <span className="text-green-400"></span> 반복 요일
             </h3>
-            <div className="grid grid-cols-7 gap-[1px]">
+            <div className="grid grid-cols-7 gap-[1px] justify-items-center">
               {DAYS.map((day) => (
                 <ChoiceButton
                   key={day}
                   active={selectedDays.includes(day)}
-                  className="py-2 text-sm font-bold flex items-center justify-center"
+                  className="w-9 h-9 text-sm font-bold flex items-center justify-center"
                   onClick={() => toggleDay(day)}
                   disabled={isSubmitting}
                 >

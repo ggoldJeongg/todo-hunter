@@ -74,11 +74,9 @@ textarea,
     --stat-emo: #C97B8E;
     --stat-fin: #B89A4E;
     --stat-liv: #9B7CB8;
-    /* 소프트 요소(카드·뱃지 등) 라운드/그림자 — 하이브리드 UI 의 'soft' 쪽 단일 소스 */
+    /* 소프트 카드(quest-card 등) 라운드/그림자 — 'soft' 쪽 단일 소스 */
     --radius-soft: 12px;
-    --radius-soft-sm: 6px;
     --shadow-soft: 0 2px 5px rgba(90, 54, 22, 0.14);
-    --shadow-soft-sm: 0 1px 2px rgba(90, 54, 22, 0.25);
     /* 도트 픽셀 UI 3색 팔레트 — 배경·테두리·글자 단일 소스.
        Tailwind 의 bg-paper / border-stone / text-ink 가 이 값을 참조하므로,
        색을 바꾸려면 여기만 고치면 유틸리티와 CSS 양쪽에 동시에 반영된다. */
@@ -268,10 +266,31 @@ textarea,
     margin:4px;
   }
 
-  /* 버튼 전용: two-step-border 의 도트색만 진한 갈색(#5A3616)으로 오버라이드 → 채움색(#7F4F21)과 분리해 입체감.
-     .two-step-border 정의보다 뒤에 있어야 border-image-source 를 이긴다. */
-  .two-step-border-brown {
-    border-image-source:url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(90,54,22)" /></svg>');
+  /* 테두리 없이 배경색만 도트픽셀 라운드 모양으로 클립 (2단 계단 6px/3px).
+     계단 크기는 6px/3px 숫자로 조절. ※ clip-path 는 바깥 box-shadow 를 잘라냄. */
+  .pixel-round {
+    clip-path: polygon(
+      0 6px,3px 6px,3px 3px,6px 3px,6px 0,
+      calc(100% - 6px) 0,calc(100% - 6px) 3px,calc(100% - 3px) 3px,calc(100% - 3px) 6px,100% 6px,
+      100% calc(100% - 6px),calc(100% - 3px) calc(100% - 6px),calc(100% - 3px) calc(100% - 3px),calc(100% - 6px) calc(100% - 3px),calc(100% - 6px) 100%,
+      6px 100%,6px calc(100% - 3px),3px calc(100% - 3px),3px calc(100% - 6px),0 calc(100% - 6px)
+    );
+  }
+
+  /* 작은 뱃지용 — 픽셀 라운드 계단을 더 작게(4px/2px). */
+  .pixel-round-sm {
+    clip-path: polygon(
+      0 4px,2px 4px,2px 2px,4px 2px,4px 0,
+      calc(100% - 4px) 0,calc(100% - 4px) 2px,calc(100% - 2px) 2px,calc(100% - 2px) 4px,100% 4px,
+      100% calc(100% - 4px),calc(100% - 2px) calc(100% - 4px),calc(100% - 2px) calc(100% - 2px),calc(100% - 4px) calc(100% - 2px),calc(100% - 4px) 100%,
+      4px 100%,4px calc(100% - 2px),2px calc(100% - 2px),2px calc(100% - 4px),0 calc(100% - 4px)
+    );
+  }
+
+  /* 도트픽셀 입체감: 하단 한 톤 어두운 그림자 (inset 이라 clip-path 안 잘림).
+     배경색과 무관하게 어둡게 얹혀 어떤 색에서도 통일된 베벨. */
+  .pixel-bevel {
+    box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.18);
   }
 
   .is-rounded {
@@ -329,7 +348,7 @@ textarea,
     border-image-slice:3;
     border-image-width:3;
     border-image-repeat:stretch;
-    border-image-source:url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(174,174,174)" /></svg>');
+    border-image-source:url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(170,140,100)" /></svg>');
     border-image-outset:2;
     transition: background-image 0.1s;
   }
