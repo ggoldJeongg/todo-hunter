@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useQuestFormStore } from "@/utils/stores/useQuestFormStore";
 import { STATUS } from "@/constants/status";
 import { EXP_PER_QUEST } from "@/constants/game";
-import { Button, Input, Calendar, PageHeader } from "@/components/common";
+import { Button, Input, Calendar, PageHeader, ChoiceButton } from "@/components/common";
 import { Tag } from "@/components/common/Tag";
 import { format } from "date-fns";
 
@@ -141,28 +141,22 @@ const QuestForm = ({ title, submitLabel, onSubmit, errorMessage }: QuestFormProp
             <span className="text-blue-400"></span> Q. 일주일 몇번 반복하나요?
           </h3>
           <div className="grid grid-cols-2 gap-3">
-            <button
-              className={`is-rounded py-2.5 text-sm font-bold cursor-pointer transition-all text-center ${
-                !isWeekly
-                  ? "bg-brand text-white ring-2 ring-ink"
-                  : "bg-paper text-stone"
-              }`}
+            <ChoiceButton
+              active={!isWeekly}
+              className="py-2.5 text-sm font-bold text-center"
               onClick={() => { setIsWeekly(false); setSelectedDays([]); }}
               disabled={isSubmitting}
             >
               일간 퀘스트
-            </button>
-            <button
-              className={`is-rounded py-2.5 text-sm font-bold cursor-pointer transition-all text-center ${
-                isWeekly
-                  ? "bg-brand text-white ring-2 ring-ink"
-                  : "bg-paper text-stone"
-              }`}
+            </ChoiceButton>
+            <ChoiceButton
+              active={isWeekly}
+              className="py-2.5 text-sm font-bold text-center"
               onClick={() => setIsWeekly(true)}
               disabled={isSubmitting}
             >
               주간 퀘스트
-            </button>
+            </ChoiceButton>
           </div>
           <p className="text-[11px] text-stone mt-1.5">
             {isWeekly ? "특정 요일에 반복되는 퀘스트" : "오늘 한 번 하는 일회성 할일"}
@@ -177,18 +171,15 @@ const QuestForm = ({ title, submitLabel, onSubmit, errorMessage }: QuestFormProp
             </h3>
             <div className="grid grid-cols-7 gap-[1px]">
               {DAYS.map((day) => (
-                <button
+                <ChoiceButton
                   key={day}
-                  className={`is-rounded py-2 text-sm font-bold cursor-pointer transition-all flex items-center justify-center ${
-                    selectedDays.includes(day)
-                      ? "bg-brand text-white ring-2 ring-ink"
-                      : "bg-paper text-stone"
-                  }`}
+                  active={selectedDays.includes(day)}
+                  className="py-2 text-sm font-bold flex items-center justify-center"
                   onClick={() => toggleDay(day)}
                   disabled={isSubmitting}
                 >
                   {day}
-                </button>
+                </ChoiceButton>
               ))}
             </div>
           </section>
@@ -204,13 +195,10 @@ const QuestForm = ({ title, submitLabel, onSubmit, errorMessage }: QuestFormProp
               const cfg = DIFFICULTY_CONFIG[key];
               const isActive = difficulty === key;
               return (
-                <button
+                <ChoiceButton
                   key={key}
-                  className={`is-rounded py-3 cursor-pointer transition-all text-center ${
-                    isActive
-                      ? "bg-brand text-white ring-2 ring-ink"
-                      : "bg-paper text-stone"
-                  }`}
+                  active={isActive}
+                  className="py-3 text-center"
                   onClick={() => setDifficulty(key)}
                   disabled={isSubmitting}
                 >
@@ -218,7 +206,7 @@ const QuestForm = ({ title, submitLabel, onSubmit, errorMessage }: QuestFormProp
                     {"★".repeat(cfg.stars)}{"☆".repeat(3 - cfg.stars)}
                   </div>
                   <div className="text-xs font-bold mt-0.5">{cfg.label}</div>
-                </button>
+                </ChoiceButton>
               );
             })}
           </div>
