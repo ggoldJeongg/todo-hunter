@@ -1,4 +1,4 @@
-import { Application, Container } from "pixi.js";
+import { Application, Container, Graphics } from "pixi.js";
 import { PixiCharacter } from "./PixiCharacter";
 import { loadSpriteStrip, loadSpriteFrames } from "./PixiSpriteCompositor";
 import { useQuestStore } from "@/utils/stores/questStore";
@@ -9,6 +9,12 @@ import {
 } from "./BattleThemes";
 import { getMonsterByKillCount, type MonsterDef } from "./MonsterRegistry";
 import { SWORDSMAN_CLIPS, SWORDSMAN_SHEET } from "@/utils/sprite/swordsman";
+
+// 지면선 확인용 디버그 오버레이. 값이 확정되면 false 로.
+const DEBUG_GROUND_LINE = false;
+
+// 플레이어(swordsman) 스프라이트는 발이 살짝 위에 잡혀, 지면선에 맞도록 이만큼 더 내린다(px).
+const PLAYER_FOOT_NUDGE_PX = 8;
 
 // 화면 셰이크 설정
 const SCREEN_SHAKE_INTENSITY = 4;
@@ -39,6 +45,9 @@ export class PixiBattleScene {
   private screenShakeActive = false;
   private screenShakeElapsed = 0;
 
+  // 지면선 디버그 오버레이
+  private groundLine: Graphics | null = null;
+
   setPositionCallback(cb: PositionCallback) {
     this.onPositionUpdate = cb;
   }
@@ -66,8 +75,29 @@ export class PixiBattleScene {
 
     this._buildBackground(width, height);
     await this._buildCharacters(width, height);
+    this._drawGroundLine();
     this._startTicker();
     this._subscribeStore();
+  }
+
+  /** 지면선(groundY) 디버그 오버레이. 캐릭터 발이 이 선에 닿는지 확인용. */
+  private _drawGroundLine() {
+    if (!DEBUG_GROUND_LINE || !this.app) return;
+    if (this.groundLine) {
+      this.app.stage.removeChild(this.groundLine);
+      this.groundLine.destroy();
+      this.groundLine = null;
+    }
+    const y = (this.theme.groundY / 100) * this.height;
+    const g = new Graphics();
+    g.rect(0, y - 1, this.width, 2).fill({ color: 0xff00ff, alpha: 0.9 });
+    // 눈금 (10% 간격) — 값 조절 참고용
+    for (let p = 70; p <= 98; p += 2) {
+      const ty = (p / 100) * this.height;
+      g.rect(0, ty, 6, 1).fill({ color: 0xffffff, alpha: 0.5 });
+    }
+    this.app.stage.addChild(g); // 캐릭터 위에 그려 확인 쉽게
+    this.groundLine = g;
   }
 
   /** 런타임에 테마 변경 */
@@ -78,8 +108,14 @@ export class PixiBattleScene {
     // 배경색 변경
     this.app.renderer.background.color = this.theme.bgColor;
 
+    // 바닥선(groundY)이 테마마다 다를 수 있으므로 캐릭터 발 위치 갱신
+    // 플레이어는 발 보정(3px)을 유지.
+    this.player?.setHomeY(this.theme.groundY + (PLAYER_FOOT_NUDGE_PX / this.height) * 100);
+    this.monster?.setHomeY(this.theme.groundY);
+
     // 배경 재구성
     this._rebuildBackground();
+    this._drawGroundLine();
   }
 
   private _buildBackground(width: number, height: number) {
@@ -105,20 +141,25 @@ export class PixiBattleScene {
   private async _buildCharacters(width: number, height: number) {
     if (!this.app) return;
 
-    // 플레이어 = swordsman 단일 스프라이트(100x100 스트립). 오른쪽(몬스터) 보는 방향.
-    // anchorY=0.9: 프레임 하단 근처가 시각적 발. monster는 이미지를 꽉 채워 anchorY=1.0.
+    // 플레이어·몬스터 모두 테마 바닥선(groundY %)에 발을 맞춘다.
+    // anchorY는 초기값일 뿐, setAutoFoot로 실제 발(불투명 최하단)을 측정해 자동 보정한다.
+    const groundY = this.theme.groundY;
+    // 플레이어만 발 보정: 지면선보다 3px 아래에 발을 두어 선에 딱 맞춘다.
+    const playerY = groundY + (PLAYER_FOOT_NUDGE_PX / height) * 100;
+
     this.player = new PixiCharacter(
       30,
-      90,
+      playerY,
       false,
-      { moveForwardTarget: { xPercent: 60, yPercent: 90 } },
+      { moveForwardTarget: { xPercent: 60, yPercent: playerY } },
       0.9
     );
+    this.player.setAutoFoot(true);
     this.player.setSceneSize(width, height);
 
-    // 몬스터 스프라이트는 프레임 하단에 캐릭터가 붙어있음(위는 투명 여백) → anchorY=1.0
     // 새 몬스터 시트는 기본적으로 왼쪽(플레이어)을 바라봄 → flip=false
-    this.monster = new PixiCharacter(72, 90, false, {}, 1.0);
+    this.monster = new PixiCharacter(72, groundY, false, {}, 1.0);
+    this.monster.setAutoFoot(true);
     this.monster.setSceneSize(width, height);
 
     // monster 먼저, player 나중에 addChild → 겹칠 때 player가 위에 그려짐
@@ -284,6 +325,7 @@ export class PixiBattleScene {
 
     // 배경 재구성
     this._rebuildBackground();
+    this._drawGroundLine();
   }
 
   destroy() {
