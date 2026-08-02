@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { IconButton } from "@/components/common";
+import { IconButton, ChoiceButton } from "@/components/common";
 import { useQuestStore } from "@/utils/stores/questStore";
 import { Tag } from "@/components/common/Tag";
 import { Button } from "@/components/common/Button";
@@ -14,8 +14,6 @@ const DAY_ORDER: Record<string, number> = {
   "월": 0, "화": 1, "수": 2, "목": 3, "금": 4, "토": 5, "일": 6,
 };
 
-// 도트 픽셀 폰트 (셀 보더는 .is-rounded / .is-rounded-sm 클래스 사용)
-const DOT_FONT = "Galmuri11Bold, monospace";
 
 const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hideAddButton?: boolean }) => {
   const { quests, fetchQuests, completeQuest, completeSubTask, deleteQuest, loading, error } = useQuestStore();
@@ -199,36 +197,17 @@ const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hide
                   </div>
                 )}
 
-                {/* 카드 하단 7요일 grid: 이 quest 의 반복 요일 강조 */}
+                {/* 카드 하단 7요일 grid: 반복 요일 강조 — 생성화면 요일 버튼(ChoiceButton) 재사용 */}
                 <div className="grid grid-cols-7 gap-1 mt-2 w-full basis-full">
-                  {DAYS_OF_WEEK.map((day) => {
-                    const inDays = days?.includes(day) ?? false;
-                    const isToday = day === todayKo;
-                    let bg = "#ffffff";
-                    let color = "#d1d5db";
-                    if (inDays) {
-                      if (isToday) {
-                        bg = "#ef4444";
-                        color = "#ffffff";
-                      } else {
-                        bg = "#fee2e2";
-                        color = "#7f1d1d";
-                      }
-                    }
-                    return (
-                      <div
-                        key={day}
-                        className="is-rounded-sm text-center py-1 text-[10px]"
-                        style={{
-                          background: bg,
-                          color,
-                          fontFamily: DOT_FONT,
-                        }}
-                      >
-                        {day}
-                      </div>
-                    );
-                  })}
+                  {DAYS_OF_WEEK.map((day) => (
+                    <ChoiceButton
+                      key={day}
+                      active={days?.includes(day) ?? false}
+                      className="w-full py-1 text-[10px] font-bold flex items-center justify-center pointer-events-none"
+                    >
+                      {day}
+                    </ChoiceButton>
+                  ))}
                 </div>
               </div>
             );
