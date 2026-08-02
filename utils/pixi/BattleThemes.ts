@@ -6,6 +6,8 @@ export interface BattleTheme {
   id: BattleThemeId;
   name: string;
   bgColor: number; // Application background
+  /** 바닥선 (화면 높이 %). 플레이어·몬스터가 이 선에 발을 맞춘다. */
+  groundY: number;
   buildBackground: (width: number, height: number) => Container;
 }
 
@@ -356,30 +358,35 @@ export const BATTLE_THEMES: Record<BattleThemeId, BattleTheme> = {
     id: "night",
     name: "밤하늘",
     bgColor: 0x0f0c29,
+    groundY: 90,
     buildBackground: buildNight,
   },
   forest: {
     id: "forest",
     name: "숲",
     bgColor: 0x0a1f0a,
+    groundY: 90,
     buildBackground: buildForest,
   },
   dungeon: {
     id: "dungeon",
     name: "던전",
     bgColor: 0x1a1a2e,
+    groundY: 90,
     buildBackground: buildDungeon,
   },
   volcano: {
     id: "volcano",
     name: "화산",
     bgColor: 0x1a0a0a,
+    groundY: 90,
     buildBackground: buildVolcano,
   },
   field: {
     id: "field",
     name: "모험의 시작",
     bgColor: 0x000000,
+    groundY: 84.3,
     buildBackground: buildField,
   },
 };

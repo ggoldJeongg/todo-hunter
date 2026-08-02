@@ -64,9 +64,19 @@ textarea,
     --success-color-blue: #2049BD;
     --warning-color-yellow: #D5B946;
     --current-color-green: #3E8B75;
-    /* 브랜드 레드 (버튼·탭·활성 상태 등 UI 크롬 전용 단일 소스) */
-    --brand-red: #C84B3A;
-    --brand-red-active: #a33a2c;
+    /* 브랜드 브라운 (버튼·탭·활성 상태 등 UI 크롬 전용 단일 소스) */
+    --brand-brown: #7F4F21;
+    --brand-brown-active: #663d18;
+    /* 스탯 색 — STR/INT/EMO/FIN/LIV. 성장정원 팔레트로 전 화면 통일(단일 소스).
+       ⚠️ Pixi(PixiGardenScene)는 CSS var 를 못 읽어 숫자로 복제하니 값 변경 시 함께 수정. */
+    --stat-str: #C84B3A;
+    --stat-int: #6B8FB8;
+    --stat-emo: #C97B8E;
+    --stat-fin: #B89A4E;
+    --stat-liv: #9B7CB8;
+    /* 소프트 카드(quest-card 등) 라운드/그림자 — 'soft' 쪽 단일 소스 */
+    --radius-soft: 12px;
+    --shadow-soft: 0 2px 5px rgba(90, 54, 22, 0.14);
     /* 도트 픽셀 UI 3색 팔레트 — 배경·테두리·글자 단일 소스.
        Tailwind 의 bg-paper / border-stone / text-ink 가 이 값을 참조하므로,
        색을 바꾸려면 여기만 고치면 유틸리티와 CSS 양쪽에 동시에 반영된다. */
@@ -255,7 +265,34 @@ textarea,
     padding:1rem 1.5rem;
     margin:4px;
   }
-  
+
+  /* 테두리 없이 배경색만 도트픽셀 라운드 모양으로 클립 (2단 계단 6px/3px).
+     계단 크기는 6px/3px 숫자로 조절. ※ clip-path 는 바깥 box-shadow 를 잘라냄. */
+  .pixel-round {
+    clip-path: polygon(
+      0 6px,3px 6px,3px 3px,6px 3px,6px 0,
+      calc(100% - 6px) 0,calc(100% - 6px) 3px,calc(100% - 3px) 3px,calc(100% - 3px) 6px,100% 6px,
+      100% calc(100% - 6px),calc(100% - 3px) calc(100% - 6px),calc(100% - 3px) calc(100% - 3px),calc(100% - 6px) calc(100% - 3px),calc(100% - 6px) 100%,
+      6px 100%,6px calc(100% - 3px),3px calc(100% - 3px),3px calc(100% - 6px),0 calc(100% - 6px)
+    );
+  }
+
+  /* 작은 뱃지용 — 픽셀 라운드 계단을 더 작게(4px/2px). */
+  .pixel-round-sm {
+    clip-path: polygon(
+      0 4px,2px 4px,2px 2px,4px 2px,4px 0,
+      calc(100% - 4px) 0,calc(100% - 4px) 2px,calc(100% - 2px) 2px,calc(100% - 2px) 4px,100% 4px,
+      100% calc(100% - 4px),calc(100% - 2px) calc(100% - 4px),calc(100% - 2px) calc(100% - 2px),calc(100% - 4px) calc(100% - 2px),calc(100% - 4px) 100%,
+      4px 100%,4px calc(100% - 2px),2px calc(100% - 2px),2px calc(100% - 4px),0 calc(100% - 4px)
+    );
+  }
+
+  /* 도트픽셀 입체감: 하단 한 톤 어두운 그림자 (inset 이라 clip-path 안 잘림).
+     배경색과 무관하게 어둡게 얹혀 어떤 색에서도 통일된 베벨. */
+  .pixel-bevel {
+    box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.18);
+  }
+
   .is-rounded {
     /* 보더 픽셀 축소: 8x8/4px → 6x6/3px (padding·margin·색은 유지) */
     border-style: solid;
@@ -311,7 +348,7 @@ textarea,
     border-image-slice:3;
     border-image-width:3;
     border-image-repeat:stretch;
-    border-image-source:url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(174,174,174)" /></svg>');
+    border-image-source:url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" ?><svg version="1.1" width="8" height="8" xmlns="http://www.w3.org/2000/svg"><path d="M3 1 h1 v1 h-1 z M4 1 h1 v1 h-1 z M2 2 h1 v1 h-1 z M5 2 h1 v1 h-1 z M1 3 h1 v1 h-1 z M6 3 h1 v1 h-1 z M1 4 h1 v1 h-1 z M6 4 h1 v1 h-1 z M2 5 h1 v1 h-1 z M5 5 h1 v1 h-1 z M3 6 h1 v1 h-1 z M4 6 h1 v1 h-1 z" fill="rgb(170,140,100)" /></svg>');
     border-image-outset:2;
     transition: background-image 0.1s;
   }
@@ -825,6 +862,14 @@ textarea,
       inset 0 0 0 4px var(--pixel-ink);
     image-rendering: pixelated;
   }
+
+  /* 퀘스트 카드 — 부드러운 양피지 카드 (라운드 + 얇은 갈색 선 + 그림자). pixel-card 대체. */
+  .quest-card {
+    background: #F5EEDD;
+    border: 2px solid rgba(127, 79, 33, 0.35);
+    border-radius: var(--radius-soft);
+    box-shadow: var(--shadow-soft);
+  }
 }
 
 /* ============================================
@@ -869,5 +914,50 @@ textarea,
   .pixel-frame > * {
     position: relative;
     z-index: 1;
+  }
+}
+
+/* ============================================
+   Frame Main — main_frame 나인슬라이스 (황금 장식 프레임)
+   원본: public/images/frames/main_frame.svg
+   빌드: node scripts/build-main-frame.mjs → main_frame.png (75x75, 중앙 남색 포함)
+   CSS 네이티브 border-image 로 9분할. slice=15(모서리), 두께=--frame-bw.
+   slice==두께==15px & DPR=1 이면 무배율(1:1)이라 픽셀이 완벽히 선명하다.
+   두께를 바꾸려면 원본 슬라이스(15)의 정수배(15/30/45) 권장.
+   ============================================ */
+@layer components {
+  .frame-main {
+    border: 19px 17px 17px 17px solid transparent;
+    border-image: url("/images/frames/main_frame.png") 19 17 17 17 / 19px 17px 17px 17px stretch;
+    image-rendering: pixelated;
+  }
+
+  .frame-card {
+    border: 19px 17px 17px 17px solid transparent;
+    border-image: url("/images/frames/main_frame.png") 19 17 17 17 fill / 19px 17px 17px 17px stretch;
+    image-rendering: pixelated;
+    color: var(--pixel-paper);
+  }
+
+  /* ── 패널별 채움색 변형 ──
+     main_frame.png 의 채움색(#201E26)만 다른 색으로 리컬러한 프레임 변형 사용.
+     외곽선(검정)·금장식은 원본 그대로. 프레임 shorthand 는 .frame-card 것을 물려받고
+     여기선 border-image-source 만 교체한다.
+     생성: node scripts/make-frame-variant.mjs --color=RRGGBB --out=파일명.png */
+  .frame-tint-condition {
+    /* 컨디션: 세이지(#92B2AA) */
+    border-image-source: url("/images/frames/main_frame_green.png");
+  }
+  .frame-tint-level {
+    /* 레벨: 크림(#DED1BC) */
+    border-image-source: url("/images/frames/main_frame_cream.png");
+  }
+
+  /* 캐릭터 카드 전용 — portrait_frame.png (99x99, 모서리 slice 26/25). */
+  .frame-portrait {
+    border: 26px 25px 25px 26px solid transparent; /* top right bottom left */
+    border-image: url("/images/frames/portrait_frame.png") 26 25 25 26 fill / 26px 25px 25px 26px stretch;
+    image-rendering: pixelated;
+    color: var(--pixel-paper);
   }
 }

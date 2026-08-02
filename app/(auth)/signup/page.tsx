@@ -1,7 +1,7 @@
 "use client";
 
 import { LoginError } from "@/application/usecases/auth/errors/LoginError";
-import { Button, Input } from "@/components/common";
+import { Button, Input, PageHeader } from "@/components/common";
 import { submitEmailSignup } from "@/utils/signupSubmit";
 import { useUserStore } from "@/utils/stores/userStore";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -475,13 +475,7 @@ const SignUp = () => {
     <div
       className="flex flex-col min-h-screen overflow-hidden bg-paper"
     >
-      {/* 상단 헤더 */}
-      <div className="flex items-center px-4 pt-6 pb-4">
-        <button onClick={() => router.back()} className="text-ink text-2xl cursor-pointer">←</button>
-        <h1 className="flex-1 text-center text-xl font-galmuri11-bold text-ink mr-6">
-          {isKakao ? "닉네임 설정" : "회원가입"}
-        </h1>
-      </div>
+      <PageHeader title={isKakao ? "닉네임 설정" : "회원가입"} />
 
       {/* 폼 영역 */}
       <div className="flex-1 flex flex-col items-center px-6 pt-6 overflow-y-auto">
@@ -490,8 +484,7 @@ const SignUp = () => {
       {!isKakao && (
         <div>
           <div className="flex items-center gap-2">
-            <Input placeholder="아이디" className="is-rounded-form w-full shadow-none"
-              ref={loginIdRef} onChange={handleLoginIdChange} />
+            <Input placeholder="아이디"              ref={loginIdRef} onChange={handleLoginIdChange} />
             <Button style={{ padding: "4px 16px", marginRight: 0 }} state="primary"
               onClick={handleCheckExistLoginId}>중복확인</Button>
           </div>
@@ -508,8 +501,7 @@ const SignUp = () => {
 
       {/* 닉네임 */}
       <div>
-        <Input placeholder="닉네임" className="is-rounded-form w-full shadow-none"
-          ref={nicknameRef} onChange={handleNicknameChange} />
+        <Input placeholder="닉네임"          ref={nicknameRef} onChange={handleNicknameChange} />
         {nicknameEmpty && (
           <span className="block mt-1 text-sm text-[#A72F35]">
             닉네임을 입력해 주세요.
@@ -521,8 +513,7 @@ const SignUp = () => {
       {!isKakao && (
         <div>
           <div className="flex items-center gap-2">
-            <Input placeholder="이메일" className="is-rounded-form w-full shadow-none"
-              type="email" ref={emailRef} onChange={handleEmailChange} />
+            <Input placeholder="이메일"              type="email" ref={emailRef} onChange={handleEmailChange} />
             <Button style={{ padding: "4px 16px", marginRight: 0 }} state="primary" onClick={handleCheckExistEmail}>중복확인</Button>
           </div>
           {(emailEmpty || showEmailCheckMessage || emailInvalid || emailExists !== null || showVerificationMessage) && (
@@ -543,7 +534,7 @@ const SignUp = () => {
         <>
           {/* 비밀번호 */}
           <div>
-            <Input placeholder="비밀번호" className="is-rounded-form w-full shadow-none" type="password"
+            <Input placeholder="비밀번호" type="password"
               ref={passwordRef} value={password} onChange={handlePasswordChange} />
             {passwordEmpty && (
               <span className="block mt-1 text-sm text-[#A72F35]">
@@ -554,7 +545,7 @@ const SignUp = () => {
 
           {/* 비밀번호 재입력 */}
           <div>
-            <Input placeholder="비밀번호 재입력" className="is-rounded-form w-full shadow-none" type="password"
+            <Input placeholder="비밀번호 재입력" type="password"
               ref={confirmPasswordRef} value={confirmPassword} onChange={handleConfirmPasswordChange} />
             {(confirmPasswordEmpty || passwordsMatch !== null) && (
               <span className={`block mt-1 text-sm ${confirmPasswordEmpty || !passwordsMatch ? "text-[#A72F35]" : "text-[#0F6F4A]"}`}>
@@ -569,7 +560,7 @@ const SignUp = () => {
             <div className="flex items-center gap-2">
               <Input
                 placeholder={isCodeSent ? "인증코드" : "인증번호 발송"}
-                className={`is-rounded-form w-full shadow-none ${isCodeSent && isVerified ? "text-muted-foreground" : ""}`}
+                className={`${isCodeSent && isVerified ? "text-muted-foreground" : ""}`}
                 ref={isCodeSent ? verificationCodeRef : null}
                 readOnly={isCodeSent && !!isVerified}
                 onChange={handleVerificationCodeChange}

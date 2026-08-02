@@ -1,0 +1,929 @@
+{
+  "version": 1,
+  "config": {
+    "scale": 2.5,
+    "aspect": 1.5,
+    "background": "/images/square/square_bg.png",
+    "collisionMask": "/images/square/square_mask.png"
+  },
+  "player": {
+    "spawn": {
+      "x": 50.3,
+      "y": 59.2
+    }
+  },
+  "objects": [
+    {
+      "id": "prop-msaeimaz-1",
+      "x": 18.1,
+      "y": 25.7,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 180,
+      "frame": {
+        "x": 35,
+        "y": 320,
+        "w": 216,
+        "h": 185
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaelob3-2",
+      "x": 80.5,
+      "y": 25.6,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 180,
+      "frame": {
+        "x": 274,
+        "y": 312,
+        "w": 222,
+        "h": 197
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaemhiz-3",
+      "x": 49.8,
+      "y": 13.4,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 75,
+      "frame": {
+        "x": 434,
+        "y": 557,
+        "w": 93,
+        "h": 88
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaepikv-4",
+      "x": 50.1,
+      "y": 49.6,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 130,
+      "frame": {
+        "x": 27,
+        "y": 558,
+        "w": 145,
+        "h": 116
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaeqjx2-6",
+      "x": 83.2,
+      "y": 59.3,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 180,
+      "frame": {
+        "x": 520,
+        "y": 312,
+        "w": 211,
+        "h": 197
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaeqzhs-7",
+      "x": 12.1,
+      "y": 57,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 180,
+      "frame": {
+        "x": 753,
+        "y": 312,
+        "w": 202,
+        "h": 197
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaesjwe-9",
+      "x": 3,
+      "y": 53.5,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 130,
+      "frame": {
+        "x": 1288,
+        "y": 523,
+        "w": 107,
+        "h": 123
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaesv3y-10",
+      "x": 92.5,
+      "y": 46,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 130,
+      "frame": {
+        "x": 1288,
+        "y": 523,
+        "w": 107,
+        "h": 123
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaet6d0-11",
+      "x": 98.2,
+      "y": 61.3,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 60,
+      "frame": {
+        "x": 1284,
+        "y": 672,
+        "w": 63,
+        "h": 71
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaetuwe-12",
+      "x": 29.1,
+      "y": 15.2,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 130,
+      "frame": {
+        "x": 1288,
+        "y": 523,
+        "w": 107,
+        "h": 123
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaeu6if-13",
+      "x": 4.1,
+      "y": 13.1,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 130,
+      "frame": {
+        "x": 1288,
+        "y": 523,
+        "w": 107,
+        "h": 123
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaeugiq-14",
+      "x": 94.6,
+      "y": 13.1,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 130,
+      "frame": {
+        "x": 1288,
+        "y": 523,
+        "w": 107,
+        "h": 123
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaevjsd-16",
+      "x": 6.2,
+      "y": 22.5,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 34,
+      "frame": {
+        "x": 1109,
+        "y": 568,
+        "w": 56,
+        "h": 68
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaevs37-17",
+      "x": 68.9,
+      "y": 13,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 35,
+      "frame": {
+        "x": 1053,
+        "y": 564,
+        "w": 42,
+        "h": 69
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaevsbi-18",
+      "x": 70.7,
+      "y": 10.6,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 34,
+      "frame": {
+        "x": 1109,
+        "y": 568,
+        "w": 56,
+        "h": 68
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaew8my-19",
+      "x": 6.7,
+      "y": 60.3,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 39,
+      "frame": {
+        "x": 1183,
+        "y": 560,
+        "w": 78,
+        "h": 77
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaewlln-20",
+      "x": 26.7,
+      "y": 69.9,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 60,
+      "frame": {
+        "x": 555,
+        "y": 552,
+        "w": 63,
+        "h": 90
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaexnfr-21",
+      "x": 37.8,
+      "y": 70.8,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 100,
+      "frame": {
+        "x": 204,
+        "y": 553,
+        "w": 65,
+        "h": 156
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaey1g5-22",
+      "x": 61.2,
+      "y": 71.4,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 100,
+      "frame": {
+        "x": 204,
+        "y": 553,
+        "w": 65,
+        "h": 156
+      },
+      "kind": "prop",
+      "flip": true
+    },
+    {
+      "id": "prop-msaezjt8-25",
+      "x": 95.7,
+      "y": 57.7,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 39,
+      "frame": {
+        "x": 1183,
+        "y": 560,
+        "w": 78,
+        "h": 77
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaf09m5-26",
+      "x": 74.3,
+      "y": 77.1,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 125,
+      "frame": {
+        "x": 1288,
+        "y": 523,
+        "w": 107,
+        "h": 123
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaf11xt-27",
+      "x": 38,
+      "y": 81.7,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 75,
+      "frame": {
+        "x": 922,
+        "y": 535,
+        "w": 110,
+        "h": 107
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaf1xkg-28",
+      "x": 21.3,
+      "y": 58.5,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 40,
+      "frame": {
+        "x": 396,
+        "y": 666,
+        "w": 77,
+        "h": 73
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaf2ehk-29",
+      "x": 76.7,
+      "y": 59.4,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 34,
+      "frame": {
+        "x": 641,
+        "y": 569,
+        "w": 48,
+        "h": 67
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaf2npv-30",
+      "x": 4.9,
+      "y": 62.2,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 22,
+      "frame": {
+        "x": 1394,
+        "y": 599,
+        "w": 44,
+        "h": 43
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaf32o5-31",
+      "x": 27.8,
+      "y": 25.8,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 35,
+      "frame": {
+        "x": 501,
+        "y": 663,
+        "w": 94,
+        "h": 77
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaf3jpq-32",
+      "x": 86.5,
+      "y": 26.1,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 37,
+      "frame": {
+        "x": 1061,
+        "y": 670,
+        "w": 112,
+        "h": 74
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaf45bu-34",
+      "x": 73.1,
+      "y": 8.8,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 130,
+      "frame": {
+        "x": 1288,
+        "y": 523,
+        "w": 107,
+        "h": 123
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaf4f4q-35",
+      "x": 23.8,
+      "y": 77.7,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 62,
+      "frame": {
+        "x": 1288,
+        "y": 523,
+        "w": 107,
+        "h": 123
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaf4k1h-36",
+      "x": 25.5,
+      "y": 80.3,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 39,
+      "frame": {
+        "x": 1183,
+        "y": 560,
+        "w": 78,
+        "h": 77
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaf68fy-38",
+      "x": 91.9,
+      "y": 54.3,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 50,
+      "frame": {
+        "x": 641,
+        "y": 569,
+        "w": 48,
+        "h": 67
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaf7dcq-39",
+      "x": 90.8,
+      "y": 55.8,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 35,
+      "frame": {
+        "x": 848,
+        "y": 568,
+        "w": 52,
+        "h": 69
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaf7mmf-40",
+      "x": 63,
+      "y": 74,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 32,
+      "frame": {
+        "x": 776,
+        "y": 573,
+        "w": 53,
+        "h": 64
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaf7szh-41",
+      "x": 18.3,
+      "y": 50.5,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 28,
+      "frame": {
+        "x": 269,
+        "y": 684,
+        "w": 47,
+        "h": 56
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaf82e8-42",
+      "x": 75.3,
+      "y": 57.2,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 31,
+      "frame": {
+        "x": 331,
+        "y": 678,
+        "w": 49,
+        "h": 61
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaf9ad6-44",
+      "x": 91.4,
+      "y": 12.5,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 50,
+      "frame": {
+        "x": 1183,
+        "y": 560,
+        "w": 78,
+        "h": 77
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msaf9tzk-45",
+      "x": 60.4,
+      "y": 78.3,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 35,
+      "frame": {
+        "x": 1394,
+        "y": 599,
+        "w": 44,
+        "h": 43
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msafa4jl-46",
+      "x": 63.7,
+      "y": 79.6,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 42,
+      "frame": {
+        "x": 1382,
+        "y": 660,
+        "w": 39,
+        "h": 83
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msafajn2-47",
+      "x": 75.6,
+      "y": 79.7,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 36,
+      "frame": {
+        "x": 1284,
+        "y": 672,
+        "w": 63,
+        "h": 71
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msbp5b1s-1",
+      "x": 90.9,
+      "y": 26.1,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 46,
+      "frame": {
+        "x": 43,
+        "y": 973,
+        "w": 157,
+        "h": 91
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msbp5peo-2",
+      "x": 9.1,
+      "y": 24.9,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 43,
+      "frame": {
+        "x": 782,
+        "y": 972,
+        "w": 82,
+        "h": 86
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msbp5xao-3",
+      "x": 68.5,
+      "y": 25.7,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 32,
+      "frame": {
+        "x": 231,
+        "y": 996,
+        "w": 143,
+        "h": 64
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msbp65oo-4",
+      "x": 72.4,
+      "y": 25.6,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 43,
+      "frame": {
+        "x": 782,
+        "y": 972,
+        "w": 82,
+        "h": 86
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msbp6hf6-5",
+      "x": 39.5,
+      "y": 85.7,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 35,
+      "frame": {
+        "x": 979,
+        "y": 985,
+        "w": 128,
+        "h": 70
+      },
+      "kind": "prop",
+      "flip": true
+    },
+    {
+      "id": "prop-msbp73hz-6",
+      "x": 25.8,
+      "y": 21.9,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 36,
+      "frame": {
+        "x": 412,
+        "y": 989,
+        "w": 71,
+        "h": 71
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "npc-msbp7d2e-7",
+      "x": 23.5,
+      "y": 33.5,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 60,
+      "frame": {
+        "x": 69,
+        "y": 789,
+        "w": 68,
+        "h": 101
+      },
+      "kind": "npc",
+      "nickname": "친절한 정심씨",
+      "interactive": false,
+      "lines": [
+        "필요한 거 있으면 말해요~",
+        "오늘도 장사 준비 완료!",
+        "좋은 물건 많이 들어왔어요."
+      ]
+    },
+    {
+      "id": "npc-msbp7s1i-8",
+      "x": 28.2,
+      "y": 53.7,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 60,
+      "frame": {
+        "x": 229,
+        "y": 773,
+        "w": 107,
+        "h": 117
+      },
+      "kind": "npc",
+      "nickname": "의문의 마법사",
+      "interactive": true,
+      "action": "rest",
+      "lines": [
+        "별들이 속삭이는군...",
+        "마나의 흐름이 느껴져.",
+        "잠시 쉬어가겠나?"
+      ]
+    },
+    {
+      "id": "npc-msbp8ltt-9",
+      "x": 88.8,
+      "y": 66.2,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 72,
+      "frame": {
+        "x": 396,
+        "y": 773,
+        "w": 71,
+        "h": 117
+      },
+      "kind": "npc",
+      "nickname": "태양손 최명장",
+      "interactive": false,
+      "flip": true,
+      "lines": [
+        "갓 구운 빵 냄새 좋지?",
+        "오늘 크루아상이 잘 됐어.",
+        "출출하면 들러요~"
+      ]
+    },
+    {
+      "id": "npc-msbp9axh-10",
+      "x": 55,
+      "y": 22.5,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 72,
+      "frame": {
+        "x": 556,
+        "y": 785,
+        "w": 70,
+        "h": 105
+      },
+      "kind": "npc",
+      "nickname": "명수",
+      "interactive": false,
+      "flip": true,
+      "lines": [
+        "오늘 날씨 좋다!",
+        "광장 한 바퀴 돌까?",
+        "심심한데 뭐 하지~"
+      ]
+    },
+    {
+      "id": "npc-msbp9ngn-11",
+      "x": 59.5,
+      "y": 22.6,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 72,
+      "frame": {
+        "x": 705,
+        "y": 789,
+        "w": 66,
+        "h": 101
+      },
+      "kind": "npc",
+      "nickname": "나미",
+      "interactive": false,
+      "flip": true,
+      "lines": [
+        "안녕! 반가워~",
+        "저 분수 예쁘지 않아?",
+        "꽃 향기가 좋네."
+      ]
+    },
+    {
+      "id": "npc-msbpa76h-12",
+      "x": 75.6,
+      "y": 33.8,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 64,
+      "frame": {
+        "x": 1014,
+        "y": 784,
+        "w": 91,
+        "h": 106
+      },
+      "kind": "npc",
+      "nickname": "꽃집 아가씨",
+      "interactive": false,
+      "flip": true,
+      "lines": [
+        "싱싱한 꽃 왔어요~",
+        "이 꽃 한 송이 어때요?",
+        "봄 냄새가 나요."
+      ]
+    },
+    {
+      "id": "npc-msbpafxw-13",
+      "x": 39.7,
+      "y": 40.5,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 60,
+      "frame": {
+        "x": 857,
+        "y": 793,
+        "w": 82,
+        "h": 97
+      },
+      "kind": "npc",
+      "nickname": "박노인",
+      "interactive": false,
+      "lines": [
+        "허허, 좋은 날이구먼.",
+        "젊을 땐 나도 모험가였지.",
+        "천천히 둘러보게나."
+      ]
+    },
+    {
+      "id": "npc-msbpavza-14",
+      "x": 61.1,
+      "y": 47.4,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 72,
+      "frame": {
+        "x": 1159,
+        "y": 780,
+        "w": 80,
+        "h": 110
+      },
+      "kind": "npc",
+      "nickname": "수상한 룰렛 상인",
+      "interactive": true,
+      "flip": true,
+      "action": "roulette",
+      "lines": [
+        "운을 시험해 볼 텐가?",
+        "한 방이면 인생 역전!",
+        "돌림판이 자넬 기다려."
+      ]
+    },
+    {
+      "id": "npc-msbpby3x-15",
+      "x": 64.9,
+      "y": 48.4,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 43,
+      "frame": {
+        "x": 1305,
+        "y": 819,
+        "w": 76,
+        "h": 71
+      },
+      "kind": "npc",
+      "nickname": "멍냥이",
+      "interactive": false,
+      "lines": [
+        "야옹~",
+        "냐앙...",
+        "그르릉..."
+      ]
+    },
+    {
+      "id": "prop-msbpcqyd-17",
+      "x": 59.9,
+      "y": 85.4,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 40,
+      "frame": {
+        "x": 609,
+        "y": 978,
+        "w": 143,
+        "h": 80
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msbpd0ps-18",
+      "x": 73.5,
+      "y": 85.8,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 35,
+      "frame": {
+        "x": 979,
+        "y": 985,
+        "w": 128,
+        "h": 70
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msbpdmu2-19",
+      "x": 42.6,
+      "y": 10.9,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 36,
+      "frame": {
+        "x": 412,
+        "y": 989,
+        "w": 71,
+        "h": 71
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msbpdqza-20",
+      "x": 55.8,
+      "y": 10.1,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 61,
+      "frame": {
+        "x": 1222,
+        "y": 936,
+        "w": 79,
+        "h": 122
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msbpdzmf-21",
+      "x": 58.5,
+      "y": 9.3,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 50,
+      "frame": {
+        "x": 884,
+        "y": 956,
+        "w": 59,
+        "h": 99
+      },
+      "kind": "prop"
+    },
+    {
+      "id": "prop-msbpe86g-22",
+      "x": 38.6,
+      "y": 10.6,
+      "imageSrc": "/images/square/square_sprites.png",
+      "size": 32,
+      "frame": {
+        "x": 231,
+        "y": 996,
+        "w": 143,
+        "h": 64
+      },
+      "kind": "prop"
+    }
+  ]
+}

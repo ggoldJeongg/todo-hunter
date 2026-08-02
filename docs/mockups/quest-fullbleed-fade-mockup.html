@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Quest 화면 · 풀블리드 + 하단 페이드 목업</title>
+<style>
+  :root{
+    --paper:#efe9dc;
+    --card:#f6f1e6;
+    --ink:#2b2620;
+    --stone:#9a8f80;
+    --brown:#7a5a3a;
+    --brown-d:#5e4127;
+    --line:#e2d7c1;
+    --ok:#86a48b;
+    --hp:#5ec16a;
+    --mhp:#d94a4a;
+    --fade:#ffffff;        /* 하단으로 사라지는 색 */
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{
+    font-family:"Galmuri11","DungGeunMo","Apple SD Gothic Neo","Malgun Gothic",monospace,sans-serif;
+    background:radial-gradient(1000px 600px at 50% -10%, #e7dfce, #d7ccb8 100%);
+    color:var(--ink);
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;
+    padding:26px 16px 50px;
+  }
+
+  .phone{
+    width:380px;max-width:100%;height:760px;
+    background:var(--fade);
+    border-radius:30px;overflow:hidden;position:relative;
+    display:flex;flex-direction:column;
+    box-shadow:0 16px 40px rgba(0,0,0,.18), 0 0 0 8px #1c1915, 0 0 0 9px #34291d;
+  }
+
+  /* ══════ 전투 필드 — 영역 지정 없이 전체로 깔림(full-bleed) ══════ */
+  .field{
+    position:relative;height:300px;flex:0 0 auto;overflow:hidden;
+    /* margin·border·border-radius 없음 → 화면 폭에 꽉 참 */
+    background:linear-gradient(180deg,#7fc4e8 0%, #a9d9ec 40%, #bfe0c4 58%, #8fbf6e 78%);
+  }
+  .field .cloud{position:absolute;background:#fff;border-radius:20px;opacity:.85;}
+  .c1{width:60px;height:17px;top:64px;left:56px;box-shadow:24px 6px 0 -3px #fff,-20px 5px 0 -4px #fff;}
+  .c2{width:46px;height:15px;top:82px;right:64px;box-shadow:18px 5px 0 -3px #fff;}
+  .field .hill{position:absolute;bottom:118px;width:100%;}
+  .field .ground{position:absolute;bottom:0;width:100%;height:150px;
+    background:linear-gradient(180deg,#7fb05a 0%,#5f8a3f 22%,#6b4a2e 23%,#573b23 100%);}
+  .field .ground::before{content:"";position:absolute;top:0;width:100%;height:10px;background:#8ec066;}
+
+  .hunter{position:absolute;left:52px;bottom:118px;width:56px;image-rendering:pixelated;}
+  .monster{position:absolute;right:50px;bottom:114px;width:84px;image-rendering:pixelated;
+    animation:bob 2.6s ease-in-out infinite;}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+  /* 하단으로 서서히 사라지는 흰색 그라데이션 (핵심) */
+  .field .fadeout{
+    position:absolute;left:0;right:0;bottom:0;height:150px;pointer-events:none;z-index:6;
+    background:linear-gradient(180deg,
+      rgba(255,255,255,0) 0%,
+      rgba(255,255,255,.35) 42%,
+      rgba(255,255,255,.8) 74%,
+      var(--fade) 100%);
+  }
+  /* 은은한 비네트(선택) */
+  .field .vignette{position:absolute;inset:0;pointer-events:none;z-index:5;
+    background:radial-gradient(ellipse at 50% 45%, transparent 42%, rgba(0,0,0,.35) 100%);}
+
+  /* HUD */
+  .hud{position:absolute;top:16px;left:14px;right:14px;display:flex;justify-content:space-between;gap:8px;z-index:7;}
+  .name-plate{background:#1c1915;border:2px solid #efe4c9;border-radius:4px;padding:5px 7px;min-width:120px;
+    box-shadow:0 2px 0 rgba(0,0,0,.4);}
+  .name-plate .nm{color:#f6edd2;font-size:10px;margin-bottom:4px;display:flex;justify-content:space-between;gap:6px;}
+  .hpbar{height:9px;background:#3a352c;border:1px solid #000;overflow:hidden;}
+  .hpbar>i{display:block;height:100%;}
+  .hp-fill{background:repeating-linear-gradient(90deg,var(--hp) 0 8px,#4fae5a 8px 9px);}
+  .mhp-fill{background:repeating-linear-gradient(90deg,var(--mhp) 0 8px,#b83c3c 8px 9px);}
+
+  /* ══════ 퀘스트 리스트 — 상단 라운드, 페이드 위로 자연스럽게 이어짐 ══════ */
+  .sheet{
+    flex:1 1 auto;min-height:0;display:flex;flex-direction:column;
+    background:var(--card);
+    border-radius:24px 24px 0 0;      /* 상단만 라운드 */
+    margin-top:-60px;                 /* 페이드 구간과 겹쳐 올라옴 */
+    position:relative;z-index:8;
+    box-shadow:0 -10px 24px rgba(0,0,0,.06);
+  }
+  .grabber{width:40px;height:5px;border-radius:5px;background:#dcd0ba;margin:10px auto 2px;}
+
+  .tabs{display:flex;padding:6px 10px 0;}
+  .tab{flex:1;border:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;
+    padding:12px 6px;color:var(--stone);background:transparent;border-radius:12px 12px 0 0;}
+  .tab.active{background:var(--brown);color:#f6edd8;box-shadow:inset 0 -3px 0 var(--brown-d);}
+
+  .list-wrap{flex:1 1 auto;min-height:0;position:relative;border-top:2px solid var(--line);}
+  .list{position:absolute;inset:0;overflow-y:auto;padding:14px;}
+  .list::-webkit-scrollbar{display:none;}
+
+  .quest{position:relative;display:flex;align-items:center;gap:12px;
+    background:#fbf7ee;border:2px solid #e2d7c1;border-radius:12px;
+    padding:12px;margin-bottom:12px;box-shadow:0 2px 0 #e2d7c1;}
+  .quest.done{opacity:.6;}
+  .check{width:24px;height:24px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:900;}
+  .check.off{border:2px solid #cabfa9;color:transparent;}
+  .check.on{background:var(--ok);color:#fff;border:2px solid var(--ok);}
+  .qname{flex:1 1 auto;min-width:0;font-size:14px;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .tag{flex:0 0 auto;font-size:11px;font-weight:700;padding:4px 9px;border-radius:6px;}
+  .tag.emo{background:#f0d3dd;color:#b25278;}
+  .tag.body{background:#d6e6f7;color:#3b6bd6;}
+  .tag.study{background:#e0d7f7;color:#6b4bd6;}
+  .tag.life{background:#d9efd9;color:#3f8f52;}
+
+  .defeated{position:absolute;top:50%;left:50%;width:56%;text-align:center;
+    transform:translate(-50%,-50%) rotate(-4deg);z-index:4;pointer-events:none;
+    background:var(--ok);color:#fff;font-size:13px;letter-spacing:5px;padding:2px 0;
+    border-top:2px solid rgba(255,255,255,.5);border-bottom:2px solid rgba(255,255,255,.5);
+    box-shadow:0 2px 6px rgba(0,0,0,.3);text-shadow:1px 1px 0 rgba(0,0,0,.3);}
+
+  .fab{position:absolute;right:14px;bottom:14px;z-index:9;border:none;cursor:pointer;
+    font-family:inherit;font-size:14px;font-weight:700;color:#f6edd8;
+    background:var(--brown);border:2px solid var(--brown-d);border-radius:10px;
+    padding:11px 16px;box-shadow:0 3px 0 var(--brown-d);}
+
+  .caption{max-width:380px;margin:20px auto 0;color:#6a6155;font-size:12.5px;line-height:1.6;text-align:center;}
+  .caption b{color:#3d372f;}
+</style>
+</head>
+<body>
+
+  <div class="phone">
+
+    <!-- ── 전투 필드: 화면 전체 폭으로 깔림 ── -->
+    <div class="field">
+      <div class="cloud c1"></div>
+      <div class="cloud c2"></div>
+      <svg class="hill" viewBox="0 0 380 60" preserveAspectRatio="none">
+        <path d="M0 60 L74 22 L150 50 L232 18 L316 46 L380 26 L380 60Z" fill="#7fae86" opacity=".7"/>
+      </svg>
+      <div class="ground"></div>
+
+      <svg class="hunter" viewBox="0 0 56 74">
+        <g shape-rendering="crispEdges">
+          <rect x="20" y="6" width="14" height="12" fill="#e8c9a0"/>
+          <rect x="18" y="2" width="18" height="6" fill="#b0596a"/>
+          <rect x="20" y="18" width="16" height="20" fill="#4a5b7a"/>
+          <rect x="16" y="38" width="8" height="22" fill="#33405a"/>
+          <rect x="32" y="38" width="8" height="22" fill="#33405a"/>
+          <rect x="40" y="4" width="4" height="40" fill="#cdd6e0" transform="rotate(16 42 24)"/>
+        </g>
+      </svg>
+
+      <svg class="monster" viewBox="0 0 90 80">
+        <ellipse cx="45" cy="74" rx="34" ry="6" fill="rgba(0,0,0,.25)"/>
+        <path d="M12 52 C8 24 30 12 45 12 C60 12 82 24 78 52 C78 66 64 72 45 72 C26 72 12 66 12 52Z" fill="#ef8a3a"/>
+        <path d="M34 8 C31 2 27 1 30 10 C33 16 37 15 34 8Z" fill="#3f7a2f"/>
+        <path d="M56 8 C59 2 63 1 60 10 C57 16 53 15 56 8Z" fill="#3f7a2f"/>
+        <ellipse cx="34" cy="46" rx="5" ry="6" fill="#2a1b0f"/>
+        <ellipse cx="56" cy="46" rx="5" ry="6" fill="#2a1b0f"/>
+        <circle cx="35.5" cy="44" r="1.6" fill="#fff"/><circle cx="57.5" cy="44" r="1.6" fill="#fff"/>
+        <path d="M38 58 Q45 63 52 58" stroke="#2a1b0f" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </svg>
+
+      <div class="vignette"></div>
+      <!-- 하단으로 서서히 사라지는 흰색 그라데이션 -->
+      <div class="fadeout"></div>
+
+      <div class="hud">
+        <div class="name-plate">
+          <div class="nm"><span>Lv.1 테스트유저</span><span>95/100</span></div>
+          <div class="hpbar"><i class="hp-fill" style="width:95%"></i></div>
+        </div>
+        <div class="name-plate">
+          <div class="nm"><span>Orange Slime</span><span>30/30</span></div>
+          <div class="hpbar"><i class="mhp-fill" style="width:100%"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 퀘스트 리스트: 상단 라운드 + 페이드 위로 이어짐 ── -->
+    <div class="sheet">
+      <div class="grabber"></div>
+
+      <div class="tabs">
+        <button class="tab active">일간 퀘스트(1/1)</button>
+        <button class="tab">주간 퀘스트(0/1)</button>
+      </div>
+
+      <div class="list-wrap">
+        <div class="list">
+          <div class="quest done">
+            <div class="defeated">DEFEATED</div>
+            <div class="check on">✓</div>
+            <div class="qname">화장하고 외출 준비 마치기</div>
+            <div class="tag emo">EMO</div>
+          </div>
+          <div class="quest">
+            <div class="check off">✓</div>
+            <div class="qname">헬스장에서 상체 운동 40분</div>
+            <div class="tag body">신체</div>
+          </div>
+          <div class="quest">
+            <div class="check off">✓</div>
+            <div class="qname">React 렌더링 최적화 아티클 정독</div>
+            <div class="tag study">학습</div>
+          </div>
+          <div class="quest">
+            <div class="check off">✓</div>
+            <div class="qname">밀린 설거지 · 주방 정리하기</div>
+            <div class="tag life">생활</div>
+          </div>
+        </div>
+
+        <button class="fab">＋ 할일 추가</button>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="caption">
+    <b>변경점</b> — 전투 필드의 박스(여백·테두리·라운드)를 없애 <b>화면 전체 폭</b>으로 깔고,
+    필드 하단을 <b>흰색 그라데이션으로 서서히 사라지게</b> 처리했습니다.
+    그 페이드 구간 위로 <b>상단 라운드 리스트 시트</b>가 자연스럽게 이어집니다.
+  </p>
+
+</body>
+</html>

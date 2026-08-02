@@ -36,7 +36,6 @@
     height: 100dvh;
     overflow-y: auto;
     overflow-x: hidden;
-    background-color: var(--pixel-paper);
     image-rendering: pixelated;
     font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
     /* 스크롤바 숨김 */
@@ -56,123 +55,6 @@
     display: none;
     width: 0;
     height: 0;
-}
-
-
-/* ============================================
-   Top Status Bar — 다크 바 + 4 pills
-   ============================================ */
-.char-top-bar {
-    position: relative;
-    z-index: 5;
-    width: 100%;
-    background: linear-gradient(180deg, #2A3F4F 0%, #1F2F3C 100%);
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    flex-wrap: wrap;
-    border-bottom: 4px solid #C8A04E;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.25);
-}
-
-.top-bar-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.top-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: rgba(255,255,255,0.1);
-    color: #FFE5B0;
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 800;
-    border: 1px solid rgba(200, 160, 78, 0.4);
-}
-
-.top-pill .icon {
-    font-size: 14px;
-    line-height: 1;
-}
-
-.top-pill .gold-color {
-    color: #FFD580;
-}
-
-.top-pill .gem-color {
-    color: #80D8E0;
-}
-
-
-/* ============================================
-   Logout button area — 스크롤해도 상단 고정 (좌:피드백 / 우:로그아웃)
-   ============================================ */
-.char-logout-area {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    /* iOS notch / Dynamic Island 안전 영역 + 기본 패딩 */
-    padding: max(12px, env(safe-area-inset-top, 12px)) 14px 8px;
-}
-
-/* 좌측 상단 피드백 버튼 — 도트 픽셀 톤 (양피지 배경 + 스텝드 그림자 + sharp edge) */
-.char-feedback-btn {
-    width: 40px;
-    height: 40px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    /* 양피지 크림 배경 — 게임 패널 톤과 통일 */
-    background: #FAE5B5;
-    border: 2px solid #4A3F2F;
-    /* 픽셀 스텝드 그림자 — 단일 색상 단차로 도트 느낌 */
-    box-shadow:
-      2px 0 0 0 #4A3F2F,
-      0 2px 0 0 #4A3F2F,
-      2px 2px 0 0 #4A3F2F,
-      4px 2px 0 0 #6E5A37,
-      2px 4px 0 0 #6E5A37,
-      4px 4px 0 0 #6E5A37;
-    border-radius: 0;
-    /* 부드러운 transition 제거 — 도트 픽셀 게임 버튼은 즉각 반응 */
-    transition: none;
-    /* 서브픽셀 렌더링 차단으로 가장자리 흐림 방지 */
-    image-rendering: pixelated;
-    cursor: pointer;
-    padding: 0;
-}
-.char-feedback-btn:hover {
-    background: #FFEED1;
-}
-/* 누름 효과 — 그림자 제거 + 살짝 우하단으로 밀어 "버튼 들어감" 느낌 */
-.char-feedback-btn:active {
-    transform: translate(4px, 4px);
-    box-shadow: none;
-}
-.char-feedback-btn svg {
-    /* 모든 SVG 보간 제거 — 도트가 깍둑썰기 그대로 보이게 */
-    image-rendering: pixelated;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: crisp-edges;
-    display: block;
-}
-.char-feedback-btn:hover {
-    transform: translate(1px, 1px);
-    box-shadow: 1px 1px 0 0 rgba(74, 63, 47, 0.4);
-}
-.char-feedback-btn:active {
-    transform: translate(2px, 2px);
-    box-shadow: 0 0 0 0 rgba(74, 63, 47, 0.4);
 }
 
 
@@ -716,7 +598,7 @@
     align-items: center;
     gap: 10px;
     padding: 6px 0;
-    border-bottom: 2px dashed rgba(21, 20, 19, 0.15);
+    border-bottom: 2px dashed rgba(255, 255, 255, 0.12);
 }
 
 .growth-item:last-child {
@@ -734,7 +616,7 @@
 .growth-msg {
     flex: 1;
     font-size: 11px;
-    color: var(--pixel-ink);
+    color: var(--pixel-paper);
     font-weight: 600;
     min-width: 0;
 }
@@ -743,7 +625,7 @@
     flex-shrink: 0;
     font-size: 11px;
     font-weight: 800;
-    color: var(--pixel-ink);
+    color: var(--pixel-paper);
 }
 
 .growth-gain.negative {
@@ -789,7 +671,7 @@
     gap: 4px;
     background: var(--pixel-paper);
     border: 2px solid var(--pixel-ink);
-    border-radius: 0;
+    border-radius: 10px;
     padding: 4px;
     margin-bottom: 14px;
     image-rendering: pixelated;
@@ -803,7 +685,7 @@
     color: var(--pixel-stone);
     background: transparent;
     border: 2px solid transparent;
-    border-radius: 0;
+    border-radius: 10px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -833,14 +715,10 @@
 /* ── 패널 프레임 (탭을 내부에 삽입) ──
    히어로/미니카드와 같은 pixel-card(라운드 + 하드 픽셀 그림자). */
 .stats-panel-frame {
-    /* 3톤 창틀 이중 라인 (globals .pixel-card 와 동일) */
-    background: var(--pixel-paper);
-    border: 2px solid var(--pixel-ink);
-    box-shadow:
-        inset 0 0 0 2px var(--pixel-stone),
-        inset 0 0 0 4px var(--pixel-ink);
+    border: 19px 17px 17px 17px solid transparent;
+    border-image: url('/images/frames/main_frame.png') 19 17 17 17 fill / 19px 17px 17px 17px stretch;
     image-rendering: pixelated;
-    padding: 16px;
+    padding: 1.5rem;
 }
 
 .stats-tabpanel:focus-visible {
@@ -895,7 +773,7 @@
     text-align: center;
     font-size: 13px;
     font-weight: 900;
-    color: var(--pixel-ink);
+    color: var(--pixel-paper);
     margin-top: 8px;
 }
 
@@ -948,7 +826,7 @@
 }
 
 .grass-axis {
-    fill: #6B5C42;
+    fill: var(--pixel-stone);
     font-size: 9px;
 }
 
@@ -958,7 +836,7 @@
     gap: 5px;
     justify-content: flex-end;
     font-size: 10px;
-    color: #6B5C42;
+    color: var(--pixel-stone);
     margin-top: 8px;
 }
 
@@ -986,5 +864,4 @@
     }
     .stat-label { width: 38px; font-size: 10px; }
     .stat-value-right { width: 38px; font-size: 9px; }
-    .top-pill { font-size: 10px; padding: 3px 8px; }
 }

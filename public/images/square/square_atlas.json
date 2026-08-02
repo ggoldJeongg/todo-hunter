@@ -1,0 +1,483 @@
+{
+  "sheet": "/images/square/square_sprites.png",
+  "width": 1448,
+  "height": 1086,
+  "sprites": {
+    "tile_stone1": {
+      "x": 46,
+      "y": 59,
+      "w": 109,
+      "h": 100,
+      "group": "tile"
+    },
+    "tile_stone2": {
+      "x": 187,
+      "y": 59,
+      "w": 115,
+      "h": 100,
+      "group": "tile"
+    },
+    "tile_stone3": {
+      "x": 333,
+      "y": 59,
+      "w": 112,
+      "h": 100,
+      "group": "tile"
+    },
+    "tile_dirt": {
+      "x": 476,
+      "y": 59,
+      "w": 113,
+      "h": 100,
+      "group": "tile"
+    },
+    "tile_grass": {
+      "x": 621,
+      "y": 59,
+      "w": 116,
+      "h": 100,
+      "group": "tile"
+    },
+    "tile_wood": {
+      "x": 770,
+      "y": 59,
+      "w": 120,
+      "h": 100,
+      "group": "tile"
+    },
+    "tile_water": {
+      "x": 920,
+      "y": 59,
+      "w": 117,
+      "h": 99,
+      "group": "tile"
+    },
+    "tile_water_edge": {
+      "x": 1080,
+      "y": 59,
+      "w": 119,
+      "h": 99,
+      "group": "tile"
+    },
+    "tile_stone_edge": {
+      "x": 46,
+      "y": 198,
+      "w": 114,
+      "h": 54,
+      "group": "tile"
+    },
+    "tile_cobble_edge": {
+      "x": 191,
+      "y": 198,
+      "w": 107,
+      "h": 54,
+      "group": "tile"
+    },
+    "tile_grass_dirt1": {
+      "x": 333,
+      "y": 198,
+      "w": 112,
+      "h": 54,
+      "group": "tile"
+    },
+    "tile_grass_dirt2": {
+      "x": 476,
+      "y": 198,
+      "w": 110,
+      "h": 55,
+      "group": "tile"
+    },
+    "tile_stone_grass": {
+      "x": 624,
+      "y": 198,
+      "w": 113,
+      "h": 55,
+      "group": "tile"
+    },
+    "tile_brick": {
+      "x": 770,
+      "y": 198,
+      "w": 116,
+      "h": 56,
+      "group": "tile"
+    },
+    "tile_water_bordered": {
+      "x": 920,
+      "y": 198,
+      "w": 100,
+      "h": 56,
+      "group": "tile"
+    },
+    "shop_cafe": {
+      "x": 35,
+      "y": 320,
+      "w": 216,
+      "h": 185,
+      "group": "building"
+    },
+    "shop_flowers": {
+      "x": 274,
+      "y": 312,
+      "w": 222,
+      "h": 197,
+      "group": "building"
+    },
+    "shop_bakery": {
+      "x": 520,
+      "y": 312,
+      "w": 211,
+      "h": 197,
+      "group": "building"
+    },
+    "shop_potions": {
+      "x": 753,
+      "y": 312,
+      "w": 202,
+      "h": 197,
+      "group": "building"
+    },
+    "shop_books": {
+      "x": 977,
+      "y": 312,
+      "w": 206,
+      "h": 198,
+      "group": "building"
+    },
+    "shop_general": {
+      "x": 1207,
+      "y": 315,
+      "w": 214,
+      "h": 194,
+      "group": "building"
+    },
+    "fountain": {
+      "x": 27,
+      "y": 558,
+      "w": 145,
+      "h": 116,
+      "group": "prop"
+    },
+    "bench": {
+      "x": 295,
+      "y": 570,
+      "w": 108,
+      "h": 78,
+      "group": "prop"
+    },
+    "board": {
+      "x": 434,
+      "y": 557,
+      "w": 93,
+      "h": 88,
+      "group": "prop"
+    },
+    "signpost": {
+      "x": 555,
+      "y": 552,
+      "w": 63,
+      "h": 90,
+      "group": "prop"
+    },
+    "barrel": {
+      "x": 641,
+      "y": 569,
+      "w": 48,
+      "h": 67,
+      "group": "prop"
+    },
+    "barrels": {
+      "x": 695,
+      "y": 565,
+      "w": 56,
+      "h": 80,
+      "group": "prop"
+    },
+    "crate": {
+      "x": 776,
+      "y": 573,
+      "w": 53,
+      "h": 64,
+      "group": "prop"
+    },
+    "crate2": {
+      "x": 848,
+      "y": 568,
+      "w": 52,
+      "h": 69,
+      "group": "prop"
+    },
+    "cart": {
+      "x": 922,
+      "y": 535,
+      "w": 110,
+      "h": 107,
+      "group": "prop"
+    },
+    "flowerpot_pink": {
+      "x": 1053,
+      "y": 564,
+      "w": 42,
+      "h": 69,
+      "group": "prop"
+    },
+    "flowerpot_yellow": {
+      "x": 1109,
+      "y": 568,
+      "w": 56,
+      "h": 68,
+      "group": "prop"
+    },
+    "bush": {
+      "x": 1183,
+      "y": 560,
+      "w": 78,
+      "h": 77,
+      "group": "prop"
+    },
+    "tree": {
+      "x": 1288,
+      "y": 523,
+      "w": 107,
+      "h": 123,
+      "group": "prop"
+    },
+    "tree_small": {
+      "x": 1394,
+      "y": 599,
+      "w": 44,
+      "h": 43,
+      "group": "prop"
+    },
+    "lamp": {
+      "x": 204,
+      "y": 553,
+      "w": 65,
+      "h": 156,
+      "group": "prop"
+    },
+    "sack": {
+      "x": 269,
+      "y": 684,
+      "w": 47,
+      "h": 56,
+      "group": "prop"
+    },
+    "crate_produce": {
+      "x": 331,
+      "y": 678,
+      "w": 49,
+      "h": 61,
+      "group": "prop"
+    },
+    "crate_bottles": {
+      "x": 396,
+      "y": 666,
+      "w": 77,
+      "h": 73,
+      "group": "prop"
+    },
+    "stall_bottles": {
+      "x": 501,
+      "y": 663,
+      "w": 94,
+      "h": 77,
+      "group": "prop"
+    },
+    "hanging_sign": {
+      "x": 612,
+      "y": 666,
+      "w": 59,
+      "h": 73,
+      "group": "prop"
+    },
+    "awning_red": {
+      "x": 692,
+      "y": 678,
+      "w": 164,
+      "h": 61,
+      "group": "prop"
+    },
+    "awning_blue": {
+      "x": 878,
+      "y": 681,
+      "w": 155,
+      "h": 59,
+      "group": "prop"
+    },
+    "planter_pink": {
+      "x": 1061,
+      "y": 670,
+      "w": 112,
+      "h": 74,
+      "group": "prop"
+    },
+    "planter_yellow": {
+      "x": 1199,
+      "y": 668,
+      "w": 53,
+      "h": 76,
+      "group": "prop"
+    },
+    "bush2": {
+      "x": 1284,
+      "y": 672,
+      "w": 63,
+      "h": 71,
+      "group": "prop"
+    },
+    "topiary": {
+      "x": 1382,
+      "y": 660,
+      "w": 39,
+      "h": 83,
+      "group": "prop"
+    },
+    "npc_shopkeeper": {
+      "x": 69,
+      "y": 789,
+      "w": 68,
+      "h": 101,
+      "group": "npc"
+    },
+    "npc_wizard": {
+      "x": 229,
+      "y": 773,
+      "w": 107,
+      "h": 117,
+      "group": "npc"
+    },
+    "npc_baker": {
+      "x": 396,
+      "y": 773,
+      "w": 71,
+      "h": 117,
+      "group": "npc"
+    },
+    "npc_villager_boy": {
+      "x": 556,
+      "y": 785,
+      "w": 70,
+      "h": 105,
+      "group": "npc"
+    },
+    "npc_villager_girl": {
+      "x": 705,
+      "y": 789,
+      "w": 66,
+      "h": 101,
+      "group": "npc"
+    },
+    "npc_elderly": {
+      "x": 857,
+      "y": 793,
+      "w": 82,
+      "h": 97,
+      "group": "npc"
+    },
+    "npc_florist": {
+      "x": 1014,
+      "y": 784,
+      "w": 91,
+      "h": 106,
+      "group": "npc"
+    },
+    "npc_merchant": {
+      "x": 1159,
+      "y": 780,
+      "w": 80,
+      "h": 110,
+      "group": "npc"
+    },
+    "npc_cat": {
+      "x": 1305,
+      "y": 819,
+      "w": 76,
+      "h": 71,
+      "group": "npc"
+    },
+    "fg_stall": {
+      "x": 43,
+      "y": 973,
+      "w": 157,
+      "h": 91,
+      "group": "foreground"
+    },
+    "fg_flowerbox": {
+      "x": 69,
+      "y": 1022,
+      "w": 107,
+      "h": 41,
+      "group": "foreground"
+    },
+    "fg_hedge": {
+      "x": 231,
+      "y": 996,
+      "w": 143,
+      "h": 64,
+      "group": "foreground"
+    },
+    "fg_crate": {
+      "x": 412,
+      "y": 989,
+      "w": 71,
+      "h": 71,
+      "group": "foreground"
+    },
+    "fg_barrel": {
+      "x": 510,
+      "y": 975,
+      "w": 68,
+      "h": 87,
+      "group": "foreground"
+    },
+    "fg_flowerbed": {
+      "x": 609,
+      "y": 978,
+      "w": 143,
+      "h": 80,
+      "group": "foreground"
+    },
+    "fg_chalkboard": {
+      "x": 782,
+      "y": 972,
+      "w": 82,
+      "h": 86,
+      "group": "foreground"
+    },
+    "fg_flowerpot_yellow": {
+      "x": 884,
+      "y": 956,
+      "w": 59,
+      "h": 99,
+      "group": "foreground"
+    },
+    "fg_fence": {
+      "x": 979,
+      "y": 985,
+      "w": 128,
+      "h": 70,
+      "group": "foreground"
+    },
+    "fg_flowerpot_pink": {
+      "x": 1127,
+      "y": 967,
+      "w": 71,
+      "h": 90,
+      "group": "foreground"
+    },
+    "fg_signpost": {
+      "x": 1222,
+      "y": 936,
+      "w": 79,
+      "h": 122,
+      "group": "foreground"
+    },
+    "fg_topiary": {
+      "x": 1330,
+      "y": 944,
+      "w": 50,
+      "h": 114,
+      "group": "foreground"
+    }
+  }
+}

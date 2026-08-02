@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
+import { IconButton, ChoiceButton } from "@/components/common";
 import { useQuestStore } from "@/utils/stores/questStore";
 import { Tag } from "@/components/common/Tag";
 import { Button } from "@/components/common/Button";
@@ -14,8 +14,6 @@ const DAY_ORDER: Record<string, number> = {
   "월": 0, "화": 1, "수": 2, "목": 3, "금": 4, "토": 5, "일": 6,
 };
 
-// 도트 픽셀 폰트 (셀 보더는 .is-rounded / .is-rounded-sm 클래스 사용)
-const DOT_FONT = "Galmuri11Bold, monospace";
 
 const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hideAddButton?: boolean }) => {
   const { quests, fetchQuests, completeQuest, completeSubTask, deleteQuest, loading, error } = useQuestStore();
@@ -92,7 +90,7 @@ const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hide
             return (
               <div
                 key={id}
-                className={`relative flex flex-wrap items-center gap-3 pixel-card p-2.5 ${completed ? "opacity-60" : ""}`}
+                className={`relative flex flex-wrap items-center gap-3 quest-card p-2.5 ${completed ? "opacity-60" : ""}`}
               >
                 {/* 완료 시 DEFEATED 띠 (카드 가운데 가로로, 살짝 회전) */}
                 {completed && (
@@ -119,19 +117,13 @@ const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hide
                   </div>
                 )}
 
-                <button
-                  className="shrink-0 cursor-pointer disabled:cursor-not-allowed"
+                <IconButton
+                  src={completed ? "/icons/check_on.svg" : "/icons/check_off.svg"}
+                  alt={completed ? "완료" : "미완료"}
                   disabled={completed || hasSubTasks}
                   onClick={() => { if (!completed && !hasSubTasks) completeQuest(id); }}
                   title={hasSubTasks ? "서브태스크를 모두 완료해야 합니다" : ""}
-                >
-                  <Image
-                    src={completed ? "/icons/check_on.svg" : "/icons/check_off.svg"}
-                    width={20}
-                    height={20}
-                    alt={completed ? "완료" : "미완료"}
-                  />
-                </button>
+                />
 
                 <div className="flex-1 min-w-0">
                   <span className="text-sm line-clamp-2 break-all block">{name}</span>
@@ -160,32 +152,22 @@ const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hide
                   </button>
                 )}
                 {!completed && (
-                  <button
-                    type="button"
-                    className="shrink-0 cursor-pointer"
+                  <IconButton
+                    src="/icons/Numbered-List.svg"
+                    alt="할일 쪼개기"
                     onClick={() => setSplitTarget(id)}
                     title="할일 쪼개기"
-                  >
-                    <Image
-                      src="/icons/Numbered-List.svg"
-                      width={20}
-                      height={20}
-                      alt="할일 쪼개기"
-                    />
-                  </button>
+                  />
                 )}
                 {!completed && (
-                  <button
-                    className="shrink-0 cursor-pointer"
+                  <IconButton
+                    src="/icons/Pencil.png"
+                    alt="수정"
                     onClick={() => router.push(`/play/quest/edit-quest/${id}`)}
-                  >
-                    <Image src="/icons/Pencil.png" width={20} height={20} alt="수정" />
-                  </button>
+                  />
                 )}
                 {!completed && (
-                  <button className="shrink-0 cursor-pointer" onClick={() => deleteQuest(id)}>
-                    <Image src="/icons/circle-x.svg" width={20} height={20} alt="삭제" />
-                  </button>
+                  <IconButton src="/icons/circle-x.svg" alt="삭제" onClick={() => deleteQuest(id)} />
                 )}
 
                 {/* 서브태스크 펼침 영역 — w-full basis-full 로 다음 줄 배치 */}
@@ -195,18 +177,13 @@ const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hide
                       const isDone = !!s.completedAt;
                       return (
                         <div key={s.id} className="flex items-center gap-2">
-                          <button
-                            className="shrink-0 cursor-pointer disabled:cursor-not-allowed"
+                          <IconButton
+                            size={16}
+                            src={isDone ? "/icons/check_on.svg" : "/icons/check_off.svg"}
+                            alt={isDone ? "완료" : "미완료"}
                             disabled={isDone || completed}
                             onClick={() => { if (!isDone && !completed) completeSubTask(id, s.id); }}
-                          >
-                            <Image
-                              src={isDone ? "/icons/check_on.svg" : "/icons/check_off.svg"}
-                              width={16}
-                              height={16}
-                              alt={isDone ? "완료" : "미완료"}
-                            />
-                          </button>
+                          />
                           <span
                             className={`text-xs flex-1 truncate ${
                               isDone ? "line-through text-stone" : "text-ink"
@@ -220,36 +197,17 @@ const WeeklyQuest = ({ hideHeader, hideAddButton }: { hideHeader?: boolean; hide
                   </div>
                 )}
 
-                {/* 카드 하단 7요일 grid: 이 quest 의 반복 요일 강조 */}
+                {/* 카드 하단 7요일 grid: 반복 요일 강조 — 생성화면 요일 버튼(ChoiceButton) 재사용 */}
                 <div className="grid grid-cols-7 gap-1 mt-2 w-full basis-full">
-                  {DAYS_OF_WEEK.map((day) => {
-                    const inDays = days?.includes(day) ?? false;
-                    const isToday = day === todayKo;
-                    let bg = "#ffffff";
-                    let color = "#d1d5db";
-                    if (inDays) {
-                      if (isToday) {
-                        bg = "#ef4444";
-                        color = "#ffffff";
-                      } else {
-                        bg = "#fee2e2";
-                        color = "#7f1d1d";
-                      }
-                    }
-                    return (
-                      <div
-                        key={day}
-                        className="is-rounded-sm text-center py-1 text-[10px]"
-                        style={{
-                          background: bg,
-                          color,
-                          fontFamily: DOT_FONT,
-                        }}
-                      >
-                        {day}
-                      </div>
-                    );
-                  })}
+                  {DAYS_OF_WEEK.map((day) => (
+                    <ChoiceButton
+                      key={day}
+                      active={days?.includes(day) ?? false}
+                      className="w-full py-1 text-[10px] font-bold flex items-center justify-center pointer-events-none"
+                    >
+                      {day}
+                    </ChoiceButton>
+                  ))}
                 </div>
               </div>
             );

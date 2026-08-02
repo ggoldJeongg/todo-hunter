@@ -108,10 +108,10 @@ const SignIn = () => {
 
   return (
     <div
-      className="flex flex-col min-h-screen overflow-hidden bg-paper"
+      className="flex flex-col min-h-screen overflow-hidden bg-paper justify-center pb-[22vh]"
     >
-      {/* 상단 다크 영역 - 제목 + 입력폼 */}
-      <div className="flex flex-col items-center justify-end pb-8 px-6" style={{ height: "55vh" }}>
+      {/* 제목 + 입력폼 — 위로 치우친 중앙정렬(키보드가 가리지 않도록) */}
+      <div className="flex flex-col items-center px-6">
         <h1
           className="mb-10 text-center text-3xl sm:text-4xl font-galmuri11-bold"        >
           <span className="text-ink">로그인</span>
@@ -128,7 +128,6 @@ const SignIn = () => {
           )}
           <div>
             <Input
-              className="is-rounded-form w-full shadow-none"
               type="text"
               placeholder="ID"
               value={loginId}
@@ -151,7 +150,6 @@ const SignIn = () => {
           </div>
           <div>
             <Input
-              className="is-rounded-form w-full shadow-none"
               type="password"
               placeholder="PASSWORD"
               value={password}
@@ -175,8 +173,8 @@ const SignIn = () => {
         </div>
       </div>
 
-      {/* 하단 밝은 영역 - 버튼 + 링크 + 카카오 */}
-      <div className="flex flex-col items-center flex-1 px-6" >
+      {/* 버튼 + 링크 + 카카오 */}
+      <div className="flex flex-col items-center px-6 pt-8" >
         <div className="flex flex-col items-center gap-3 w-full max-w-[320px]">
           <Button
             value={"play"}
