@@ -16,22 +16,25 @@ import {
   SWORDSMAN_SHEET,
   loadSpriteImage,
 } from "@/utils/sprite/swordsman";
-import { useSquareStore } from "@/utils/stores/squareStore";
+import { useSquareStore, type Direction } from "@/utils/stores/squareStore";
 import { useUserStore } from "@/utils/stores/userStore";
 import {
   loadCollisionMask,
   findReachablePoint,
   findNearestWalkable,
+  findPath,
 } from "@/utils/sprite/CollisionMask";
 import { STATUS } from "@/constants/status";
-import type { SquareUser } from "@/app/play/square/_components/NpcData";
+import {
+  DEFAULT_SQUARE_CONFIG,
+  type SquareMapData,
+} from "@/utils/square/squareMap";
 
-const BACKGROUND_SRC = "/images/backgrounds/square.png";
-const COLLISION_MASK_SRC = "/images/backgrounds/square_mask.png";
-
-// 맵 크기 (뷰포트 대비 배율). CSS 버전과 동일한 값 유지.
-const MAP_SCALE = 2.5;
-const MAP_ASPECT = 1536 / 1024;
+// 배경/충돌은 맵 데이터(map.config)에서 온다.
+// 반응형: 맵은 뷰포트와 무관한 "고정 월드"(WORLD_H × aspect)로 정의하고,
+// 카메라가 world.scale(줌)으로 확대한다 → 어느 기기든 오브젝트 비율이 동일.
+// 줌 = 화면높이 / WORLD_H (높이 맞춤). 데스크톱은 좌우를 더 보고, 월드보다 넓으면 레터박스.
+const WORLD_H = 960; // 고정 월드 높이(px). 에디터 PREVIEW_MAP_WIDTH 와 짝(WORLD_H*aspect).
 const MOVE_SPEED = 25; // %/초
 
 // NPC 상호작용: NPC 앞(플레이어 쪽)에서 멈추는 거리(맵 %).
@@ -59,8 +62,8 @@ const DEPTH_S_NEAR = 1.2;
 const NAME_FONT = "Galmuri11, system-ui, sans-serif";
 
 export interface SquareSceneOptions {
-  npcs: SquareUser[];
-  npcBasePositions: { x: number; y: number }[];
+  /** 광장 맵 데이터 (배경/충돌/오브젝트 배치). loadSquareMap()으로 로드해 전달. */
+  map: SquareMapData;
   onPlayerClick: () => void;
   onNpcClick: (action: "rest" | "roulette" | undefined) => void;
 }
@@ -201,8 +204,9 @@ export class PixiSquareScene {
   private playerNameTag: Container | null = null;
   private playerTimeText: Text | null = null;
 
-  private npcContainers: Container[] = [];
-  // 스프라이트 시트 NPC 애니메이션 (가로 스트립 프레임 순환)
+  private map: SquareMapData | null = null;
+  private objectContainers: Container[] = [];
+  // 스프라이트 시트 애니메이션 (가로 스트립 프레임 순환) — NPC/prop 공용
   private npcAnims: {
     sprite: Sprite;
     frames: Texture[];
@@ -210,13 +214,33 @@ export class PixiSquareScene {
     elapsed: number;
     rate: number;
   }[] = [];
-  private npcPcts: { x: number; y: number }[] = [];
+  // 배치된 오브젝트들의 현재 위치(맵 %) — map.objects 와 인덱스 정렬
+  private objectPcts: { x: number; y: number }[] = [];
+  // 오브젝트별 "걷는 길로 스냅할지" 여부 — NPC=true, prop(장애물)=false
+  private objectSnap: boolean[] = [];
+
+  // 앰비언트 말풍선: NPC별 대사 + 타이머 상태
+  private clock = 0; // 누적 시간(ms)
+  private npcBubbles: {
+    node: Container; // NPC 컨테이너 (말풍선을 자식으로 붙임)
+    size: number;
+    tagX: number; // 이름표와 같은 가로 정렬
+    lines: string[];
+    bubble: Container | null;
+    next: number; // 다음 대사 시작 시각(clock)
+    until: number; // 현재 대사 숨길 시각(clock)
+    last: number; // 직전 대사 인덱스(연속 반복 방지)
+  }[] = [];
 
   private width = 0;
   private height = 0;
 
   // 현재 캐릭터 위치 (맵 %)
   private animPos = { x: 50, y: 70 };
+
+  // A* 경로(맵 % waypoint 목록)와 현재 진행 인덱스. 비어 있으면 정지.
+  private path: { x: number; y: number }[] = [];
+  private pathIndex = 0;
 
   private opts: SquareSceneOptions | null = null;
   private unsubscribe: (() => void) | null = null;
@@ -228,11 +252,15 @@ export class PixiSquareScene {
     | { action: "rest" | "roulette" | undefined; x: number; y: number }
     | null = null;
 
+  private get config() {
+    return this.map?.config ?? DEFAULT_SQUARE_CONFIG;
+  }
+  // 고정 월드 크기 (뷰포트와 무관). 카메라가 world.scale 로 확대한다.
   private get mapWidth() {
-    return Math.max(this.width * MAP_SCALE, this.height * MAP_ASPECT);
+    return WORLD_H * this.config.aspect;
   }
   private get mapHeight() {
-    return this.mapWidth / MAP_ASPECT;
+    return WORLD_H;
   }
   private pctToPxX(p: number) {
     return (p / 100) * this.mapWidth;
@@ -250,8 +278,11 @@ export class PixiSquareScene {
     this.width = width;
     this.height = height;
     this.opts = opts;
+    this.map = opts.map;
     this.animPos = { ...useSquareStore.getState().position };
-    this.npcPcts = opts.npcBasePositions.map((p) => ({ ...p }));
+    // 오브젝트 초기 위치/스냅 여부를 맵 데이터에서 파생
+    this.objectPcts = this.map.objects.map((o) => ({ x: o.x, y: o.y }));
+    this.objectSnap = this.map.objects.map((o) => o.kind === "npc");
 
     this.app = new Application();
     await this.app.init({
@@ -269,15 +300,19 @@ export class PixiSquareScene {
     // 발이 화면 아래(y 큼)일수록 나중에(위에) 그려져 앞에 있는 것처럼 보인다.
     this.world.sortableChildren = true;
 
+    // 바닥(타일맵)은 에디터에서 PNG로 구워 config.background 로 쓴다.
+    // 게임은 배경 이미지 + 오브젝트만 렌더한다.
     await this._buildBackground();
     await this._buildPlayer();
-    await this._buildNpcs();
+    await this._buildObjects();
 
-    // 충돌 마스크 로드 후 NPC + 플레이어 위치를 걸어갈 수 있는 점으로 보정
-    loadCollisionMask(COLLISION_MASK_SRC)
+    // 충돌 마스크 로드 후 오브젝트(NPC) + 플레이어 위치를 걸어갈 수 있는 점으로 보정
+    loadCollisionMask(this.config.collisionMask)
       .then(() => {
-        this._snapNpcPositions();
+        this._snapObjectPositions();
         this._snapPlayerPosition();
+        // 길찾기 격자를 미리 생성해 첫 클릭 시 끊김 방지 (start==goal이라 즉시 반환)
+        findPath(this.animPos.x, this.animPos.y, this.animPos.x, this.animPos.y, this._footprint);
       })
       .catch((err) => console.error("[Square] 충돌 마스크 로드 실패:", err));
 
@@ -287,7 +322,7 @@ export class PixiSquareScene {
 
   private async _buildBackground() {
     if (!this.app) return;
-    const tex = await Assets.load<Texture>(BACKGROUND_SRC);
+    const tex = await Assets.load<Texture>(this.config.background);
     tex.source.scaleMode = "nearest";
     this.bg = new Sprite(tex);
     this.bg.width = this.mapWidth;
@@ -336,63 +371,82 @@ export class PixiSquareScene {
     this._rebuildPlayerNameTag();
   }
 
-  private async _buildNpcs() {
-    if (!this.app || !this.opts) return;
+  private async _buildObjects() {
+    if (!this.app || !this.map) return;
 
-    for (let i = 0; i < this.opts.npcs.length; i++) {
-      const npc = this.opts.npcs[i];
-      const size = npc.avatarSize ?? NPC_DEFAULT_SIZE;
+    const objects = this.map.objects;
+    for (let i = 0; i < objects.length; i++) {
+      const obj = objects[i];
+      const size = obj.size ?? NPC_DEFAULT_SIZE;
       const node = new Container();
 
       // 외형. 좌우반전/오프셋은 sprite에만 적용 → 이름표는 정자세 유지.
+      //  - frame 있음   → 아틀라스 시트에서 해당 사각형만 잘라 사용 (종횡비 유지)
       //  - 가로 스트립   → 정사각 프레임 분할 후 순환 애니메이션 (예: 128x32 = 4프레임)
       //  - 정사각/단일   → 정적 Sprite (예: todo_wheel 1024x1024)
-      const src = npc.imageSrc ?? "/images/characters/npcs/todo_wheel.png";
+      const src = obj.imageSrc;
       let display: Sprite;
+      let frameW: number; // 원본 프레임 픽셀 (종횡비 계산용)
+      let frameH: number;
       const base = await Assets.load<Texture>(src);
       base.source.scaleMode = "nearest";
-      const fw = base.width;
-      const fh = base.height;
-      const isStrip = fw > fh && fw % fh === 0;
-      const frameSize = isStrip ? fh : Math.min(fw, fh);
-      if (isStrip) {
-        const count = fw / fh;
-        const frames = sliceStrip(base, fh, count);
-        const sprite = new Sprite(frames[0]);
-        // 프레임 순환 속도 (ms/frame)
-        this.npcAnims.push({ sprite, frames, idx: 0, elapsed: 0, rate: 300 });
-        display = sprite;
+      if (obj.frame) {
+        const f = obj.frame;
+        const tex = new Texture({
+          source: base.source,
+          frame: new Rectangle(f.x, f.y, f.w, f.h),
+        });
+        display = new Sprite(tex);
+        frameW = f.w;
+        frameH = f.h;
       } else {
-        display = new Sprite(base);
+        const fw = base.width;
+        const fh = base.height;
+        const isStrip = fw > fh && fw % fh === 0;
+        const frameSize = isStrip ? fh : Math.min(fw, fh);
+        if (isStrip) {
+          const count = fw / fh;
+          const frames = sliceStrip(base, fh, count);
+          const sprite = new Sprite(frames[0]);
+          // 프레임 순환 속도 (ms/frame)
+          this.npcAnims.push({ sprite, frames, idx: 0, elapsed: 0, rate: 300 });
+          display = sprite;
+        } else {
+          display = new Sprite(base);
+        }
+        frameW = frameSize;
+        frameH = frameSize;
       }
 
       // 발 기준 정렬 (CSS의 -translate-y-full과 동일: 박스 하단이 좌표에 닿음)
+      // size = 표시 높이. 가로는 프레임 종횡비로 계산(정사각 프레임이면 size와 동일).
       display.anchor.set(0.5, 1.0);
-      display.width = size;
       display.height = size;
-      display.x = npc.offsetX ?? 0;
-      display.y = npc.offsetY ?? 0;
-      if (npc.flip) display.scale.x = -Math.abs(display.scale.x);
+      display.width = size * (frameW / frameH);
+      display.x = obj.offsetX ?? 0;
+      display.y = obj.offsetY ?? 0;
+      if (obj.flip) display.scale.x = -Math.abs(display.scale.x);
 
       // 클릭 판정.
       // Pixi는 스프라이트를 알파가 아닌 "사각 바운딩 박스"로 히트 판정한다.
       // 그대로 두면 투명 여백까지 클릭을 삼켜 주변 빈 땅 클릭 시 이동이 막힌다.
       //  - interactive NPC: 실제 그림 크기에 맞춘 hitArea로 좁혀 받는다.
-      //  - 그 외 NPC: eventMode "none" → 클릭을 통과시켜 항상 이동 가능.
-      if (npc.interactive) {
+      //  - 그 외(비상호작용 NPC/prop): eventMode "none" → 클릭 통과 → 항상 이동 가능.
+      if (obj.kind === "npc" && obj.interactive) {
         const hitW = size * 0.8;
         const hitH = size * 0.9;
+        const action = obj.action;
         node.eventMode = "static";
         node.cursor = "pointer";
         node.hitArea = new Rectangle(
-          (npc.offsetX ?? 0) - hitW / 2,
-          (npc.offsetY ?? 0) - hitH,
+          (obj.offsetX ?? 0) - hitW / 2,
+          (obj.offsetY ?? 0) - hitH,
           hitW,
           hitH
         );
         node.on("pointertap", (e: FederatedPointerEvent) => {
           e.stopPropagation();
-          this._approachNpc(i, npc.action);
+          this._approachNpc(i, action);
         });
       } else {
         node.eventMode = "none";
@@ -400,28 +454,56 @@ export class PixiSquareScene {
 
       node.addChild(display);
 
-      // 이름표 (NPC는 닉네임만) — 그림이 프레임 안에서 치우쳐 있어도
+      // 이름표는 NPC만 (닉네임). 그림이 프레임 안에서 치우쳐 있어도
       // 실제 픽셀 중심에 이름표를 맞춰 가운데 정렬되게 한다.
-      const tag = this._buildNpcNameTag(npc.nickname, size);
-      const img = await loadSpriteImage(src);
-      const artOff = frameArtCenterOffsetPx(img, frameSize, 0, size);
-      tag.x = (npc.offsetX ?? 0) + (npc.flip ? -artOff : artOff);
-      node.addChild(tag);
+      if (obj.kind === "npc") {
+        const tag = this._buildNpcNameTag(obj.nickname, size);
+        let tagX: number;
+        if (obj.frame) {
+          // 아틀라스 프레임은 그림이 프레임에 이미 중앙 정렬됨 → 오프셋 보정 불필요
+          tagX = obj.offsetX ?? 0;
+        } else {
+          const img = await loadSpriteImage(src);
+          const artOff = frameArtCenterOffsetPx(img, frameH, 0, size);
+          tagX = (obj.offsetX ?? 0) + (obj.flip ? -artOff : artOff);
+        }
+        tag.x = tagX;
+        node.addChild(tag);
 
-      node.x = this.pctToPxX(this.npcPcts[i].x);
-      node.y = this.pctToPxY(this.npcPcts[i].y);
+        // 앰비언트 말풍선 등록 (대사가 있는 NPC만). 시작 시각을 인덱스로 stagger.
+        if (obj.lines && obj.lines.length > 0) {
+          this.npcBubbles.push({
+            node,
+            size,
+            tagX,
+            lines: obj.lines,
+            bubble: null,
+            next: 3000 + Math.random() * 8000 + this.npcBubbles.length * 1500,
+            until: 0,
+            last: -1,
+          });
+        }
+      }
+
+      node.x = this.pctToPxX(this.objectPcts[i].x);
+      node.y = this.pctToPxY(this.objectPcts[i].y);
       node.zIndex = node.y; // 발 y 기준 깊이 정렬
-      node.scale.set(depthScale(this.npcPcts[i].y)); // 원근 스케일
+      node.scale.set(depthScale(this.objectPcts[i].y)); // 원근 스케일
       this.world.addChild(node);
-      this.npcContainers.push(node);
+      this.objectContainers.push(node);
     }
   }
 
-  private _snapNpcPositions() {
-    for (let i = 0; i < this.npcPcts.length; i++) {
-      const snapped = findNearestWalkable(this.npcPcts[i].x, this.npcPcts[i].y);
-      this.npcPcts[i] = snapped;
-      const node = this.npcContainers[i];
+  private _snapObjectPositions() {
+    for (let i = 0; i < this.objectPcts.length; i++) {
+      // prop(장애물)은 걷는 길 위로 끌어오지 않는다 — NPC만 스냅.
+      if (!this.objectSnap[i]) continue;
+      const snapped = findNearestWalkable(
+        this.objectPcts[i].x,
+        this.objectPcts[i].y
+      );
+      this.objectPcts[i] = snapped;
+      const node = this.objectContainers[i];
       if (node) {
         node.x = this.pctToPxX(snapped.x);
         node.y = this.pctToPxY(snapped.y);
@@ -438,6 +520,8 @@ export class PixiSquareScene {
     const snapped = findNearestWalkable(this.animPos.x, this.animPos.y);
     if (snapped.x === this.animPos.x && snapped.y === this.animPos.y) return;
     this.animPos = { x: snapped.x, y: snapped.y };
+    this.path = [];
+    this.pathIndex = 0;
     const px = this.pctToPxX(snapped.x);
     const py = this.pctToPxY(snapped.y);
     this.player?.setWorldPosition(px, py);
@@ -465,6 +549,41 @@ export class PixiSquareScene {
     col.y = -size - height - 4;
     col.eventMode = "none";
     return col;
+  }
+
+  /** 앰비언트 말풍선: 크림색 둥근 사각형 + 아래 꼬리 + 텍스트. (0,0)=꼬리 끝(하단 중앙). */
+  private _makeSpeechBubble(text: string): Container {
+    const node = new Container();
+    const label = new Text({
+      text,
+      style: {
+        fontFamily: NAME_FONT,
+        fontSize: 12,
+        fill: 0x2b2b2b,
+        align: "center",
+        wordWrap: true,
+        wordWrapWidth: 150,
+        lineHeight: 15,
+      },
+    });
+    label.anchor.set(0.5, 0);
+    const padX = 8;
+    const padY = 6;
+    const tail = 7;
+    const w = Math.ceil(label.width) + padX * 2;
+    const h = Math.ceil(label.height) + padY * 2;
+
+    const bg = new Graphics();
+    bg.roundRect(-w / 2, -(h + tail), w, h, 7);
+    bg.fill({ color: 0xfdf6e3, alpha: 0.98 });
+    const tri = new Graphics();
+    tri.poly([-6, -tail, 6, -tail, 0, 0]);
+    tri.fill({ color: 0xfdf6e3, alpha: 0.98 });
+
+    label.position.set(0, -(h + tail) + padY);
+    node.addChild(bg, tri, label);
+    node.eventMode = "none";
+    return node;
   }
 
   private _rebuildPlayerNameTag() {
@@ -567,13 +686,62 @@ export class PixiSquareScene {
 
   private _updateCamera(playerPxX: number, playerPxY: number) {
     if (this.width === 0 || this.height === 0) return;
-    let camX = playerPxX - this.width / 2;
-    let camY = playerPxY - this.height / 2;
-    camX = clamp(camX, 0, this.mapWidth - this.width);
-    camY = clamp(camY, 0, this.mapHeight - this.height);
-    // 카메라를 옮기는 대신 월드를 반대로 이동 (CSS translate(-cam)과 동일 원리)
+    // 높이 맞춤 줌: 월드 높이를 화면 높이에 맞춘다 → 오브젝트 비율이 기기 무관하게 동일.
+    const zoom = this.height / this.mapHeight;
+    this.world.scale.set(zoom);
+
+    const worldScreenW = this.mapWidth * zoom;
+    const worldScreenH = this.mapHeight * zoom; // == this.height
+
+    // 가로: 플레이어 추적 + 맵 경계 클램프. 월드가 화면보다 좁으면 가운데(좌우 레터박스).
+    let camX: number;
+    if (worldScreenW <= this.width) {
+      camX = (worldScreenW - this.width) / 2; // 음수 → 좌우 배경색 여백
+    } else {
+      camX = clamp(playerPxX * zoom - this.width / 2, 0, worldScreenW - this.width);
+    }
+    // 세로: 화면 높이에 꽉 참(스크롤 없음).
+    const camY = (worldScreenH - this.height) / 2;
+
+    // 카메라를 옮기는 대신 월드를 반대로 이동
     this.world.x = -camX;
     this.world.y = -camY;
+  }
+
+  private get _footprint() {
+    return {
+      halfWidthPct: (PLAYER_FOOTPRINT_WIDTH / 2 / this.mapWidth) * 100,
+      heightPct: (PLAYER_FOOTPRINT_HEIGHT / this.mapHeight) * 100,
+    };
+  }
+
+  /**
+   * 현재 위치에서 (goalX,goalY)까지 A* 경로를 계산해 걷기 시작한다.
+   * 장애물을 자동 우회. 실패 시 직선 도달 지점으로 폴백. 이동 못 하면 false.
+   */
+  private _walkTo(goalX: number, goalY: number): boolean {
+    const cur = this.animPos;
+    const fp = this._footprint;
+    let path = findPath(cur.x, cur.y, goalX, goalY, fp);
+    if (!path || path.length < 2) {
+      // 폴백: 직선으로 도달 가능한 지점까지
+      const reach = findReachablePoint(cur.x, cur.y, goalX, goalY, 0.5, fp);
+      if (Math.abs(reach.x - cur.x) < 0.3 && Math.abs(reach.y - cur.y) < 0.3) {
+        return false;
+      }
+      path = [
+        { x: cur.x, y: cur.y },
+        { x: reach.x, y: reach.y },
+      ];
+    }
+    this.path = path;
+    this.pathIndex = 1; // [0]은 현재 위치 → 1부터 이동
+    // 목표를 targetPosition에 넣어 "걷는 중" 상태 표시 (도착 시 null)
+    useSquareStore.setState({
+      isWalking: true,
+      targetPosition: { ...path[path.length - 1] },
+    });
+    return true;
   }
 
   private _handleMapClick(e: FederatedPointerEvent) {
@@ -584,15 +752,7 @@ export class PixiSquareScene {
     const xPct = clamp((local.x / this.mapWidth) * 100, 0, 100);
     const yPct = clamp((local.y / this.mapHeight) * 100, 0, 100);
 
-    const cur = this.animPos;
-    // 발자국 박스로 충돌 검사 (CSS 버전과 동일한 footprint 적용)
-    const reach = findReachablePoint(cur.x, cur.y, xPct, yPct, 0.5, {
-      halfWidthPct: (PLAYER_FOOTPRINT_WIDTH / 2 / this.mapWidth) * 100,
-      heightPct: (PLAYER_FOOTPRINT_HEIGHT / this.mapHeight) * 100,
-    });
-    if (Math.abs(reach.x - cur.x) < 0.3 && Math.abs(reach.y - cur.y) < 0.3) return;
-
-    useSquareStore.getState().moveTo(reach.x, reach.y);
+    this._walkTo(xPct, yPct);
   }
 
   /**
@@ -603,7 +763,7 @@ export class PixiSquareScene {
     index: number,
     action: "rest" | "roulette" | undefined
   ) {
-    const npcPos = this.npcPcts[index];
+    const npcPos = this.objectPcts[index];
     if (!npcPos) return;
     const cur = this.animPos;
 
@@ -620,17 +780,17 @@ export class PixiSquareScene {
     const dx = cur.x - npcPos.x;
     const dy = cur.y - npcPos.y;
     const len = Math.hypot(dx, dy) || 1;
-    const standXRaw = npcPos.x + (dx / len) * INTERACT_STAND_GAP;
-    const standYRaw = npcPos.y + (dy / len) * INTERACT_STAND_GAP;
+    const standX = npcPos.x + (dx / len) * INTERACT_STAND_GAP;
+    const standY = npcPos.y + (dy / len) * INTERACT_STAND_GAP;
 
-    // 충돌을 고려해 도달 가능한 지점으로 보정 (맵 클릭과 동일한 footprint)
-    const reach = findReachablePoint(cur.x, cur.y, standXRaw, standYRaw, 0.5, {
-      halfWidthPct: (PLAYER_FOOTPRINT_WIDTH / 2 / this.mapWidth) * 100,
-      heightPct: (PLAYER_FOOTPRINT_HEIGHT / this.mapHeight) * 100,
-    });
-
+    // A*로 서는 지점까지 걸어간 뒤 도착하면 상호작용
     this.pendingInteraction = { action, x: npcPos.x, y: npcPos.y };
-    useSquareStore.getState().moveTo(reach.x, reach.y);
+    if (!this._walkTo(standX, standY)) {
+      // 이미 못 움직일 만큼 가깝거나 막힘 → 바로 상호작용
+      this.pendingInteraction = null;
+      this._faceTowards(npcPos.x);
+      this.opts?.onNpcClick(action);
+    }
   }
 
   /** 대상 x좌표(맵 %)를 향해 좌우 방향을 맞춘다. */
@@ -645,22 +805,43 @@ export class PixiSquareScene {
     this.app.ticker.add((ticker) => {
       const dt = ticker.deltaMS / 1000;
       const store = useSquareStore.getState();
-      const target = store.targetPosition;
 
-      if (target) {
-        const dx = target.x - this.animPos.x;
-        const dy = target.y - this.animPos.y;
+      // A* waypoint 추적: 현재 목표 지점으로 이동, 도달하면 다음 지점으로 (멈추지 않음)
+      if (this.pathIndex < this.path.length) {
+        const wp = this.path[this.pathIndex];
+        const dx = wp.x - this.animPos.x;
+        const dy = wp.y - this.animPos.y;
         const dist = Math.hypot(dx, dy);
         if (dist < 0.5) {
-          this.animPos = { x: target.x, y: target.y };
-          store.arriveAtTarget();
-          this.player?.setRoaming(false);
+          this.animPos = { x: wp.x, y: wp.y };
+          this.pathIndex++;
+          if (this.pathIndex >= this.path.length) {
+            // 최종 도착
+            this.path = [];
+            this.pathIndex = 0;
+            useSquareStore.setState({
+              position: { ...this.animPos },
+              targetPosition: null,
+              isWalking: false,
+            });
+            this.player?.setRoaming(false);
+          }
         } else {
           const step = MOVE_SPEED * dt;
           const r = Math.min(step / dist, 1);
           this.animPos = { x: this.animPos.x + dx * r, y: this.animPos.y + dy * r };
+          // 이동 방향으로 바라보기
+          const dir: Direction =
+            Math.abs(dx) > Math.abs(dy)
+              ? dx > 0
+                ? "right"
+                : "left"
+              : dy > 0
+                ? "down"
+                : "up";
+          if (store.facing !== dir) useSquareStore.setState({ facing: dir });
           this.player?.setRoaming(true);
-          this.player?.setFlip(store.facing === "left");
+          this.player?.setFlip(dir === "left");
         }
       } else {
         this.player?.setRoaming(false);
@@ -689,6 +870,31 @@ export class PixiSquareScene {
       }
 
       this._updatePlayerTime();
+
+      // 앰비언트 말풍선: 일정 간격마다 랜덤 대사를 잠깐 띄웠다 사라짐
+      this.clock += ticker.deltaMS;
+      for (const nb of this.npcBubbles) {
+        if (nb.bubble) {
+          if (this.clock >= nb.until) {
+            nb.node.removeChild(nb.bubble);
+            nb.bubble.destroy({ children: true });
+            nb.bubble = null;
+            nb.next = this.clock + 15000 + Math.random() * 15000; // 15~30초 후 다음
+          }
+        } else if (this.clock >= nb.next) {
+          let idx = Math.floor(Math.random() * nb.lines.length);
+          if (nb.lines.length > 1 && idx === nb.last) {
+            idx = (idx + 1) % nb.lines.length;
+          }
+          nb.last = idx;
+          const bubble = this._makeSpeechBubble(nb.lines[idx]);
+          bubble.x = nb.tagX;
+          bubble.y = -nb.size - 28; // 이름표 위
+          nb.node.addChild(bubble);
+          nb.bubble = bubble;
+          nb.until = this.clock + 3500; // 3.5초 표시
+        }
+      }
 
       // NPC 앞까지 걸어가 도착하면(이동 목표 소진) 상호작용 발동
       if (
@@ -725,10 +931,10 @@ export class PixiSquareScene {
       this.bg.width = this.mapWidth;
       this.bg.height = this.mapHeight;
     }
-    for (let i = 0; i < this.npcContainers.length; i++) {
-      this.npcContainers[i].x = this.pctToPxX(this.npcPcts[i].x);
-      this.npcContainers[i].y = this.pctToPxY(this.npcPcts[i].y);
-      this.npcContainers[i].zIndex = this.npcContainers[i].y;
+    for (let i = 0; i < this.objectContainers.length; i++) {
+      this.objectContainers[i].x = this.pctToPxX(this.objectPcts[i].x);
+      this.objectContainers[i].y = this.pctToPxY(this.objectPcts[i].y);
+      this.objectContainers[i].zIndex = this.objectContainers[i].y;
     }
     const px = this.pctToPxX(this.animPos.x);
     const py = this.pctToPxY(this.animPos.y);

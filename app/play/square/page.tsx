@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useUserStore } from "@/utils/stores/userStore";
 import { useQuestStore } from "@/utils/stores/questStore";
 import { FEATURES } from "@/constants/features";
-import { NPC_USERS } from "./_components/NpcData";
+import { loadSquareMap } from "@/utils/square/squareMap";
 import FocusTimer from "./_components/FocusTimer";
 import SharedQuestSelector from "./_components/SharedQuestSelector";
 import ChatArea from "./_components/ChatArea";
@@ -13,13 +13,7 @@ import RestActivityModal from "./_components/RestActivityModal";
 import RouletteModal from "./_components/RouletteModal";
 import type { PixiSquareScene } from "@/utils/pixi/PixiSquareScene";
 
-// NPC 기준 위치 (맵 % 기준) — 마스크 로드 후 scene이 걸어갈 수 있는 점으로 보정
-const NPC_POSITIONS = [
-  { x: 25, y: 65 }, // 왼쪽 노점
-  { x: 82, y: 65 }, // 오른쪽 노점
-  { x: 40, y: 48 }, // 분수 왼쪽
-  { x: 60, y: 58 }, // 분수 오른쪽
-];
+// NPC/오브젝트 배치는 이제 /public/maps/square.json 에서 로드한다. (loadSquareMap)
 
 // 피처 플래그 OFF 시 직접 URL 접근 방어 — 캐릭터 페이지로 리다이렉트
 function PlazaDisabledRedirect() {
@@ -64,13 +58,16 @@ function SquarePageContent() {
       const canvas = canvasRef.current;
       if (!container || !canvas) return;
 
+      // 광장 맵 데이터(배경/충돌/NPC·오브젝트 배치) 로드
+      const map = await loadSquareMap();
+      if (destroyed) return;
+
       const width = container.clientWidth;
       const height = container.clientHeight;
 
       const scene = new PixiSquareScene();
       await scene.init(canvas, width, height, {
-        npcs: NPC_USERS,
-        npcBasePositions: NPC_POSITIONS,
+        map,
         onPlayerClick: () => setSelectorOpen(true),
         onNpcClick: (action) => {
           if (action === "roulette") setRouletteModalOpen(true);
