@@ -2,8 +2,7 @@
 
 import { useQuestStore } from "@/utils/stores/questStore";
 import { useUserStore } from "@/utils/stores/userStore";
-
-const SEGMENTS = 10;
+import StatBar from "@/components/common/StatBar";
 
 const HudBox = ({
   name,
@@ -16,21 +15,19 @@ const HudBox = ({
   max: number;
   color: string;
 }) => {
-  const ratio = max > 0 ? Math.min(current / max, 1) : 0;
-  const filled = Math.ceil(ratio * SEGMENTS);
   return (
     <div
-      className="min-w-[120px] max-w-[140px] bg-black px-2 py-0.5"
+      className="min-w-[120px] max-w-[150px] bg-black px-2 py-1"
       style={{
-        // 픽셀 게임 스타일: 단단한 흰 테두리 + inner shadow로 두께감
-        border: "2px solid #ffffff",
+        // 둥근 프레임 + 흰 테두리. 안쪽에 매끈한 pill 프로그레스 바.
+        border: "3px solid #ffffff",
+        borderRadius: "10px",
         boxShadow:
-          "inset 0 0 0 1px rgba(0,0,0,1), inset 2px 2px 0 rgba(255,255,255,0.12), 2px 2px 0 rgba(0,0,0,0.6)",
-        imageRendering: "pixelated",
+          "inset 0 0 0 1px rgba(0,0,0,1), 2px 2px 0 rgba(0,0,0,0.5)",
       }}
     >
       <div
-        className="text-[9px] font-bold mb-0.5 text-white text-center break-words"
+        className="text-[9px] font-bold mb-1 text-white text-center break-words"
         style={{
           fontFamily: "Galmuri11Bold, monospace",
           letterSpacing: "0.5px",
@@ -42,24 +39,17 @@ const HudBox = ({
       >
         {name}
       </div>
-      <div className="flex items-center gap-1">
-        <div className="flex gap-[1px] flex-1">
-          {Array.from({ length: SEGMENTS }, (_, i) => (
-            <div
-              key={i}
-              className="flex-1 h-[7px] transition-colors duration-200"
-              style={{
-                background: i < filled ? color : "#1a1a1a",
-                boxShadow:
-                  i < filled
-                    ? "inset 0 -2px 0 rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.25)"
-                    : "inset 0 0 0 1px rgba(255,255,255,0.05)",
-              }}
-            />
-          ))}
-        </div>
+      <div className="flex items-center gap-1.5">
+        <StatBar
+          value={current}
+          max={max}
+          color={color}
+          height={9}
+          className="flex-1"
+          ariaLabel={name}
+        />
         <span
-          className="text-[7px] text-white/80 min-w-[28px] text-right tabular-nums"
+          className="text-[7px] text-white/85 min-w-[30px] text-right tabular-nums"
           style={{ fontFamily: "Galmuri11Bold, monospace" }}
         >
           {current}/{max}

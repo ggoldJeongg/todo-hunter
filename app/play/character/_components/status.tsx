@@ -1,4 +1,5 @@
 import Image from "next/image";
+import StatBar from "@/components/common/StatBar";
 
 // 6 스탯 바 — 다크 패널 위. 아이콘 · 라벨 · 게이지 · 수치 · 설명 한 줄.
 //   체력=STR, 지력=INT, 매력=EMO, 경제력=FIN, 생활력=LIV
@@ -40,7 +41,6 @@ const Status = ({ str, int, emo, fin, liv, stress }: StatusProps) => {
     <ul className="flex flex-col gap-[10px]">
       {STATS.map(({ key, icon, emoji, color, desc }, i) => {
         const value = Math.max(0, Math.min(MAX, values[i] ?? 0));
-        const pct = (value / MAX) * 100;
         return (
           <li key={key} className="flex items-center gap-[8px]">
             {/* 아이콘 배지 — 어두운 ink 배지 위에 컬러 아이콘 */}
@@ -63,17 +63,15 @@ const Status = ({ str, int, emo, fin, liv, stress }: StatusProps) => {
               {key}
             </span>
 
-            {/* 게이지 — 어두운 트랙 + 지표색 채움 (라운드 필) */}
-            <div
-              className="relative h-[12px] w-[92px] shrink-0 overflow-hidden border border-ink bg-ink [image-rendering:pixelated]"
-              role="meter"
-              aria-label={key}
-              aria-valuenow={value}
-              aria-valuemin={0}
-              aria-valuemax={MAX}
-            >
-              <div className="h-full" style={{ width: `${pct}%`, background: color }} />
-            </div>
+            {/* 게이지 — 공용 StatBar (HP·경험치와 동일 디자인) */}
+            <StatBar
+              value={value}
+              max={MAX}
+              color={color}
+              height={12}
+              className="w-[92px] shrink-0"
+              ariaLabel={key}
+            />
 
             <span className="w-[26px] shrink-0 text-right text-[12px] font-bold leading-none tabular-nums text-paper">
               {value}

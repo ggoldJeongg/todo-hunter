@@ -5,6 +5,7 @@ import styles from "./_components/character.module.css";
 import Character from "./_components/character";
 import StatsTabs from "./_components/StatsTabs";
 import { Button } from "@/components/common";
+import StatBar from "@/components/common/StatBar";
 import { useUserStore } from "@/utils/stores/userStore";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, Suspense, useState, useMemo, useCallback } from "react";
@@ -99,7 +100,6 @@ export default function CharacterPage() {
     const currentLevel = level ?? 1;
     const currentExp = exp ?? 0;
     const expToNext = EXP_TO_LEVEL_UP(currentLevel);
-    const expPercent = Math.min((currentExp / expToNext) * 100, 100);
     const wp = willpower ?? 100;
     const wpMax = maxWillpower ?? 100;
 
@@ -209,16 +209,14 @@ export default function CharacterPage() {
                             <p className="text-[11px] font-bold tabular-nums text-ink">
                                 EXP {currentExp} / {expToNext}
                             </p>
-                            <div
-                                className="relative mt-[4px] h-[10px] w-full overflow-hidden border border-ink bg-ink [image-rendering:pixelated]"
-                                role="meter"
-                                aria-label="경험치"
-                                aria-valuenow={currentExp}
-                                aria-valuemin={0}
-                                aria-valuemax={expToNext}
-                            >
-                                <div className="h-full bg-[#E89BB5]" style={{ width: `${expPercent}%` }} />
-                            </div>
+                            <StatBar
+                                value={currentExp}
+                                max={expToNext}
+                                color="#E89BB5"
+                                height={10}
+                                className="mt-[4px] w-full"
+                                ariaLabel="경험치"
+                            />
                         </div>
                     </div>
 
@@ -229,16 +227,14 @@ export default function CharacterPage() {
                             <p className="text-[11px] font-bold text-ink">컨디션</p>
                             <span className="mt-2 text-[24px] leading-none" aria-hidden="true">🍀</span>
                             <p className="mt-2 font-galmuri11-bold text-[15px] text-ink">{condition.label}</p>
-                            <div
-                                className="mt-2 h-[8px] w-full overflow-hidden border border-ink bg-ink [image-rendering:pixelated]"
-                                role="meter"
-                                aria-label="컨디션"
-                                aria-valuenow={condition.value}
-                                aria-valuemin={0}
-                                aria-valuemax={100}
-                            >
-                                <div className="h-full bg-[#6AAF6A]" style={{ width: `${condition.value}%` }} />
-                            </div>
+                            <StatBar
+                                value={condition.value}
+                                max={100}
+                                color="#6AAF6A"
+                                height={8}
+                                className="mt-2 w-full"
+                                ariaLabel="컨디션"
+                            />
                             <p className="mt-1 text-[9px] tabular-nums text-[#5A5651]">{condition.value}점 / 100점</p>
                         </div>
 
