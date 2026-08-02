@@ -671,7 +671,7 @@
     gap: 4px;
     background: var(--pixel-paper);
     border: 2px solid var(--pixel-ink);
-    border-radius: 0;
+    border-radius: 10px;
     padding: 4px;
     margin-bottom: 14px;
     image-rendering: pixelated;
@@ -685,7 +685,7 @@
     color: var(--pixel-stone);
     background: transparent;
     border: 2px solid transparent;
-    border-radius: 0;
+    border-radius: 10px;
     cursor: pointer;
     display: flex;
     align-items: center;
