@@ -1,26 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { PageHeader } from "@/components/common";
 
 export default function TermsPage() {
-  const router = useRouter();
-
   return (
     <div
       className="flex flex-col min-h-screen overflow-hidden bg-paper"
     >
-      <div className="flex items-center px-4 pt-6 pb-4">
-        <button
-          onClick={() => router.back()}
-          className="text-ink text-2xl cursor-pointer"
-          aria-label="뒤로가기"
-        >
-          ←
-        </button>
-        <h1 className="flex-1 text-center text-xl font-galmuri11-bold text-ink mr-6">
-          이용약관
-        </h1>
-      </div>
+      <PageHeader title="이용약관" />
 
       <div className="flex-1 overflow-y-auto px-6 pb-10">
         <article className="mx-auto max-w-[640px] bg-[#fffdf2] border-[3px] border-[#4A3F2F] p-6 text-[13px] leading-7 text-[#4A3F2F] shadow-[4px_4px_0_#c9b178]">

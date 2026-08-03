@@ -75,6 +75,11 @@ export class PixiCharacter {
   private sceneWidth = 0;
   private sceneHeight = 0;
 
+  // 발 자동 정렬(전투 전용 opt-in): 스프라이트의 실제 발(불투명 최하단)을 재서
+  // anchor.y 를 보정 → homeY(=바닥선)에 발이 정확히 닿게 한다. 광장은 사용 안 함.
+  private autoFoot = false;
+  private footMeasured = false;
+
   // 상태
   private state: CharacterState = "idle";
 
@@ -212,6 +217,24 @@ export class PixiCharacter {
     }
   }
 
+  /** 발 자동 정렬 켜기(전투 전용). 켜면 다음 update에서 발 위치를 측정해 anchor 보정. */
+  setAutoFoot(enabled: boolean) {
+    this.autoFoot = enabled;
+    this.footMeasured = false;
+  }
+
+  /** 홈 Y(바닥선 %) 변경 + idle이면 즉시 재배치. (테마 변경 시 바닥선 갱신용) */
+  setHomeY(yPercent: number) {
+    this.homeYPercent = yPercent;
+    this.config.moveForwardTarget = {
+      ...this.config.moveForwardTarget,
+      yPercent,
+    };
+    if (this.state === "idle" && this.sceneHeight > 0) {
+      this.container.y = (this.homeYPercent / 100) * this.sceneHeight;
+    }
+  }
+
   /** 플레이어: 멀티레이어 idle 설정 */
   setIdleLayers(
     renderer: Renderer,
@@ -266,6 +289,7 @@ export class PixiCharacter {
     this.monsterAnim = "idle";
     this.monsterClipIdx = 0;
     this.monsterClipElapsed = 0;
+    this.footMeasured = false; // 새 몬스터 → 발 재측정
 
     if (clips.idle.length > 0) {
       this.sprite.texture = clips.idle[0];
@@ -324,6 +348,7 @@ export class PixiCharacter {
     this.clipFrameRate = frameRate;
     this.clipFrameIdx = 0;
     this.clipElapsed = 0;
+    this.footMeasured = false; // 새 클립 → 발 재측정(autoFoot 켜진 경우만 적용)
 
     if (clips.idle.length > 0) {
       this.sprite.texture = clips.idle[0];
@@ -496,7 +521,41 @@ export class PixiCharacter {
   private _needIdleRestore = false;
 
   /** 매 프레임 호출 (Ticker에서) */
+  /**
+   * 현재 스프라이트 프레임의 실제 발(불투명 픽셀 최하단)을 재서 anchor.y 를 보정.
+   * → homeY(바닥선)에 발이 정확히 닿는다. 프레임 여백이 제각각인 몬스터도 자동 정렬.
+   * extract 실패/빈 프레임이면 기존 anchor 유지.
+   */
+  private _measureFoot(renderer: Renderer) {
+    const tex = this.sprite.texture;
+    if (!tex || tex.width < 1 || tex.height < 1) return;
+    let out: { pixels: Uint8ClampedArray | Uint8Array; width: number; height: number };
+    try {
+      out = renderer.extract.pixels(tex);
+    } catch {
+      return;
+    }
+    const { pixels, width: w, height: h } = out;
+    if (!pixels || w < 1 || h < 1) return;
+    let bottom = -1;
+    for (let y = h - 1; y >= 0 && bottom < 0; y--) {
+      for (let x = 0; x < w; x++) {
+        if (pixels[(y * w + x) * 4 + 3] > 16) {
+          bottom = y;
+          break;
+        }
+      }
+    }
+    if (bottom < 0) return; // 완전 투명
+    const footFrac = Math.min(1, (bottom + 1) / h);
+    this.sprite.anchor.set(this.sprite.anchor.x, footFrac);
+    this.footMeasured = true;
+  }
+
   update(renderer: Renderer, deltaMS: number) {
+    // 발 자동 정렬(전투 전용): 텍스처 준비 후 1회 측정 (클립/몬스터 바뀌면 재측정)
+    if (this.autoFoot && !this.footMeasured) this._measureFoot(renderer);
+
     // idle 프레임 복원 (렌더러 필요)
     if (this._needIdleRestore && this.renderTexture) {
       compositeFrame(

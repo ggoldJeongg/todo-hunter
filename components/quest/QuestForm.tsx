@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useQuestFormStore } from "@/utils/stores/useQuestFormStore";
 import { STATUS } from "@/constants/status";
 import { EXP_PER_QUEST } from "@/constants/game";
-import { Button, Input, Calendar } from "@/components/common";
+import { Button, Input, Calendar, PageHeader, ChoiceButton } from "@/components/common";
 import { Tag } from "@/components/common/Tag";
 import { format } from "date-fns";
 
@@ -65,21 +65,23 @@ const QuestForm = ({ title, submitLabel, onSubmit, errorMessage }: QuestFormProp
   return (
     <div className="flex flex-col bg-paper text-ink h-screen overflow-hidden">
       {/* ── 헤더 ── */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-3 shrink-0">
-        <button onClick={goBack} className="text-ink text-2xl cursor-pointer" disabled={isSubmitting}>
-          &larr;
-        </button>
-        <h1 className="text-lg font-bold">{title}</h1>
-        <Button
-          state="primary"
-          size="S"
-          onClick={handleSubmit}
-          disabled={!questName.trim() || isSubmitting}
-          className={!questName.trim() || isSubmitting ? "opacity-40" : ""}
-        >
-          {isSubmitting ? "저장 중" : submitLabel}
-        </Button>
-      </div>
+      <PageHeader
+        title={title}
+        onBack={goBack}
+        backDisabled={isSubmitting}
+        className="px-4 pt-4 pb-3 shrink-0"
+        right={
+          <Button
+            state="primary"
+            size="S"
+            onClick={handleSubmit}
+            disabled={!questName.trim() || isSubmitting}
+            className={!questName.trim() || isSubmitting ? "opacity-40" : ""}
+          >
+            {isSubmitting ? "저장 중" : submitLabel}
+          </Button>
+        }
+      />
 
       {errorMessage && (
         <p role="alert" className="mx-5 mb-3 rounded bg-red-950/60 px-3 py-2 text-sm text-red-100">
@@ -88,7 +90,7 @@ const QuestForm = ({ title, submitLabel, onSubmit, errorMessage }: QuestFormProp
       )}
 
       {/* ── 폼 스크롤 영역 ── */}
-      <div className="flex-1 overflow-y-auto px-5 pb-28 space-y-7 scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+      <div className="flex-1 overflow-y-auto px-5 pt-1 pb-28 space-y-7 scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
 
         {/* 1. 할일 입력 */}
         <div>
@@ -99,7 +101,7 @@ const QuestForm = ({ title, submitLabel, onSubmit, errorMessage }: QuestFormProp
             maxLength={QUEST_NAME_MAX}
             onChange={(e) => setQuestName(e.target.value)}
             disabled={isSubmitting}
-            className="is-rounded-form w-full shadow-none text-ink"
+            className="text-ink"
           />
           <p className="text-right text-xs text-stone mt-1">
             {questName.length} / {QUEST_NAME_MAX}
@@ -113,13 +115,13 @@ const QuestForm = ({ title, submitLabel, onSubmit, errorMessage }: QuestFormProp
           </h3>
           <div className="grid grid-cols-5 gap-2">
             {STATUS_KEYS.map((key) => (
-              <button key={key} onClick={() => setTagged(key)} className="cursor-pointer" disabled={isSubmitting}>
+              <button key={key} onClick={() => setTagged(key)} className="cursor-pointer scale-90" disabled={isSubmitting}>
                 <Tag
                   variant={key}
                   size="lg"
                   className={`w-full transition-all ${
                     tagged === key
-                      ? "ring-2 ring-ink scale-105"
+                      ? "scale-105"
                       : "opacity-60"
                   }`}
                 >
@@ -139,28 +141,22 @@ const QuestForm = ({ title, submitLabel, onSubmit, errorMessage }: QuestFormProp
             <span className="text-blue-400"></span> Q. 일주일 몇번 반복하나요?
           </h3>
           <div className="grid grid-cols-2 gap-3">
-            <button
-              className={`is-rounded py-2.5 text-sm font-bold cursor-pointer transition-all text-center ${
-                !isWeekly
-                  ? "bg-brand text-white ring-2 ring-ink"
-                  : "bg-paper text-stone"
-              }`}
+            <ChoiceButton
+              active={!isWeekly}
+              className="py-2.5 text-sm font-bold text-center"
               onClick={() => { setIsWeekly(false); setSelectedDays([]); }}
               disabled={isSubmitting}
             >
               일간 퀘스트
-            </button>
-            <button
-              className={`is-rounded py-2.5 text-sm font-bold cursor-pointer transition-all text-center ${
-                isWeekly
-                  ? "bg-brand text-white ring-2 ring-ink"
-                  : "bg-paper text-stone"
-              }`}
+            </ChoiceButton>
+            <ChoiceButton
+              active={isWeekly}
+              className="py-2.5 text-sm font-bold text-center"
               onClick={() => setIsWeekly(true)}
               disabled={isSubmitting}
             >
               주간 퀘스트
-            </button>
+            </ChoiceButton>
           </div>
           <p className="text-[11px] text-stone mt-1.5">
             {isWeekly ? "특정 요일에 반복되는 퀘스트" : "오늘 한 번 하는 일회성 할일"}
@@ -173,20 +169,17 @@ const QuestForm = ({ title, submitLabel, onSubmit, errorMessage }: QuestFormProp
             <h3 className="text-sm font-bold mb-3 flex items-center gap-1.5">
               <span className="text-green-400"></span> 반복 요일
             </h3>
-            <div className="grid grid-cols-7 gap-[1px]">
+            <div className="grid grid-cols-7 gap-[1px] justify-items-center">
               {DAYS.map((day) => (
-                <button
+                <ChoiceButton
                   key={day}
-                  className={`is-rounded py-2 text-sm font-bold cursor-pointer transition-all flex items-center justify-center ${
-                    selectedDays.includes(day)
-                      ? "bg-brand text-white ring-2 ring-ink"
-                      : "bg-paper text-stone"
-                  }`}
+                  active={selectedDays.includes(day)}
+                  className="w-9 h-9 text-sm font-bold flex items-center justify-center"
                   onClick={() => toggleDay(day)}
                   disabled={isSubmitting}
                 >
                   {day}
-                </button>
+                </ChoiceButton>
               ))}
             </div>
           </section>
@@ -202,13 +195,10 @@ const QuestForm = ({ title, submitLabel, onSubmit, errorMessage }: QuestFormProp
               const cfg = DIFFICULTY_CONFIG[key];
               const isActive = difficulty === key;
               return (
-                <button
+                <ChoiceButton
                   key={key}
-                  className={`is-rounded py-3 cursor-pointer transition-all text-center ${
-                    isActive
-                      ? "bg-brand text-white ring-2 ring-ink"
-                      : "bg-paper text-stone"
-                  }`}
+                  active={isActive}
+                  className="py-3 text-center"
                   onClick={() => setDifficulty(key)}
                   disabled={isSubmitting}
                 >
@@ -216,7 +206,7 @@ const QuestForm = ({ title, submitLabel, onSubmit, errorMessage }: QuestFormProp
                     {"★".repeat(cfg.stars)}{"☆".repeat(3 - cfg.stars)}
                   </div>
                   <div className="text-xs font-bold mt-0.5">{cfg.label}</div>
-                </button>
+                </ChoiceButton>
               );
             })}
           </div>

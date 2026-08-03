@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Quest 화면 · 웹툰 에디토리얼 목업</title>
+<style>
+  :root{
+    --paper:#f4efe6;
+    --ink:#26211c;
+    --stone:#8a8178;
+    --line:rgba(38,33,28,.08);
+    --accent:#c2673d;      /* 사냥 오렌지 */
+    --accent-soft:#e9d7c6;
+    --ok:#86a48b;          /* 처치 완료 초록 */
+    --shadow:0 10px 30px rgba(0,0,0,.12);
+    --font: "Pretendard","Apple SD Gothic Neo","Malgun Gothic","Segoe UI",sans-serif;
+    --serif: "Nanum Myeongjo","Iowan Old Style",Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:var(--font);
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #efe7d9 0%, #e4ddd0 45%, #d8cfc0 100%);
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:28px 16px 60px;
+    line-height:1.5;
+  }
+
+  /* ── 폰 프레임 ─────────────────────────────── */
+  .phone{
+    width:390px;
+    max-width:100%;
+    background:var(--paper);
+    border-radius:34px;
+    overflow:hidden;
+    box-shadow:var(--shadow), 0 0 0 8px #1c1915, 0 0 0 9px #322c26;
+    position:relative;
+    height:800px;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ══════════════════════════════════════════════
+     HERO (FightField 재해석)
+     ══════════════════════════════════════════════ */
+  .hero{
+    position:relative;
+    height:360px;
+    flex:0 0 auto;
+    overflow:hidden;
+    color:#fff;
+    background:
+      linear-gradient(180deg,#3a2c4d 0%, #6a4a5a 38%, #b9784f 72%, #e9b06a 100%);
+  }
+  /* 원경 산 실루엣 */
+  .hero .mountains{position:absolute;bottom:96px;left:0;width:100%;opacity:.35;}
+  .hero .mountains-2{position:absolute;bottom:120px;left:0;width:100%;opacity:.22;}
+  /* 지면 */
+  .hero .ground{
+    position:absolute;bottom:0;left:0;width:100%;height:120px;
+    background:linear-gradient(180deg,#5c7a3f 0%, #47632f 100%);
+  }
+  .hero .ground::after{
+    content:"";position:absolute;top:0;left:0;width:100%;height:14px;
+    background:linear-gradient(180deg,rgba(255,255,255,.18),transparent);
+  }
+  /* 별/입자 */
+  .hero .stars{position:absolute;inset:0;opacity:.5;}
+
+  /* 몬스터(오늘의 보스) */
+  .boss{
+    position:absolute; right:26px; bottom:78px; width:132px; height:auto;
+    filter:drop-shadow(0 8px 10px rgba(0,0,0,.35));
+    animation:bob 3.2s ease-in-out infinite;
+  }
+  /* 헌터 실루엣 */
+  .hunter{
+    position:absolute; left:34px; bottom:84px; width:66px; height:auto;
+    filter:drop-shadow(0 6px 8px rgba(0,0,0,.4));
+    animation:bob 3.6s ease-in-out infinite .4s;
+  }
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+  /* 시네마틱 그라데이션 오버레이 (웹툰 히어로 핵심) */
+  .hero .scrim{
+    position:absolute;inset:0;
+    background:
+      linear-gradient(180deg, rgba(20,16,26,.55) 0%, rgba(20,16,26,0) 30%, rgba(20,16,26,0) 45%, rgba(15,12,18,.82) 100%);
+  }
+
+  /* 상단 바 */
+  .hero-top{
+    position:absolute;top:0;left:0;width:100%;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 18px; z-index:3;
+  }
+  .icon-btn{
+    width:34px;height:34px;border:none;border-radius:50%;
+    background:rgba(255,255,255,.14);backdrop-filter:blur(4px);
+    color:#fff;font-size:17px;display:grid;place-items:center;cursor:pointer;
+  }
+
+  /* 몬스터 HP (게임 정체성 유지) */
+  .boss-hp{
+    position:absolute; top:58px; right:18px; z-index:3; width:150px;
+    font-size:11px; letter-spacing:.3px;
+  }
+  .boss-hp .row{display:flex;justify-content:space-between;margin-bottom:4px;text-shadow:0 1px 2px rgba(0,0,0,.5);}
+  .boss-hp .bar{height:8px;border-radius:6px;background:rgba(255,255,255,.22);overflow:hidden;}
+  .boss-hp .bar > i{display:block;height:100%;width:100%;border-radius:6px;
+    background:linear-gradient(90deg,#ff7a59,#ff4d4d);}
+
+  /* 히어로 타이틀 (웹툰 에디토리얼) */
+  .hero-copy{
+    position:absolute; left:22px; right:22px; bottom:26px; z-index:3;
+  }
+  .overline{
+    font-size:12px;letter-spacing:2px;text-transform:uppercase;
+    opacity:.85; display:flex;align-items:center;gap:8px; margin-bottom:10px;
+  }
+  .overline .dot{width:5px;height:5px;border-radius:50%;background:var(--accent);}
+  .hero-title{
+    font-family:var(--serif);
+    font-size:29px; line-height:1.28; font-weight:700; letter-spacing:-.3px;
+    text-shadow:0 2px 12px rgba(0,0,0,.45);
+  }
+  .hero-sub{
+    margin-top:12px; font-size:13.5px; opacity:.9; max-width:290px;
+    text-shadow:0 1px 6px rgba(0,0,0,.5);
+  }
+
+  /* ══════════════════════════════════════════════
+     LIST (QuestList 재해석)
+     ══════════════════════════════════════════════ */
+  .sheet{
+    flex:1 1 auto; min-height:0; display:flex; flex-direction:column;
+    background:var(--paper);
+    border-radius:22px 22px 0 0;
+    margin-top:-18px; position:relative; z-index:4;
+    box-shadow:0 -8px 24px rgba(0,0,0,.08);
+  }
+  .grabber{width:38px;height:4px;border-radius:4px;background:#d8cfc0;margin:10px auto 4px;}
+
+  /* 세그먼트 탭 */
+  .tabs{display:flex;gap:6px;padding:8px 18px 10px;}
+  .tab{
+    flex:1;border:none;cursor:pointer;font-family:var(--font);
+    font-size:13.5px;font-weight:700;padding:10px 8px;border-radius:12px;
+    color:var(--stone);background:transparent;transition:.15s;
+  }
+  .tab .cnt{font-weight:600;opacity:.7;font-size:12px;margin-left:4px;}
+  .tab.active{background:var(--ink);color:var(--paper);box-shadow:0 4px 12px rgba(38,33,28,.18);}
+
+  .section-label{
+    padding:6px 20px 2px;font-size:11.5px;letter-spacing:1px;color:var(--stone);
+    text-transform:uppercase;
+  }
+
+  .list{flex:1 1 auto;overflow-y:auto;padding:2px 0 96px;}
+  .list::-webkit-scrollbar{display:none;}
+
+  /* 퀘스트 = 웹툰 에디토리얼 로우 */
+  .quest{
+    display:flex;gap:14px;align-items:flex-start;
+    padding:16px 20px; position:relative; cursor:pointer;
+  }
+  .quest + .quest::before{
+    content:"";position:absolute;top:0;left:20px;right:20px;height:1px;background:var(--line);
+  }
+  .thumb{
+    flex:0 0 auto;width:64px;height:64px;border-radius:14px;overflow:hidden;
+    display:grid;place-items:center;position:relative;
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.05);
+  }
+  .thumb svg{width:78%;height:78%;}
+  .qmeta{flex:1 1 auto;min-width:0;padding-top:2px;}
+  .qcat{font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--accent);margin-bottom:4px;}
+  .qtitle{font-size:15.5px;font-weight:700;line-height:1.35;color:var(--ink);}
+  .qdesc{font-size:12.5px;color:var(--stone);margin-top:5px;line-height:1.45;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .qfoot{display:flex;align-items:center;gap:8px;margin-top:9px;font-size:11.5px;color:var(--stone);}
+  .pill{padding:2px 8px;border-radius:20px;font-weight:700;font-size:10.5px;letter-spacing:.3px;}
+  .pill.body{background:#e7efff;color:#3b6bd6;}
+  .pill.study{background:#e9e3ff;color:#6b4bd6;}
+  .pill.life{background:#e4f4e4;color:#3f8f52;}
+  .sub-progress{display:flex;align-items:center;gap:6px;}
+  .sub-bar{width:52px;height:5px;border-radius:5px;background:#e5ddd0;overflow:hidden;}
+  .sub-bar>i{display:block;height:100%;background:var(--accent);border-radius:5px;}
+
+  /* 우측 액션(체크/enter) */
+  .qgo{flex:0 0 auto;align-self:center;color:#c9beb0;font-size:20px;}
+
+  /* 완료된 퀘스트 */
+  .quest.done{opacity:.62;}
+  .quest.done .qtitle{color:var(--stone);}
+  .stamp{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:11px;font-weight:800;letter-spacing:1px;color:#fff;
+    background:var(--ok);padding:3px 9px;border-radius:20px;
+  }
+
+  /* 플로팅 추가 버튼 */
+  .fab{
+    position:absolute;right:18px;bottom:22px;z-index:8;
+    border:none;cursor:pointer;font-family:var(--font);
+    background:var(--ink);color:var(--paper);
+    font-size:14px;font-weight:700;
+    padding:14px 20px;border-radius:30px;
+    box-shadow:0 8px 22px rgba(38,33,28,.28);
+    display:flex;align-items:center;gap:8px;
+  }
+
+  .caption{
+    max-width:390px;margin:22px auto 0;color:#6a6258;font-size:12.5px;line-height:1.6;
+    text-align:center;
+  }
+  .caption b{color:#3d372f;}
+</style>
+</head>
+<body>
+
+  <div class="phone">
+
+    <!-- ══════ HERO (구 FightField) ══════ -->
+    <header class="hero">
+      <!-- 원경 산 -->
+      <svg class="mountains-2" viewBox="0 0 390 90" preserveAspectRatio="none"><path d="M0 90 L60 30 L120 70 L200 20 L280 65 L340 35 L390 75 L390 90Z" fill="#2b2340"/></svg>
+      <svg class="mountains" viewBox="0 0 390 90" preserveAspectRatio="none"><path d="M0 90 L50 45 L110 80 L180 40 L250 78 L320 48 L390 82 L390 90Z" fill="#241d33"/></svg>
+      <div class="ground"></div>
+
+      <!-- 별 입자 -->
+      <svg class="stars" viewBox="0 0 390 360"><g fill="#fff">
+        <circle cx="40" cy="40" r="1.2"/><circle cx="120" cy="70" r="1"/><circle cx="300" cy="30" r="1.4"/>
+        <circle cx="350" cy="90" r="1"/><circle cx="220" cy="50" r="1.1"/><circle cx="70" cy="110" r="1"/>
+      </g></svg>
+
+      <!-- 헌터 실루엣 -->
+      <svg class="hunter" viewBox="0 0 60 90">
+        <g fill="#1d1626">
+          <circle cx="26" cy="16" r="9"/>
+          <rect x="18" y="24" width="17" height="30" rx="6"/>
+          <rect x="14" y="52" width="8" height="26" rx="4"/>
+          <rect x="30" y="52" width="8" height="26" rx="4"/>
+          <rect x="40" y="6" width="5" height="52" rx="2" transform="rotate(18 42 32)"/>
+        </g>
+        <rect x="42" y="2" width="5" height="20" rx="2" transform="rotate(18 44 12)" fill="#cdd6e0"/>
+      </svg>
+
+      <!-- 오늘의 보스: 오렌지 슬라임 -->
+      <svg class="boss" viewBox="0 0 130 120">
+        <ellipse cx="65" cy="112" rx="48" ry="8" fill="rgba(0,0,0,.25)"/>
+        <path d="M18 78 C10 40 40 20 65 20 C90 20 120 40 112 78 C112 96 92 104 65 104 C38 104 18 96 18 78Z" fill="#f08a3c"/>
+        <path d="M18 78 C10 40 40 20 65 20 C90 20 120 40 112 78 C112 96 92 104 65 104 C38 104 18 96 18 78Z" fill="url(#g)" opacity=".35"/>
+        <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd08a"/><stop offset="1" stop-color="#c95d1e" stop-opacity="0"/></linearGradient></defs>
+        <path d="M50 14 C46 6 40 4 44 16 C48 24 54 22 50 14Z" fill="#3f7a2f"/>
+        <path d="M78 14 C82 6 88 4 84 16 C80 24 74 22 78 14Z" fill="#3f7a2f"/>
+        <ellipse cx="48" cy="70" rx="7" ry="9" fill="#2a1b0f"/>
+        <ellipse cx="82" cy="70" rx="7" ry="9" fill="#2a1b0f"/>
+        <circle cx="50" cy="67" r="2.4" fill="#fff"/><circle cx="84" cy="67" r="2.4" fill="#fff"/>
+        <path d="M56 86 Q65 92 74 86" stroke="#2a1b0f" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </svg>
+
+      <div class="scrim"></div>
+
+      <!-- 상단 바 -->
+      <div class="hero-top">
+        <button class="icon-btn" aria-label="뒤로">‹</button>
+        <button class="icon-btn" aria-label="공유">⤴</button>
+      </div>
+
+      <!-- 몬스터 HP -->
+      <div class="boss-hp">
+        <div class="row"><span>Orange Slime</span><span>30/30</span></div>
+        <div class="bar"><i style="width:100%"></i></div>
+      </div>
+
+      <!-- 에디토리얼 타이틀 -->
+      <div class="hero-copy">
+        <div class="overline"><span class="dot"></span>오늘의 사냥터 · 초원</div>
+        <h1 class="hero-title">당신을 기다리는<br/>오렌지 슬라임</h1>
+        <p class="hero-sub">일간 퀘스트를 처치하고 성장의 씨앗을 모으세요. 오늘 남은 사냥은 단 하나.</p>
+      </div>
+    </header>
+
+    <!-- ══════ SHEET / LIST (구 QuestList) ══════ -->
+    <section class="sheet">
+      <div class="grabber"></div>
+
+      <div class="tabs">
+        <button class="tab active">일간 퀘스트<span class="cnt">1/1</span></button>
+        <button class="tab">주간 퀘스트<span class="cnt">0/1</span></button>
+      </div>
+
+      <div class="section-label">오늘의 퀘스트</div>
+
+      <div class="list">
+
+        <!-- 진행형 퀘스트 (서브태스크) -->
+        <div class="quest">
+          <div class="thumb" style="background:linear-gradient(135deg,#e7efff,#cfe0ff);">
+            <svg viewBox="0 0 48 48"><g fill="#3b6bd6"><rect x="10" y="12" width="28" height="6" rx="3"/><rect x="10" y="22" width="20" height="6" rx="3"/><rect x="10" y="32" width="24" height="6" rx="3"/></g></svg>
+          </div>
+          <div class="qmeta">
+            <div class="qcat">신체 · 난이도 ★★☆</div>
+            <div class="qtitle">헬스장에서 상체 운동 40분</div>
+            <div class="qdesc">벤치프레스 · 랫풀다운 · 숄더프레스로 나눠 하나씩 처치하면 보스 체력이 깎입니다.</div>
+            <div class="qfoot">
+              <span class="pill body">신체</span>
+              <span class="sub-progress"><span class="sub-bar"><i style="width:66%"></i></span>서브 2/3</span>
+            </div>
+          </div>
+          <div class="qgo">›</div>
+        </div>
+
+        <!-- 완료된 퀘스트 (구 DEFEATED 띠 재해석) -->
+        <div class="quest done">
+          <div class="thumb" style="background:linear-gradient(135deg,#e4f4e4,#cdeccf);">
+            <svg viewBox="0 0 48 48"><path d="M14 25 l7 7 l14 -15" stroke="#3f8f52" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="qmeta">
+            <div class="qcat" style="color:var(--ok)">생활 · 처치 완료</div>
+            <div class="qtitle">화장하고 외출 준비 마치기</div>
+            <div class="qfoot"><span class="stamp">✓ 처치 완료</span><span>+12 EXP · +3 매력</span></div>
+          </div>
+          <div class="qgo" style="color:var(--ok)">✓</div>
+        </div>
+
+        <!-- 미리보기용 추가 예시들 -->
+        <div class="quest">
+          <div class="thumb" style="background:linear-gradient(135deg,#e9e3ff,#d9ccff);">
+            <svg viewBox="0 0 48 48"><path d="M12 14 h24 v20 h-24Z M12 14 l12 9 l12 -9" stroke="#6b4bd6" stroke-width="3.5" fill="none" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="qmeta">
+            <div class="qcat">학습 · 난이도 ★☆☆</div>
+            <div class="qtitle">React 렌더링 최적화 아티클 정독</div>
+            <div class="qdesc">memo · useCallback · 리스트 key 전략까지. 읽고 나면 지식 스탯이 오릅니다.</div>
+            <div class="qfoot"><span class="pill study">학습</span><span>단일 퀘스트</span></div>
+          </div>
+          <div class="qgo">›</div>
+        </div>
+
+        <div class="quest">
+          <div class="thumb" style="background:linear-gradient(135deg,#fdeadf,#ffd8c2);">
+            <svg viewBox="0 0 48 48"><path d="M24 10 C16 18 12 24 12 30 a12 12 0 0 0 24 0 c0 -6 -4 -12 -12 -20Z" fill="#c2673d"/></svg>
+          </div>
+          <div class="qmeta">
+            <div class="qcat">생활 · 난이도 ★★★</div>
+            <div class="qtitle">밀린 설거지 · 주방 정리</div>
+            <div class="qdesc">가장 강한 오늘의 엘리트 몬스터. 처치 시 컨디션 회복 버프를 드립니다.</div>
+            <div class="qfoot"><span class="pill life">생활</span><span>단일 퀘스트</span></div>
+          </div>
+          <div class="qgo">›</div>
+        </div>
+
+      </div>
+
+      <button class="fab">＋ 할일 추가</button>
+    </section>
+
+  </div>
+
+  <p class="caption">
+    <b>재해석 포인트</b> — 픽셀 전투 캔버스(FightField)는 <b>시네마틱 히어로 배너</b>로,
+    퀘스트 카드 리스트는 웹툰식 <b>썸네일 + 타이틀 + 설명 + 메타</b> 로우로 옮겼습니다.
+    보스 HP·처치 완료 등 게임 정체성은 유지했습니다. (일러스트는 placeholder SVG)
+  </p>
+
+</body>
+</html>

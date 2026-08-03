@@ -31,6 +31,9 @@ PRD.md
 .DS_Store
 *.pem
 
+# Claude Code (로컬 세션·설정)
+.claude/
+
 # debug
 npm-debug.log*
 yarn-debug.log*

@@ -17,12 +17,14 @@ const TAG_TO_LABEL: Record<string, string> = {
 // 카테고리(태그) 색상 — 앱 전역 스탯 팔레트와 동일
 const TAG_ORDER = ["STR", "INT", "EMO", "FIN", "LIV"] as const;
 type Tag = (typeof TAG_ORDER)[number];
+// 스탯 색 — globals.css 의 --stat-* 토큰 단일 소스 참조.
+// (SVG stroke/인라인 background 모두 var() 정상 동작 — 같은 파일 stroke="var(--pixel-stone)" 참고)
 const TAG_COLOR: Record<Tag, string> = {
-    STR: "#C84B3A",
-    INT: "#6B8FB8",
-    EMO: "#C97B8E",
-    FIN: "#B89A4E",
-    LIV: "#9B7CB8",
+    STR: "var(--stat-str)",
+    INT: "var(--stat-int)",
+    EMO: "var(--stat-emo)",
+    FIN: "var(--stat-fin)",
+    LIV: "var(--stat-liv)",
 };
 
 interface RhythmHour {
@@ -154,11 +156,26 @@ export default function StatsTabs({ recentCompleted }: StatsTabsProps) {
                         </p>
 
                         {rhythmTotal === 0 ? (
+                            // 빈 상태 — 성장정원 캔버스와 같은 높이(230)로 고정 + 텍스트 가운데 정렬
                             <div
-                                className={styles["growth-item"]}
-                                style={{ justifyContent: "center", color: "var(--pixel-stone)", marginTop: 8 }}
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    textAlign: "center",
+                                    height: 230,
+                                    marginTop: 8,
+                                    padding: "0 16px",
+                                    color: "var(--pixel-stone)",
+                                    fontSize: 12,
+                                    lineHeight: 1.6,
+                                }}
                             >
-                                <span>아직 완료 기록이 없어요. 퀘스트를 완료하면 리듬이 채워져요.</span>
+                                <span>
+                                    아직 완료 기록이 없어요.
+                                    <br />
+                                    퀘스트를 완료하면 리듬이 채워져요.
+                                </span>
                             </div>
                         ) : (
                             <>
@@ -175,9 +192,9 @@ export default function StatsTabs({ recentCompleted }: StatsTabsProps) {
                                             cy={CY}
                                             r={OUTER + 14}
                                             fill="none"
-                                            stroke="var(--pixel-ink)"
+                                            stroke="var(--pixel-stone)"
                                             strokeWidth={1.5}
-                                            opacity={0.25}
+                                            opacity={0.35}
                                         />
                                         {/* 시(時)마다 카테고리별로 누적된 스포크 */}
                                         {spokes.flatMap((s) =>

@@ -3,7 +3,9 @@ import { cva, VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const inputVariants = cva(
-  "p-1 outline-none",
+  // 폼 인풋 기본: 픽셀 라운드 테두리(is-rounded-form) + full width + box-shadow 제거.
+  // (기존 모든 폼 사용처가 공통으로 쓰던 값을 내장 — DialogButton 데모 제외)
+  "is-rounded-form w-full shadow-none p-1 outline-none",
   {
     variants: {
       state: {

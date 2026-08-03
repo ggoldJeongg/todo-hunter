@@ -15,12 +15,13 @@ const TAG_LABEL: Record<Tag, string> = {
   FIN: "경제력",
   LIV: "생활력",
 };
+// 스탯 색 — globals.css 의 --stat-* 토큰을 단일 소스로 참조 (인라인 background 라 var() 안전)
 const TAG_COLOR: Record<Tag, string> = {
-  STR: "#C84B3A",
-  INT: "#6B8FB8",
-  EMO: "#C97B8E",
-  FIN: "#B89A4E",
-  LIV: "#9B7CB8",
+  STR: "var(--stat-str)",
+  INT: "var(--stat-int)",
+  EMO: "var(--stat-emo)",
+  FIN: "var(--stat-fin)",
+  LIV: "var(--stat-liv)",
 };
 const TAG_ORDER: Tag[] = ["STR", "INT", "EMO", "FIN", "LIV"];
 // 카테고리별 대표 작물 (PixiGardenScene의 CROP_ROW와 일치)
