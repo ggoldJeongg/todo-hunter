@@ -89,11 +89,13 @@ textarea,
        잠식해 레이아웃이 깨지던 문제 해결. slice(원본 자르기)는 정수로 고정하고
        '렌더 두께(border-width / border-image-width)'만 clamp 로 축소해
        픽셀아트 모서리는 유지하면서 좁은 화면에서만 얇아지게 한다.
-       기준: 최대값은 기존 디자인값(19/17, 26/25)과 동일 → 넓은 화면은 변화 없음. */
-    --frame-bw-top: clamp(9px, 2.8vw, 19px);
-    --frame-bw: clamp(7px, 2.2vw, 17px);
-    --portrait-bw-top: clamp(11px, 3.6vw, 26px);
-    --portrait-bw: clamp(10px, 3.4vw, 25px);
+       ⚠️ 앱이 max-w-[430px] 로 캡되므로 clamp 최댓값은 "vw=430 에서의 값"으로 고정한다.
+       (안 그러면 데스크톱처럼 vw>430 에서 테두리가 계속 굵어져 카드가 컨테이너 밖으로 튀어나감.
+        즉 데스크톱은 430px 뷰와 동일하게 프리즈.) */
+    --frame-bw-top: clamp(9px, 2.8vw, 12px);
+    --frame-bw: clamp(7px, 2.2vw, 9.5px);
+    --portrait-bw-top: clamp(11px, 3.6vw, 16px);
+    --portrait-bw: clamp(10px, 3.4vw, 15px);
   }
   .dark {
     --background: 240 10% 3.9%;
