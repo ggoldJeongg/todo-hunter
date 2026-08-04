@@ -168,10 +168,15 @@ export default function CharacterPage() {
                 </Button>
             </header>
 
-            {/* ===== 캐릭터 카드 + 레벨/정보 패널 ===== */}
-            <section className="mx-auto mt-1 flex w-[92%] max-w-[460px] gap-2">
+            {/* ===== 캐릭터 카드 + 레벨/정보 패널 =====
+                [포트레이트 | 정보컬럼] 가로 2단 배치를 전 구간 유지.
+                좁은 화면(폴드 344px 등)에서 깨지지 않도록:
+                  · 포트레이트는 self-stretch 로 우측 컬럼 높이에 맞춰 늘림(가운데 뜨는 현상 방지)
+                  · 포트레이트 폭·간격·패딩·테두리는 vw 기반 clamp 로 축소해 정보 카드 폭을 확보
+                items-stretch 로 좌우 컬럼 높이를 맞춘다. */}
+            <section className="mx-auto mt-1 flex items-stretch gap-[clamp(5px,1.8vw,8px)] w-[94%] max-w-[460px]">
                 {/* 좌: 캐릭터 스프라이트 + 하단 닉네임 (구분선·칭호 없음) */}
-                <div className="frame-portrait flex aspect-[3/4] w-[150px] shrink-0 flex-col self-center overflow-hidden">
+                <div className="frame-portrait flex min-h-[150px] w-[clamp(96px,calc(49vw_-_60px),150px)] shrink-0 flex-col self-stretch overflow-hidden">
                     {/* 캐릭터 영역 — 배경패턴 / 그림자 / 스프라이트 3레이어 (뒤→앞).
                         스프라이트가 프레임 높이를 꽉 채우고(정사각, 좌우는 잘림), 발끝은 캔버스 94% 지점. */}
                     <div className="relative flex flex-1 overflow-hidden">
@@ -189,15 +194,19 @@ export default function CharacterPage() {
                         </div>
                     </div>
                     {/* 닉네임 — 카드 하단, 양옆 대괄호 장식 (프레임 안쪽으로 여백 확보) */}
-                    <p className="shrink-0 px-2 pt-1 pb-5 text-center font-galmuri11-bold text-[15px] text-paper">
-                        [ {nickname ?? "모험가"} ]
+                    {/* 닉네임 — 폰트 유동 축소 + 대괄호 여백 제거로 일반 이름은 한 줄에 들어감.
+                        긴 이름은 말줄임 없이 (한글 글자 단위) 줄바꿈되어 전체가 다 보인다.
+                        (break-keep 를 쓰면 공백 없는 한글이 안 끊겨 클리핑되므로 기본 줄바꿈 사용)
+                        포트레이트를 좁은 폭에서도 넓게(≈108px@344) 잡아 닉네임 폰트를 키움. */}
+                    <p className="shrink-0 px-0.5 pt-1 pb-5 text-center font-galmuri11-bold text-[clamp(10px,3.4vw,15px)] leading-tight text-paper">
+                        [{nickname ?? "모험가"}]
                     </p>
                 </div>
 
                 {/* 우: 레벨(작게) → 컨디션 → 성격·특성 세로 스택 (왼쪽 카드 높이만큼 채움) */}
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
                     {/* 레벨 패널 (compact) */}
-                    <div className="frame-card frame-tint-level flex items-center gap-3 p-6">
+                    <div className="frame-card frame-tint-level flex items-center gap-3 p-[clamp(8px,2.8vw,24px)]">
                         <div className="grid h-[46px] w-[46px] shrink-0 place-items-center bg-ink">
                             <span className="flex flex-col items-center leading-none">
                                 <span className="text-[8px] font-bold tracking-wide text-stone">LV</span>
@@ -221,10 +230,10 @@ export default function CharacterPage() {
                     </div>
 
                     {/* 컨디션 | 성격·특성 가로 2열 (남는 높이 채움) */}
-                    <div className="flex flex-1 gap-2">
+                    <div className="flex flex-1 gap-[clamp(5px,1.6vw,8px)]">
                         {/* 컨디션 — 가운데 정렬 (제목 / 이모지 / 값 / 바 / 점수) */}
-                        <div className="frame-card frame-tint-condition flex flex-1 flex-col items-center justify-center p-[1.2rem] text-center">
-                            <p className="text-[11px] font-bold text-ink">컨디션</p>
+                        <div className="frame-card frame-tint-condition flex flex-1 flex-col items-center justify-center p-[clamp(8px,2.4vw,1.2rem)] text-center">
+                            <p className="whitespace-nowrap text-[11px] font-bold text-ink">컨디션</p>
                             <span className="mt-2 text-[24px] leading-none" aria-hidden="true">🍀</span>
                             <p className="mt-2 font-galmuri11-bold text-[15px] text-ink">{condition.label}</p>
                             <StatBar
@@ -235,16 +244,16 @@ export default function CharacterPage() {
                                 className="mt-2 w-full"
                                 ariaLabel="컨디션"
                             />
-                            <p className="mt-1 text-[9px] tabular-nums text-[#5A5651]">{condition.value}점 / 100점</p>
+                            <p className="mt-1 whitespace-nowrap text-[clamp(8px,2.4vw,9px)] tabular-nums text-[#5A5651]">{condition.value}점 / 100점</p>
                         </div>
 
                         {/* 성격·특성 — 제목 아래 전체폭 세로 목록 + 행 사이 점선 구분선 */}
-                        <div className="frame-card flex flex-1 flex-col p-[1.2rem]">
-                            <p className="text-center text-[11px] font-bold text-paper">성격·특성</p>
+                        <div className="frame-card flex flex-1 flex-col p-[clamp(8px,2.4vw,1.2rem)]">
+                            <p className="whitespace-nowrap text-center text-[11px] font-bold text-paper">성격·특성</p>
                             <ul className="mt-[8px] flex w-full flex-1 flex-col">
                                 {traits.length === 0 ? (
-                                    <li className="flex flex-1 items-center gap-[8px]">
-                                        <span className="grid h-[24px] w-[24px] shrink-0 place-items-center rounded-[4px] bg-stone/30 text-[12px]">🔒</span>
+                                    <li className="flex flex-1 items-center gap-[clamp(3px,1.2vw,8px)]">
+                                        <span className="grid h-[clamp(13px,4vw,24px)] w-[clamp(13px,4vw,24px)] shrink-0 place-items-center rounded-[4px] bg-stone/30 text-[12px]">🔒</span>
                                         <span className="truncate text-[11px] text-stone">분석 중</span>
                                     </li>
                                 ) : (
@@ -254,18 +263,18 @@ export default function CharacterPage() {
                                             return (
                                                 <li key={t} className="flex flex-1 items-center gap-[8px]">
                                                     <span
-                                                        className="grid h-[24px] w-[24px] shrink-0 place-items-center rounded-[4px] text-[12px]"
+                                                        className="grid h-[clamp(13px,4vw,24px)] w-[clamp(13px,4vw,24px)] shrink-0 place-items-center rounded-[4px] text-[12px]"
                                                         style={{ background: d.bg }}
                                                     >
                                                         {d.icon}
                                                     </span>
-                                                    <span className="truncate text-[11px] font-bold text-paper">{t}</span>
+                                                    <span className="truncate text-[clamp(9px,2.8vw,11px)] font-bold text-paper">{t}</span>
                                                 </li>
                                             );
                                         })}
                                         {traits.length < 3 && (
-                                            <li className="flex flex-1 items-center gap-[8px]">
-                                                <span className="grid h-[24px] w-[24px] shrink-0 place-items-center rounded-[4px] bg-stone/30 text-[12px]">🔒</span>
+                                            <li className="flex flex-1 items-center gap-[clamp(3px,1.2vw,8px)]">
+                                                <span className="grid h-[clamp(13px,4vw,24px)] w-[clamp(13px,4vw,24px)] shrink-0 place-items-center rounded-[4px] bg-stone/30 text-[12px]">🔒</span>
                                                 <span className="truncate text-[11px] text-stone">??????</span>
                                             </li>
                                         )}
@@ -277,7 +286,7 @@ export default function CharacterPage() {
                 </div>
             </section>
             {/* ===== 스탯 패널 ===== */}
-            <section className="frame-card mx-auto mt-2 w-[92%] max-w-[460px] p-6">
+            <section className="frame-card mx-auto mt-2 w-[92%] max-w-[460px] p-[clamp(12px,4vw,24px)]">
                 <Suspense>
                     <Status
                         str={str ?? 0}

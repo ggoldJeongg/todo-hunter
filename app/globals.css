@@ -83,6 +83,17 @@ textarea,
     --pixel-paper: #E9E3D7;
     --pixel-stone: #B0AAA1;
     --pixel-ink: #151413;
+
+    /* ── 유동(fluid) 나인슬라이스 프레임 두께 ──
+       좁은 화면(갤럭시 폴드 344px 등)에서 고정 px 테두리가 내부 콘텐츠 폭을
+       잠식해 레이아웃이 깨지던 문제 해결. slice(원본 자르기)는 정수로 고정하고
+       '렌더 두께(border-width / border-image-width)'만 clamp 로 축소해
+       픽셀아트 모서리는 유지하면서 좁은 화면에서만 얇아지게 한다.
+       기준: 최대값은 기존 디자인값(19/17, 26/25)과 동일 → 넓은 화면은 변화 없음. */
+    --frame-bw-top: clamp(9px, 2.8vw, 19px);
+    --frame-bw: clamp(7px, 2.2vw, 17px);
+    --portrait-bw-top: clamp(11px, 3.6vw, 26px);
+    --portrait-bw: clamp(10px, 3.4vw, 25px);
   }
   .dark {
     --background: 240 10% 3.9%;
@@ -927,14 +938,24 @@ textarea,
    ============================================ */
 @layer components {
   .frame-main {
-    border: 19px 17px 17px 17px solid transparent;
-    border-image: url("/images/frames/main_frame.png") 19 17 17 17 / 19px 17px 17px 17px stretch;
+    border-style: solid;
+    border-color: transparent;
+    border-width: var(--frame-bw-top) var(--frame-bw) var(--frame-bw) var(--frame-bw);
+    border-image-source: url("/images/frames/main_frame.png");
+    border-image-slice: 19 17 17 17;
+    border-image-width: var(--frame-bw-top) var(--frame-bw) var(--frame-bw) var(--frame-bw);
+    border-image-repeat: stretch;
     image-rendering: pixelated;
   }
 
   .frame-card {
-    border: 19px 17px 17px 17px solid transparent;
-    border-image: url("/images/frames/main_frame.png") 19 17 17 17 fill / 19px 17px 17px 17px stretch;
+    border-style: solid;
+    border-color: transparent;
+    border-width: var(--frame-bw-top) var(--frame-bw) var(--frame-bw) var(--frame-bw);
+    border-image-source: url("/images/frames/main_frame.png");
+    border-image-slice: 19 17 17 17 fill;
+    border-image-width: var(--frame-bw-top) var(--frame-bw) var(--frame-bw) var(--frame-bw);
+    border-image-repeat: stretch;
     image-rendering: pixelated;
     color: var(--pixel-paper);
   }
@@ -955,8 +976,14 @@ textarea,
 
   /* 캐릭터 카드 전용 — portrait_frame.png (99x99, 모서리 slice 26/25). */
   .frame-portrait {
-    border: 26px 25px 25px 26px solid transparent; /* top right bottom left */
-    border-image: url("/images/frames/portrait_frame.png") 26 25 25 26 fill / 26px 25px 25px 26px stretch;
+    border-style: solid;
+    border-color: transparent;
+    /* top right bottom left */
+    border-width: var(--portrait-bw-top) var(--portrait-bw) var(--portrait-bw) var(--portrait-bw-top);
+    border-image-source: url("/images/frames/portrait_frame.png");
+    border-image-slice: 26 25 25 26 fill;
+    border-image-width: var(--portrait-bw-top) var(--portrait-bw) var(--portrait-bw) var(--portrait-bw-top);
+    border-image-repeat: stretch;
     image-rendering: pixelated;
     color: var(--pixel-paper);
   }
