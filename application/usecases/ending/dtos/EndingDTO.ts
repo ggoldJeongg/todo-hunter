@@ -7,6 +7,8 @@ export interface EndingDTO {
   endingStory: string[];
   endingDialogue: DialogueLine[];
   endingImage: string;
+  endingNpcImage?: string;
+  endingNpcName?: string;
   achievableTitle: {
     titleName: string;
     description: string;

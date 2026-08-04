@@ -129,6 +129,8 @@ const EndingPage = () => {
             <EndingScriptBox
               name={endingData.endingName}
               dialogue={endingData.endingDialogue}
+              npcImage={endingData.endingNpcImage}
+              npcName={endingData.endingNpcName}
             />
             <div
               className={`transition-opacity duration-1000 z-10 relative ${
