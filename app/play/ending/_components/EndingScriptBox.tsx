@@ -8,12 +8,10 @@ import EndingPortrait from "./EndingPortrait";
 interface EndingScriptBoxProps {
   name: string;
   dialogue: DialogueLine[];
-  /** NPC 외형 (엔딩별 다르게 지정 가능, 미지정 시 기본 NPC) */
-  npcAppearance?: {
-    outfitId?: string | null;
-    hairId?: string | null;
-    hatId?: string | null;
-  };
+  /** 엔딩별 NPC 초상화 PNG 경로. 미지정/로드 실패 시 검사 스프라이트로 폴백 */
+  npcImage?: string;
+  /** 엔딩별 NPC 화자 이름. 미지정 시 "???" */
+  npcName?: string;
 }
 
 const TYPING_SPEED = 40; // ms per character
@@ -41,17 +39,11 @@ const SPEAKER_CONFIG = {
   },
 };
 
-// 기본 NPC 외형 — 엔딩에서 npcAppearance 전달 안 했을 때 사용
-const DEFAULT_NPC_APPEARANCE = {
-  outfitId: "fstr_v05",
-  hairId: "bob1_v04",
-  hatId: null,
-};
-
 const EndingScriptBox = ({
   name,
   dialogue,
-  npcAppearance,
+  npcImage,
+  npcName,
 }: EndingScriptBoxProps) => {
   const [nameVisible, setNameVisible] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -68,8 +60,6 @@ const EndingScriptBox = ({
 
   const currentLine = dialogue[currentIndex];
   const isLastLine = currentIndex >= dialogue.length - 1;
-
-  const npc = npcAppearance ?? DEFAULT_NPC_APPEARANCE;
 
   // 엔딩명 슬라이드인
   useEffect(() => {
@@ -117,10 +107,12 @@ const EndingScriptBox = ({
   const config = currentLine ? SPEAKER_CONFIG[currentLine.speaker] : null;
   const speaker = currentLine?.speaker;
 
-  // speaker 별 화자 이름 (label 우선, 동적인 경우 nickname)
+  // speaker 별 화자 이름 (player=닉네임, npc=엔딩별 이름 or "???", narrator=없음)
   const speakerLabel =
     speaker === "player"
       ? playerNickname ?? "나"
+      : speaker === "npc"
+      ? npcName ?? config?.label ?? "???"
       : config?.label ?? "";
 
   return (
@@ -155,11 +147,9 @@ const EndingScriptBox = ({
             <div className="absolute -top-2 right-2 z-10">
               <div className="bg-paper border-2 border-ink p-1">
                 <EndingPortrait
-                  outfitId={npc.outfitId}
-                  hairId={npc.hairId}
-                  hatId={npc.hatId}
+                  imageSrc={npcImage}
                   size={PORTRAIT_SIZE}
-                  flipX={true}
+                  flipX={!npcImage}
                 />
               </div>
             </div>

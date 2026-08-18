@@ -103,6 +103,8 @@ export class EndingUsecase {
         endingStory: endingInfo.story,
         endingDialogue: endingInfo.dialogue,
         endingImage: endingInfo.image,
+        endingNpcImage: endingInfo.npcImage,
+        endingNpcName: endingInfo.npcName,
         achievableTitle: title,
       };
     }
@@ -116,6 +118,8 @@ export class EndingUsecase {
       endingStory: fallback?.story ?? [DEFAULT_ENDING_PROMPT],
       endingDialogue: fallback?.dialogue ?? [],
       endingImage: DEFAULT_ENDING_IMAGE,
+      endingNpcImage: fallback?.npcImage,
+      endingNpcName: fallback?.npcName,
       achievableTitle: defaultTitle,
     };
   }

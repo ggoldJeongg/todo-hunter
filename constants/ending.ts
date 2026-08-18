@@ -12,6 +12,21 @@ const BG = {
   hero: "/endings/hero.png", // TODO: 전용 이미지 생성 후 교체 (현재 town.png 복사본)
 } as const;
 
+// ==================== NPC 초상화 매핑 ====================
+// 대사창 우측 "???" 화자에 뜨는 NPC 이미지. 엔딩별로 archetype 을 재사용한다.
+// public/endings/npc/*.png 에 파일을 넣으면 해당 초상화가 뜨고,
+// 파일이 없으면 EndingPortrait 가 자동으로 검사 스프라이트로 폴백한다.
+const NPC = {
+  innkeeper: "/endings/npc/innkeeper.png", // 여관 주인
+  elder: "/endings/npc/elder.png", // 촌장 / 현자
+  aide: "/endings/npc/aide.png", // 시종 / 비서 / 진행자
+  villager: "/endings/npc/villager.png", // 마을 주민
+  scholar: "/endings/npc/scholar.png", // 학자 / 사서
+  merchant: "/endings/npc/merchant.png", // 상인 / 직원
+  knight: "/endings/npc/knight.png", // 기사 / 병사
+  spirit: "/endings/npc/spirit.png", // 정령 / 자연의 목소리
+} as const;
+
 // ==================== 엔딩 데이터 (endingCode → 이미지, 스토리) ====================
 
 export interface DialogueLine {
@@ -24,6 +39,8 @@ interface EndingInfo {
   story: string[]; // 기존 호환용
   dialogue: DialogueLine[]; // 핑퐁 대화
   image: string;
+  npcImage?: string; // 대사창 NPC 초상화 (미지정 시 검사 스프라이트로 폴백)
+  npcName?: string; // 대사창 NPC 화자 이름 (미지정 시 "???")
 }
 
 export const ENDING_MAP: Record<string, EndingInfo> = {
@@ -40,6 +57,8 @@ export const ENDING_MAP: Record<string, EndingInfo> = {
       { speaker: "narrator", text: "창밖으로 들려오는 모험가들의 발소리가 점점 멀어진다." },
     ],
     image: BG.lazy,
+    npcImage: NPC.innkeeper,
+    npcName: "여관 주인",
   },
   TRUE_HERO: {
     name: "진정한 용사",
@@ -53,6 +72,8 @@ export const ENDING_MAP: Record<string, EndingInfo> = {
       { speaker: "narrator", text: "어떤 위기가 와도 흔들리지 않는, 균형 잡힌 영웅의 모습이 빛난다." },
     ],
     image: BG.hero,
+    npcImage: NPC.elder,
+    npcName: "촌장",
   },
   LEGENDARY: {
     name: "전설의 영웅",
@@ -66,6 +87,8 @@ export const ENDING_MAP: Record<string, EndingInfo> = {
       { speaker: "narrator", text: "왕국의 기사도, 마법학원의 현자도, 모두가 당신을 우러러본다." },
     ],
     image: BG.hero,
+    npcImage: NPC.aide,
+    npcName: "시종",
   },
 
   // 단일 스탯 엔딩
@@ -81,6 +104,8 @@ export const ENDING_MAP: Record<string, EndingInfo> = {
       { speaker: "player", text: "별거 아냐. 매일 훈련한 덕분이지." },
     ],
     image: BG.battle,
+    npcImage: NPC.villager,
+    npcName: "마을 사람",
   },
   SAGE_PATH: {
     name: "현자의 길",
@@ -94,6 +119,8 @@ export const ENDING_MAP: Record<string, EndingInfo> = {
       { speaker: "player", text: "힘이 아닌 지혜로 거둔 승리... 나쁘지 않군." },
     ],
     image: BG.library,
+    npcImage: NPC.scholar,
+    npcName: "학자",
   },
   EMPATHY_POET: {
     name: "공감의 시인",
@@ -107,6 +134,8 @@ export const ENDING_MAP: Record<string, EndingInfo> = {
       { speaker: "npc", text: "칼 대신 말로 해결하다니... 대단하구나." },
     ],
     image: BG.forest,
+    npcImage: NPC.villager,
+    npcName: "마을 사람",
   },
   GOLDEN_MERCHANT: {
     name: "황금의 상인",
@@ -120,6 +149,8 @@ export const ENDING_MAP: Record<string, EndingInfo> = {
       { speaker: "narrator", text: "자신만만한 미소를 짓는 황금의 상인이 빛난다." },
     ],
     image: BG.market,
+    npcImage: NPC.merchant,
+    npcName: "직원",
   },
   VILLAGE_GUARDIAN: {
     name: "마을의 수호자",
@@ -133,6 +164,8 @@ export const ENDING_MAP: Record<string, EndingInfo> = {
       { speaker: "narrator", text: "마을 사람들이 편히 잠든다. 모두 당신 덕분이다." },
     ],
     image: BG.village,
+    npcImage: NPC.villager,
+    npcName: "마을 사람",
   },
 
   // 듀얼 스탯 엔딩
@@ -147,6 +180,8 @@ export const ENDING_MAP: Record<string, EndingInfo> = {
       { speaker: "npc", text: "혼자서 보스를...?! 마검사의 전설이 시작됐어!" },
     ],
     image: BG.battle,
+    npcImage: NPC.knight,
+    npcName: "병사",
   },
   GUARDIAN_KNIGHT: {
     name: "수호기사",
@@ -160,6 +195,8 @@ export const ENDING_MAP: Record<string, EndingInfo> = {
       { speaker: "player", text: "지키고 싶은 사람이 있으면 강해지는 법이야." },
     ],
     image: BG.battle,
+    npcImage: NPC.villager,
+    npcName: "동료",
   },
   ARENA_CHAMPION: {
     name: "투기장의 챔피언",
@@ -172,6 +209,8 @@ export const ENDING_MAP: Record<string, EndingInfo> = {
       { speaker: "npc", text: "챔피언! 챔피언! 챔피언!" },
     ],
     image: BG.battle,
+    npcImage: NPC.aide,
+    npcName: "진행자",
   },
   WILD_HUNTER: {
     name: "자급자족 사냥꾼",
@@ -184,6 +223,8 @@ export const ENDING_MAP: Record<string, EndingInfo> = {
       { speaker: "narrator", text: "누구에게도 얽매이지 않는 사냥꾼의 삶이 계속된다." },
     ],
     image: BG.forest,
+    npcImage: NPC.villager,
+    npcName: "마을 사람",
   },
   HEALING_MAGE: {
     name: "치유의 마법사",
@@ -197,6 +238,8 @@ export const ENDING_MAP: Record<string, EndingInfo> = {
       { speaker: "player", text: "이 미소가 있으니까 계속할 수 있어." },
     ],
     image: BG.library,
+    npcImage: NPC.villager,
+    npcName: "마을 사람",
   },
   ALCHEMIST: {
     name: "연금술사",
@@ -210,6 +253,8 @@ export const ENDING_MAP: Record<string, EndingInfo> = {
       { speaker: "narrator", text: "실험실과 금고가 동시에 가득 찬다." },
     ],
     image: BG.library,
+    npcImage: NPC.merchant,
+    npcName: "조수",
   },
   INVENTOR: {
     name: "발명가",
@@ -222,6 +267,8 @@ export const ENDING_MAP: Record<string, EndingInfo> = {
       { speaker: "narrator", text: "오늘도 설계도를 그리는 발명가의 하루가 계속된다." },
     ],
     image: BG.village,
+    npcImage: NPC.villager,
+    npcName: "마을 사람",
   },
   BARD: {
     name: "음유시인",
@@ -235,6 +282,8 @@ export const ENDING_MAP: Record<string, EndingInfo> = {
       { speaker: "narrator", text: "감동과 금화를 동시에 거두는 예술가의 삶." },
     ],
     image: BG.market,
+    npcImage: NPC.villager,
+    npcName: "관객",
   },
   DRUID: {
     name: "드루이드",
@@ -248,6 +297,8 @@ export const ENDING_MAP: Record<string, EndingInfo> = {
       { speaker: "npc", text: "숲이 당신을 기억합니다... 고마워요." },
     ],
     image: BG.forest,
+    npcImage: NPC.spirit,
+    npcName: "숲의 정령",
   },
   GUILD_MASTER: {
     name: "길드 마스터",
@@ -261,6 +312,8 @@ export const ENDING_MAP: Record<string, EndingInfo> = {
       { speaker: "narrator", text: "모든 모험가가 당신의 길드 문을 두드린다." },
     ],
     image: BG.market,
+    npcImage: NPC.aide,
+    npcName: "길드 직원",
   },
   ORDINARY_DAY: {
     name: "평범한 하루",
@@ -273,6 +326,8 @@ export const ENDING_MAP: Record<string, EndingInfo> = {
       { speaker: "player", text: "그런가? 다음 주에는 좀 더 열심히 해볼까." },
     ],
     image: BG.village,
+    npcImage: NPC.villager,
+    npcName: "친구",
   },
 };
 

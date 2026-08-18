@@ -715,10 +715,17 @@
 /* ── 패널 프레임 (탭을 내부에 삽입) ──
    히어로/미니카드와 같은 pixel-card(라운드 + 하드 픽셀 그림자). */
 .stats-panel-frame {
-    border: 19px 17px 17px 17px solid transparent;
-    border-image: url('/images/frames/main_frame.png') 19 17 17 17 fill / 19px 17px 17px 17px stretch;
+    /* 유동 프레임 두께 — globals.css :root 의 --frame-bw* 토큰 재사용.
+       (기존 `border` shorthand 는 4-값 width 가 무효라 사실상 border-image 로만 그려졌음) */
+    border-style: solid;
+    border-color: transparent;
+    border-width: var(--frame-bw-top) var(--frame-bw) var(--frame-bw) var(--frame-bw);
+    border-image-source: url('/images/frames/main_frame.png');
+    border-image-slice: 19 17 17 17 fill;
+    border-image-width: var(--frame-bw-top) var(--frame-bw) var(--frame-bw) var(--frame-bw);
+    border-image-repeat: stretch;
     image-rendering: pixelated;
-    padding: 1.5rem;
+    padding: clamp(12px, 4vw, 1.5rem);
 }
 
 .stats-tabpanel:focus-visible {
@@ -851,17 +858,10 @@
 
 /* ============================================
    Responsive
+   ------------------------------------------------
+   유동(clamp) 토큰과 페이지의 min-[380px] 리플로우로 반응형을 처리하므로
+   별도 브레이크포인트 블록은 두지 않는다.
+   (과거 여기 있던 @media(max-width:380px) 블록은 .char-portrait-frame /
+    .stat-label 등 현재 마크업에 존재하지 않는 옛 클래스를 대상으로 해
+    실제로는 아무 효과가 없던 죽은 코드라 제거함.)
    ============================================ */
-@media (max-width: 380px) {
-    .char-portrait-frame { width: 110px; }
-    .char-portrait-bg {
-        width: 110px;
-        height: 130px;
-    }
-    .char-portrait-bg canvas {
-        width: 110px !important;
-        height: 110px !important;
-    }
-    .stat-label { width: 38px; font-size: 10px; }
-    .stat-value-right { width: 38px; font-size: 9px; }
-}
